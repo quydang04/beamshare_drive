@@ -1,0 +1,2 @@
+"use strict";const e=require("vue"),s=require("../../utils/utils.js"),u={class:"txt-preview"},c=e.defineComponent({__name:"index",props:{file:{default:()=>null},url:{default:()=>null},name:{}},setup(r){const i=r,n=e.ref(null);return e.watch(()=>i.file,t=>{t&&s.getFileRenderByFile(t).then(l=>{n.value=l})},{immediate:!0}),(t,l)=>(e.openBlock(),e.createElementBlock("div",u,e.toDisplayString(n.value),1))}});module.exports=c;
+//# sourceMappingURL=index.vue.js.map

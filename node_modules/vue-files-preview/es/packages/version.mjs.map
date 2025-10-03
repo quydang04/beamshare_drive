@@ -1,0 +1,1 @@
+{"version":3,"file":"version.mjs","sources":["../../../packages/version.ts"],"sourcesContent":["export const version = \"1.0.38\";"],"names":["version"],"mappings":"AAAO,MAAMA,IAAU;"}

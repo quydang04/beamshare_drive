@@ -1,0 +1,208 @@
+/* Vue Office Preview Styles */
+.vue-office-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.vue-office-content {
+    background: white;
+    border-radius: 16px;
+    width: 95vw;
+    height: 95vh;
+    max-width: 1200px;
+    max-height: 900px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.vue-office-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+}
+
+.vue-office-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a202c;
+    margin: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 16px;
+}
+
+.vue-office-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.vue-office-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    text-align: center;
+    padding: 60px;
+    color: #667eea;
+}
+
+.loading-spinner i {
+    font-size: 48px;
+    margin-bottom: 20px;
+    animation: spin 1s linear infinite;
+}
+
+.loading-spinner p {
+    font-size: 16px;
+    color: #718096;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Error Message */
+.error-message {
+    text-align: center;
+    padding: 60px;
+    color: #e53e3e;
+}
+
+.error-message i {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.error-message p {
+    font-size: 16px;
+    color: #718096;
+}
+
+/* Unsupported File */
+.unsupported-file {
+    text-align: center;
+    padding: 60px;
+    color: #718096;
+}
+
+.unsupported-file i {
+    font-size: 80px;
+    color: #667eea;
+    opacity: 0.6;
+    margin-bottom: 24px;
+}
+
+.unsupported-file h4 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 12px;
+}
+
+.unsupported-file p {
+    color: #718096;
+    margin-bottom: 8px;
+}
+
+/* Action Buttons */
+.btn-download,
+.btn-close {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    border: none;
+}
+
+.btn-download {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-close {
+    background: #f7fafc;
+    color: #4a5568;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-close:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+}
+
+/* Vue Office Components Styling */
+.vue-office-modal .vue-office-docx,
+.vue-office-modal .vue-office-excel,
+.vue-office-modal .vue-office-pdf {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .vue-office-content {
+        width: 98vw;
+        height: 98vh;
+        border-radius: 8px;
+    }
+    
+    .vue-office-header {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .vue-office-header h3 {
+        font-size: 16px;
+        margin-right: 0;
+        text-align: center;
+    }
+    
+    .vue-office-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .btn-download,
+    .btn-close {
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+}

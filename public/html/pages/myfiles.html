@@ -1,0 +1,56 @@
+<!-- My Files Page -->
+<div class="page active">
+    <div class="myfiles-container">
+        <div class="page-header-compact">
+            <div class="header-main">
+                <div class="header-icon">
+                    <i class="fas fa-folder-open"></i>
+                </div>
+                <div class="header-text">
+                    <h1>Tệp của tôi</h1>
+                    <span class="file-count">0 tệp tin</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="view-toggle" data-view="list" title="Chuyển chế độ xem">
+                    <i class="fas fa-list"></i>
+                </button>
+                <button class="view-toggle" onclick="refreshFiles()" title="Làm mới danh sách">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="btn-upload" onclick="window.loadPage('upload')">
+                    <i class="fas fa-plus"></i>
+                    Tải lên
+                </button>
+            </div>
+        </div>
+        
+        <div class="files-content" id="files-content">
+            <!-- Files will be loaded here -->
+        </div>
+        
+        <div class="empty-state" id="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-folder-open"></i>
+            </div>
+            <h3>Không có tệp tin nào</h3>
+            <p>Bạn chưa tải lên tệp tin nào. Hãy bắt đầu bằng cách tải lên tệp đầu tiên của bạn.</p>
+            <div class="empty-actions">
+                <button class="btn-primary" onclick="window.loadPage('upload')">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    Tải lên tệp
+                </button>
+            </div>
+            <div class="quick-tips">
+                <div class="tip">
+                    <i class="fas fa-info-circle"></i>
+                    Kéo thả tệp vào đây để tải lên nhanh
+                </div>
+                <div class="tip">
+                    <i class="fas fa-shield-alt"></i>
+                    Tệp của bạn được mã hóa và bảo mật
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

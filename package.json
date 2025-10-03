@@ -1,0 +1,30 @@
+{
+  "name": "beamshare-drive",
+  "version": "1.0.0",
+  "description": "BeamShare Drive - Cloud Storage Frontend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js --dev"
+  },
+  "keywords": [
+    "beamshare",
+    "cloud",
+    "storage",
+    "drive"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mime-types": "^3.0.1",
+    "multer": "^2.0.2",
+    "path": "^0.12.7",
+    "vue": "^3.5.22",
+    "vue-files-preview": "^1.0.38",
+    "vue-office-preview": "^1.0.2"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}

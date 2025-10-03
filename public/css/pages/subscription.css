@@ -1,0 +1,235 @@
+/* Subscription Page Styles */
+.subscription-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.subscription-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.subscription-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.subscription-header p {
+    font-size: 16px;
+    color: #6b7280;
+}
+
+.pricing-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.pricing-card {
+    background: white;
+    border-radius: 16px;
+    padding: 32px 24px;
+    border: 2px solid #e5e7eb;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.pricing-card:hover {
+    border-color: #8b5cf6;
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-card.popular {
+    border-color: #8b5cf6;
+    background: linear-gradient(135deg, #f3f4f6 0%, #ffffff 100%);
+}
+
+.pricing-card.popular::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #8b5cf6, #6366f1);
+    border-radius: 16px 16px 0 0;
+}
+
+.card-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.badge {
+    background: #8b5cf6;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 16px;
+}
+
+.card-header h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.card-header p {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.price {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.price-amount {
+    font-size: 48px;
+    font-weight: 800;
+    color: #1f2937;
+}
+
+.price-period {
+    color: #6b7280;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.features {
+    margin-bottom: 32px;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.feature i {
+    color: #10b981;
+    font-size: 16px;
+    width: 20px;
+}
+
+.feature span {
+    color: #374151;
+    font-size: 14px;
+}
+
+.feature-note {
+    font-size: 12px;
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 16px;
+    padding-left: 32px;
+}
+
+.btn-subscribe {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-subscribe.primary {
+    background: #8b5cf6;
+    color: white;
+}
+
+.btn-subscribe:hover {
+    transform: translateY(-2px);
+}
+
+.btn-subscribe.primary:hover {
+    background: #7c3aed;
+}
+
+.btn-subscribe:not(.primary):hover {
+    background: #e5e7eb;
+}
+
+.current-usage {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    border: 2px solid #e5e7eb;
+}
+
+.usage-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.usage-header i {
+    color: #f59e0b;
+    font-size: 20px;
+}
+
+.usage-header span {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.usage-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.usage-info > span:first-child {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.usage-bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.usage-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.usage-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    text-align: right;
+}
+
+/* Responsive Design for Subscription */
+@media (max-width: 768px) {
+    .pricing-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .subscription-container {
+        padding: 20px 16px;
+    }
+}

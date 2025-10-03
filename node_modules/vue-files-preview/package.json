@@ -1,0 +1,70 @@
+{
+  "name": "vue-files-preview",
+  "version": "1.0.38",
+  "main": "./es/packages/index.mjs",
+  "module": "./es/packages/index.mjs",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./es/packages/index.mjs",
+      "require": "./lib/packages/index.js"
+    },
+    "./es": {
+      "types": "./types/index.d.ts",
+      "import": "./es/packages/index.mjs"
+    },
+    "./lib": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/packages/index.js"
+    },
+    "./es/packages/*.mjs": {
+      "types": "./types/*.d.ts",
+      "import": "./es/packages/*.mjs"
+    },
+    "./lib/packages/*.js": {
+      "types": "./types/*.d.ts",
+      "require": "./lib/packages/*.js"
+    },
+    "./es/packages/*": {
+      "types": [
+        "./types/*.d.ts",
+        "./types/index.d.ts"
+      ],
+      "import": "./es/packages/*.mjs"
+    },
+    "./lib/packages/version.js": {
+      "types": "./types/version.d.ts",
+      "require": "./lib/packages/version.js"
+    },
+    "./es/packages/version.mjs": {
+      "types": [
+        "./types/version.d.ts"
+      ],
+      "import": "./es/packages/version.mjs"
+    },
+    "./*": "./*"
+  },
+  "description": "A tool for previewing files such as doc, excel, pdf, image, markdown, txt, audio, and video and so on.",
+  "keywords": [
+    "vue-file-preview",
+    "vue3-file-preview",
+    "file-preview",
+    "vue-preview",
+    "vue3-preview",
+    "vue3-viewer",
+    "vue3-file-viewer",
+    "vue",
+    "vue3"
+  ],
+  "author": "SmallTeddy",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VueFilesPreview/vue-files-preview"
+  },
+  "bugs": {
+    "url": "https://github.com/VueFilesPreview/vue-files-preview/issues"
+  },
+  "homepage": "https://github.com/VueFilesPreview"
+}

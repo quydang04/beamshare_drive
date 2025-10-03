@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeamShare - Cloud Storage</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/pages/myfiles.css">
+    <link rel="stylesheet" href="../css/pages/upload.css">
+    <link rel="stylesheet" href="../css/pages/dashboard.css">
+    <link rel="stylesheet" href="../css/pages/subscription.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <i class="fas fa-cloud"></i>
+            <span class="logo">BeamShare</span>
+        </div>
+        <div class="header-center"></div>
+        <div class="header-right">
+            <div class="user-avatar">
+                <span>U</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="user-info">
+                <div class="user-avatar-large">
+                    <span id="user-initial">U</span>
+                </div>
+                <div class="user-name" id="user-name">User</div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item" data-page="dashboard">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="upload">
+                    <i class="fas fa-upload"></i>
+                    <span>Upload</span>
+                </a>
+                <a href="#" class="nav-item active" data-page="myfiles">
+                    <i class="fas fa-folder"></i>
+                    <span>My Files</span>
+                </a>
+                <a href="#" class="nav-item" data-page="subscription">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Subscription</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="main-content">
+            <!-- Content will be loaded here -->
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/base.js"></script>
+    <script src="../js/pages/myfiles.js"></script>
+    <script src="../js/pages/upload.js"></script>
+    <script src="../js/pages/dashboard.js"></script>
+    <script src="../js/pages/subscription.js"></script>
+    
+    <script>
+        // Load page content dynamically
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load default page (My Files)
+            loadPage('myfiles');
+            
+            // Handle navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Update active nav item
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Load page content
+                    const page = this.getAttribute('data-page');
+                    loadPage(page);
+                });
+            });
+        });
+        
+        async function loadPage(pageName) {
+            try {
+                const response = await fetch(`pages/${pageName}.html`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const content = await response.text();
+                document.getElementById('main-content').innerHTML = content;
+                
+                // Initialize page-specific functionality
+                if (window[`init${pageName.charAt(0).toUpperCase() + pageName.slice(1)}`]) {
+                    window[`init${pageName.charAt(0).toUpperCase() + pageName.slice(1)}`]();
+                }
+            } catch (error) {
+                console.error(`Error loading ${pageName} page:`, error);
+                // Fallback content
+                document.getElementById('main-content').innerHTML = `
+                    <div class="page active">
+                        <div class="page-header">
+                            <h1>Lỗi tải trang</h1>
+                        </div>
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <h3>Không thể tải trang ${pageName}</h3>
+                            <p>Vui lòng thử lại sau.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

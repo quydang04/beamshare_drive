@@ -1,0 +1,2 @@
+"use strict";const e=require("vue"),s=require("../../utils/utils.js"),i={class:"pic-preview"},o=["src"],u=e.defineComponent({__name:"index",props:{file:{default:()=>null},url:{default:()=>null},name:{}},setup(r){const c=r,n=e.ref(null);return e.watch(()=>c.file,t=>{t&&s.getFileRenderByFile(t).then(l=>{n.value=l})},{immediate:!0}),(t,l)=>(e.openBlock(),e.createElementBlock("div",i,[e.createElementVNode("img",{src:n.value,alt:""},null,8,o)]))}});module.exports=u;
+//# sourceMappingURL=index.vue.js.map
