@@ -1,0 +1,367 @@
+/* Responsive Design & Accessibility Styles */
+/* This file contains all responsive design rules and accessibility improvements */
+/* for modal dialogs, toast notifications, and conflict resolution components */
+
+/* ===== MODAL & TOAST RESPONSIVE STYLES ===== */
+
+/* Tablet and smaller screens */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 16px;
+        border-radius: 12px;
+    }
+    
+    .modal-header {
+        padding: 24px 24px 12px;
+    }
+    
+    .modal-body {
+        padding: 0 24px 20px;
+    }
+    
+    .modal-footer {
+        padding: 20px 24px 24px;
+        flex-direction: column;
+    }
+    
+    .modal-footer button {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .toast-container {
+        right: 16px;
+        left: 16px;
+        top: 16px;
+    }
+    
+    .toast {
+        min-width: auto;
+        max-width: none;
+        border-radius: 8px;
+    }
+    
+    .toast-content {
+        padding: 16px 20px;
+    }
+    
+    .toast-close {
+        top: 12px;
+        right: 12px;
+    }
+    
+    .file-details-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mobile screens */
+@media (max-width: 480px) {
+    .modal-header .modal-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+    
+    .modal-header h3 {
+        font-size: 18px;
+    }
+    
+    .modal-body p {
+        font-size: 15px;
+    }
+    
+    .toast-content {
+        gap: 12px;
+    }
+    
+    .toast-icon {
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+    }
+    
+    .toast-message {
+        font-size: 14px;
+    }
+}
+
+/* ===== CONFLICT RESOLUTION RESPONSIVE STYLES ===== */
+
+/* Tablet and smaller screens */
+@media (max-width: 768px) {
+    .conflict-resolution-container {
+        max-width: 100%;
+        padding: 0 16px;
+    }
+
+    .conflict-info {
+        padding: 20px;
+        margin-bottom: 24px;
+        border-radius: 12px;
+    }
+
+    .conflict-info::before {
+        height: 2px;
+    }
+
+    .conflict-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        border-radius: 10px;
+    }
+
+    .conflict-message h4 {
+        font-size: 16px;
+    }
+
+    .conflict-message p {
+        font-size: 13px;
+    }
+
+    .conflict-options {
+        gap: 16px;
+    }
+
+    .conflict-option {
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    .option-icon {
+        font-size: 20px;
+        margin-right: 16px;
+    }
+
+    .option-content h5 {
+        font-size: 15px;
+    }
+
+    .option-content p {
+        font-size: 13px;
+    }
+
+    .option-radio label {
+        width: 24px;
+        height: 24px;
+        border-width: 2px;
+    }
+
+    .option-radio label::after {
+        width: 12px;
+        height: 12px;
+    }
+
+    .rename-input {
+        padding: 14px 16px;
+        font-size: 14px;
+        border-radius: 10px;
+    }
+}
+
+/* Mobile screens */
+@media (max-width: 480px) {
+    .conflict-resolution-container {
+        padding: 0 12px;
+    }
+
+    .conflict-info {
+        padding: 16px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+    }
+
+    .conflict-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+        border-radius: 8px;
+    }
+
+    .conflict-message h4 {
+        font-size: 15px;
+    }
+
+    .conflict-message p {
+        font-size: 12px;
+    }
+
+    .conflict-options {
+        gap: 12px;
+    }
+
+    .conflict-option {
+        padding: 16px;
+        border-radius: 10px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .option-icon {
+        font-size: 18px;
+        margin-right: 0;
+        margin-bottom: 0;
+        align-self: flex-start;
+    }
+
+    .option-content {
+        width: 100%;
+    }
+
+    .option-content h5 {
+        font-size: 14px;
+    }
+
+    .option-content p {
+        font-size: 12px;
+    }
+
+    .option-radio {
+        margin-left: 0;
+        align-self: flex-end;
+        position: absolute;
+        top: 16px;
+        right: 16px;
+    }
+
+    .option-radio label {
+        width: 22px;
+        height: 22px;
+        border-width: 2px;
+    }
+
+    .option-radio label::after {
+        width: 10px;
+        height: 10px;
+    }
+
+    .rename-input {
+        padding: 12px 14px;
+        font-size: 13px;
+        border-radius: 8px;
+    }
+
+    .rename-input-container {
+        margin-top: 16px;
+        padding-top: 16px;
+    }
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .modal-overlay,
+    .modal-content,
+    .toast {
+        animation: none;
+        transition: opacity 0.2s ease;
+    }
+    
+    .modal-content {
+        transform: none;
+    }
+    
+    .toast {
+        transform: none;
+    }
+    
+    .toast.show {
+        transform: none;
+    }
+    
+    .toast.removing {
+        transform: none;
+    }
+    
+    .conflict-option {
+        transition: none;
+    }
+    
+    .conflict-option:hover {
+        transform: none;
+    }
+    
+    .option-radio label::after {
+        transition: opacity 0.1s ease;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .modal-content {
+        border: 2px solid #000000;
+    }
+    
+    .toast {
+        border: 2px solid #000000;
+    }
+    
+    .btn-primary {
+        border: 2px solid #000000;
+    }
+    
+    .btn-secondary {
+        border: 2px solid #000000;
+    }
+    
+    .conflict-option {
+        border-width: 3px;
+    }
+    
+    .conflict-option:hover,
+    .conflict-option.selected {
+        border-color: #000000;
+    }
+    
+    .option-radio label {
+        border-width: 3px;
+        border-color: #000000;
+    }
+}
+
+/* ===== FOCUS INDICATORS FOR ACCESSIBILITY ===== */
+
+/* Modal and toast focus indicators */
+.modal-close:focus-visible,
+.toast-close:focus-visible,
+.toast-action:focus-visible,
+.modal-footer button:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Conflict resolution focus indicators */
+.conflict-option:focus-within {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.option-radio input[type="radio"]:focus + label {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.rename-input:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* ===== SCREEN READER SUPPORT ===== */
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

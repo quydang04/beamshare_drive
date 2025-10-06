@@ -187,27 +187,55 @@ async function uploadFiles(files) {
             method: 'POST',
             body: formData
         });
-        
+
+        // Check if response is ok first
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+        }
+
         const result = await response.json();
         console.log('Upload response:', result);
-        
+
         if (result.success) {
-            showMessage(`Đã tải lên thành công ${result.files.length} file!`, 'success');
-            
+            const fileCount = result.files ? result.files.length : files.length;
+            showMessage(`Đã tải lên thành công ${fileCount} file!`, 'success');
+
             // Update progress to 100%
             updateProgressBars(100);
-            
+
             // Redirect to My Files after delay
             setTimeout(() => {
                 showMessage('Chuyển đến trang quản lý file...', 'info');
                 window.loadPage('myfiles');
             }, 2000);
         } else {
-            throw new Error(result.error || 'Upload failed');
+            // More detailed error handling
+            const errorMsg = result.error || result.message || 'Upload failed - no error details provided';
+            console.error('Server returned error:', result);
+            throw new Error(errorMsg);
         }
     } catch (error) {
         console.error('Upload error:', error);
-        showMessage(`Lỗi tải lên: ${error.message}`, 'error');
+
+        // Hide progress UI on error
+        const progressContainer = document.querySelector('.upload-progress-container');
+        if (progressContainer) {
+            progressContainer.remove();
+        }
+
+        // Show detailed error message
+        let errorMessage = 'Lỗi tải lên';
+        if (error.message) {
+            if (error.message.includes('HTTP Error')) {
+                errorMessage = `Lỗi kết nối server: ${error.message}`;
+            } else if (error.message.includes('Failed to fetch')) {
+                errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+            } else {
+                errorMessage = `Lỗi tải lên: ${error.message}`;
+            }
+        }
+
+        showMessage(errorMessage, 'error');
     } finally {
         isUploading = false; // Reset uploading flag
     }
@@ -242,14 +270,35 @@ function updateProgressBars(percentage) {
     });
 }
 
-// Show message to user
+// Show message to user using toast system
 function showMessage(message, type = 'info') {
     console.log(`Message (${type}):`, message);
-    
-    if (window.showNotification) {
-        window.showNotification(message, type);
+
+    // Use the toast system with proper method calls
+    if (window.toastSystem) {
+        // Use the convenience methods for better consistency
+        switch(type) {
+            case 'success':
+                window.toastSystem.success(message);
+                break;
+            case 'error':
+                window.toastSystem.error(message);
+                break;
+            case 'warning':
+                window.toastSystem.warning(message);
+                break;
+            case 'info':
+            default:
+                window.toastSystem.info(message);
+                break;
+        }
     } else {
-        alert(message);
+        // Fallback to console log
+        console.log(`[${type.toUpperCase()}] ${message}`);
+        // Only show alert for errors as fallback
+        if (type === 'error') {
+            alert(`Lỗi: ${message}`);
+        }
     }
 }
 

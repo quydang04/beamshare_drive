@@ -27,8 +27,10 @@ window.initMyFiles = function() {
             }
             
             // Show notification for view change
-            if (window.showNotification) {
-                showNotification(`Chế độ xem: ${currentView === 'grid' ? 'Lưới' : 'Danh sách'}`, 'info');
+            if (window.toastSystem) {
+                window.toastSystem.info(`Chế độ xem: ${currentView === 'grid' ? 'Lưới' : 'Danh sách'}`, {
+                    duration: 2000
+                });
             }
         });
     }
@@ -51,8 +53,15 @@ window.initMyFiles = function() {
 // Refresh files manually
 window.refreshFiles = function() {
     console.log('Refreshing files...');
-    showNotification('Đang làm mới danh sách tệp...', 'info');
-    
+
+    // Use new toast system directly
+    if (window.toastSystem) {
+        window.toastSystem.info('Đang làm mới danh sách tệp...', {
+            duration: 2000,
+            dismissible: false
+        });
+    }
+
     // Add rotation animation to refresh button
     const refreshBtn = document.querySelector('[onclick="refreshFiles()"] i');
     if (refreshBtn) {
@@ -61,7 +70,7 @@ window.refreshFiles = function() {
             refreshBtn.style.animation = '';
         }, 1000);
     }
-    
+
     loadFiles();
 };
 
@@ -107,7 +116,11 @@ function initDragAndDrop() {
         const files = dt.files;
         
         if (files.length > 0) {
-            showNotification(`Đã thả ${files.length} tệp. Chuyển đến trang tải lên...`, 'success');
+            if (window.toastSystem) {
+                window.toastSystem.success(`Đã thả ${files.length} tệp. Chuyển đến trang tải lên...`, {
+                    duration: 3000
+                });
+            }
             setTimeout(() => {
                 window.loadPage('upload');
             }, 1000);
@@ -161,7 +174,11 @@ async function loadFiles() {
         }
     } catch (error) {
         console.error('Error loading files:', error);
-        showNotification('Lỗi tải danh sách tệp', 'error');
+        if (window.toastSystem) {
+            window.toastSystem.error('Lỗi tải danh sách tệp', {
+                duration: 4000
+            });
+        }
     }
 }
 
@@ -175,7 +192,11 @@ window.createSampleFiles = function() {
     ];
     
     createFileList(sampleFiles);
-    showNotification('Đã tạo 4 tệp mẫu để bạn trải nghiệm!', 'success');
+    if (window.toastSystem) {
+        window.toastSystem.success('Đã tạo 4 tệp mẫu để bạn trải nghiệm!', {
+            duration: 3000
+        });
+    }
 };
 
 // Create file list display
@@ -218,13 +239,16 @@ function createFileListHTML(files) {
                         <button class="action-btn preview-btn" title="Xem trước" onclick="previewFile('${file.id}', '${file.originalName}', '${file.type}')">
                             <i class="fas fa-eye"></i>
                         </button>
+                        <button class="action-btn details-btn" title="Xem chi tiết" onclick="viewFileDetails('${file.id}', '${file.originalName}')">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
                         <button class="action-btn download-btn" title="Tải xuống" onclick="downloadFile('${file.id}', '${file.originalName}')">
                             <i class="fas fa-download"></i>
                         </button>
-                        <button class="action-btn rename-btn" title="Đổi tên" onclick="renameFile('${file.id}', '${file.originalName}')">
+                        <button class="action-btn rename-btn" title="Đổi tên" onclick="renameFile('${file.id}', '${file.displayName || file.originalName}')">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="action-btn delete-btn" title="Xóa" onclick="deleteFile('${file.id}', '${file.originalName}')">
+                        <button class="action-btn delete-btn" title="Xóa" onclick="deleteFile('${file.id}', '${file.displayName || file.originalName}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -265,12 +289,42 @@ function formatFileSize(bytes) {
 function formatDate(dateString) {
     const date = new Date(dateString);
     const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 1) return 'Hôm qua';
-    if (diffDays <= 7) return `${diffDays} ngày trước`;
-    
+    const diffTime = now - date; // Remove Math.abs to get correct direction
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    // Handle future dates (shouldn't happen but just in case)
+    if (diffTime < 0) {
+        return date.toLocaleDateString('vi-VN');
+    }
+
+    // Less than 1 minute
+    if (diffMinutes < 1) {
+        return 'Vừa xong';
+    }
+
+    // Less than 1 hour
+    if (diffMinutes < 60) {
+        return `${diffMinutes} phút trước`;
+    }
+
+    // Less than 24 hours
+    if (diffHours < 24) {
+        return `${diffHours} giờ trước`;
+    }
+
+    // Exactly 1 day
+    if (diffDays === 1) {
+        return 'Hôm qua';
+    }
+
+    // Less than 7 days
+    if (diffDays < 7) {
+        return `${diffDays} ngày trước`;
+    }
+
+    // More than a week - show actual date
     return date.toLocaleDateString('vi-VN');
 }
 
@@ -291,7 +345,11 @@ function addFileInteractions() {
         item.addEventListener('click', function(e) {
             if (!e.target.closest('.action-btn')) {
                 const fileName = this.getAttribute('data-file-name');
-                showNotification(`Đang mở tệp: ${fileName}`, 'info');
+                if (window.toastSystem) {
+                    window.toastSystem.info(`Đang mở tệp: ${fileName}`, {
+                        duration: 2000
+                    });
+                }
             }
         });
     });
@@ -304,16 +362,22 @@ function addFileInteractions() {
             
             switch(action) {
                 case 'Tải xuống':
-                    showNotification(`Đang tải xuống: ${fileName}`, 'success');
+                    if (window.toastSystem) {
+                        window.toastSystem.success(`Đang tải xuống: ${fileName}`, {
+                            duration: 2000
+                        });
+                    }
                     break;
                 case 'Chia sẻ':
-                    showNotification(`Đã tạo link chia sẻ cho: ${fileName}`, 'success');
+                    if (window.toastSystem) {
+                        window.toastSystem.success(`Đã tạo link chia sẻ cho: ${fileName}`, {
+                            duration: 3000
+                        });
+                    }
                     break;
                 case 'Xóa':
-                    if (confirm(`Bạn có chắc muốn xóa "${fileName}"?`)) {
-                        this.closest('.file-item').remove();
-                        showNotification(`Đã xóa: ${fileName}`, 'info');
-                    }
+                    // Remove this case since delete is handled by the onclick attribute
+                    // This prevents the double-modal issue
                     break;
             }
         });
@@ -325,14 +389,19 @@ function addFileInteractions() {
 // Download file
 window.downloadFile = async function(fileId, fileName) {
     try {
-        showNotification(`Đang tải xuống ${fileName}...`, 'info');
-        
+        if (window.toastSystem) {
+            window.toastSystem.info(`Đang tải xuống ${fileName}...`, {
+                duration: 2000,
+                dismissible: false
+            });
+        }
+
         const response = await fetch(`/api/download/${fileId}`);
-        
+
         if (!response.ok) {
             throw new Error('Download failed');
         }
-        
+
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -342,29 +411,57 @@ window.downloadFile = async function(fileId, fileName) {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        
-        showNotification(`Đã tải xuống ${fileName}`, 'success');
+
+        if (window.toastSystem) {
+            window.toastSystem.success(`Đã tải xuống ${fileName}`, {
+                duration: 3000
+            });
+        }
     } catch (error) {
         console.error('Download error:', error);
-        showNotification(`Lỗi tải xuống: ${error.message}`, 'error');
+        if (window.toastSystem) {
+            window.toastSystem.error(`Lỗi tải xuống: ${error.message}`, {
+                duration: 4000
+            });
+        }
     }
 };
 
-// Delete file
+// Delete file with modal confirmation
 window.deleteFile = async function(fileId, fileName) {
-    if (!confirm(`Bạn có chắc muốn xóa "${fileName}"?`)) {
+    // Prevent double-click by checking if modal is already open
+    if (window.modalSystem.activeModal) {
         return;
     }
-    
+
+    const confirmed = await window.modalSystem.confirm({
+        title: 'Xác nhận xóa tệp',
+        message: `Bạn có chắc muốn xóa "${fileName}"? Hành động này không thể hoàn tác.`,
+        confirmText: 'Xóa',
+        cancelText: 'Hủy',
+        confirmClass: 'btn-danger'
+    });
+
+    if (!confirmed) {
+        return;
+    }
+
+    // Disable delete button during processing
+    const deleteBtn = document.querySelector(`[onclick="deleteFile('${fileId}', '${fileName}')"]`);
+    if (deleteBtn) {
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+
     try {
         const response = await fetch(`/api/files/${fileId}`, {
             method: 'DELETE'
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
-            showNotification(`Đã xóa ${fileName}`, 'success');
+            window.toastSystem.success(`Đã xóa ${fileName}`);
             // Reload file list
             loadFiles();
         } else {
@@ -372,31 +469,91 @@ window.deleteFile = async function(fileId, fileName) {
         }
     } catch (error) {
         console.error('Delete error:', error);
-        showNotification(`Lỗi xóa tệp: ${error.message}`, 'error');
+        window.toastSystem.error(`Lỗi xóa tệp: ${error.message}`);
+    } finally {
+        // Re-enable delete button
+        if (deleteBtn) {
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        }
     }
 };
 
-// Rename file
+// Rename file with modal and validation
 window.renameFile = async function(fileId, currentName) {
-    const newName = prompt('Nhập tên mới:', currentName.replace(/\.[^/.]+$/, ""));
-    
-    if (!newName || newName.trim() === '') {
+    // Prevent double-click by checking if modal is already open
+    if (window.modalSystem.activeModal) {
         return;
     }
-    
+
+    // Extract file extension
+    const lastDotIndex = currentName.lastIndexOf('.');
+    const nameWithoutExt = lastDotIndex > 0 ? currentName.substring(0, lastDotIndex) : currentName;
+    const extension = lastDotIndex > 0 ? currentName.substring(lastDotIndex) : '';
+
+    const newName = await window.modalSystem.prompt({
+        title: 'Đổi tên tệp',
+        message: `Nhập tên mới cho tệp "${currentName}":`,
+        defaultValue: nameWithoutExt,
+        placeholder: 'Tên tệp (không bao gồm phần mở rộng)',
+        confirmText: 'Đổi tên',
+        required: true,
+        validator: (value) => {
+            if (!value.trim()) {
+                return 'Tên tệp không được để trống';
+            }
+
+            // Check for invalid characters
+            const invalidChars = /[<>:"/\\|?*]/;
+            if (invalidChars.test(value)) {
+                return 'Tên tệp chứa ký tự không hợp lệ';
+            }
+
+            // Check for duplicate names (basic check - could be enhanced with server-side validation)
+            const fullNewName = value.trim() + extension;
+            if (fullNewName === currentName) {
+                return 'Tên mới phải khác tên hiện tại';
+            }
+
+            // Check if file with new name already exists
+            const existingFiles = document.querySelectorAll('.file-item');
+            for (let fileItem of existingFiles) {
+                const existingName = fileItem.getAttribute('data-file-name');
+                if (existingName === fullNewName && fileItem.getAttribute('data-file-id') !== fileId) {
+                    return 'Đã tồn tại tệp với tên này';
+                }
+            }
+
+            return true;
+        }
+    });
+
+    if (!newName) {
+        return;
+    }
+
+    const fullNewName = newName + extension;
+
+    // Disable rename button during processing
+    const renameBtn = document.querySelector(`[onclick="renameFile('${fileId}', '${currentName}')"]`);
+    if (renameBtn) {
+        renameBtn.disabled = true;
+        renameBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+
     try {
         const response = await fetch(`/api/files/${fileId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ newName: newName.trim() })
+            body: JSON.stringify({ newName: fullNewName })
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
-            showNotification(`Đã đổi tên thành ${newName}`, 'success');
+            window.toastSystem.success(`Đã đổi tên thành "${fullNewName}"`);
             // Reload file list
             loadFiles();
         } else {
@@ -404,7 +561,134 @@ window.renameFile = async function(fileId, currentName) {
         }
     } catch (error) {
         console.error('Rename error:', error);
-        showNotification(`Lỗi đổi tên: ${error.message}`, 'error');
+        window.toastSystem.error(`Lỗi đổi tên: ${error.message}`);
+    } finally {
+        // Re-enable rename button
+        if (renameBtn) {
+            renameBtn.disabled = false;
+            renameBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        }
+    }
+};
+
+// View file details
+window.viewFileDetails = async function(fileId, fileName) {
+    // Prevent double-click by checking if modal is already open
+    if (window.modalSystem.activeModal) {
+        return;
+    }
+
+    try {
+        // Fetch detailed file information
+        const response = await fetch(`/api/files/${fileId}/details`);
+        const fileDetails = await response.json();
+
+        if (!response.ok) {
+            throw new Error(fileDetails.error || 'Failed to fetch file details');
+        }
+
+        // Create file details content
+        const detailsContent = document.createElement('div');
+        detailsContent.className = 'file-details-container';
+
+        // File icon and basic info
+        const headerSection = document.createElement('div');
+        headerSection.className = 'file-details-header';
+        headerSection.innerHTML = `
+            <div class="file-icon-large">
+                <i class="fas ${getFileIconClass(fileDetails)}"></i>
+            </div>
+            <div class="file-basic-info">
+                <h4>${fileDetails.originalName}</h4>
+                <p class="file-type">${fileDetails.type || 'Unknown'}</p>
+            </div>
+        `;
+
+        // Details grid
+        const detailsGrid = document.createElement('div');
+        detailsGrid.className = 'file-details-grid';
+
+        const details = [
+            { label: 'Tên tệp', value: fileDetails.originalName },
+            { label: 'Kích thước', value: formatFileSize(fileDetails.size) },
+            { label: 'Loại MIME', value: fileDetails.type || 'Không xác định' },
+            { label: 'Thời điểm tải lên', value: formatDate(fileDetails.uploadDate) },
+            { label: 'Người sở hữu', value: fileDetails.owner || 'User' },
+            { label: 'Quyền truy cập', value: fileDetails.permissions || 'Riêng tư' }
+        ];
+
+        if (fileDetails.hash) {
+            details.push({
+                label: 'SHA-256 Hash',
+                value: `
+                    <div class="file-hash-container">
+                        <code class="file-hash">${fileDetails.hash}</code>
+                        <button class="copy-hash-btn" onclick="copyToClipboard('${fileDetails.hash}')">
+                            <i class="fas fa-copy"></i> Sao chép
+                        </button>
+                    </div>
+                `
+            });
+        }
+
+        if (fileDetails.version) {
+            details.push({ label: 'Phiên bản', value: fileDetails.version });
+        }
+
+        details.forEach(detail => {
+            const item = document.createElement('div');
+            item.className = 'file-details-item';
+            item.innerHTML = `
+                <div class="file-details-label">${detail.label}</div>
+                <div class="file-details-value">${detail.value}</div>
+            `;
+            detailsGrid.appendChild(item);
+        });
+
+        detailsContent.appendChild(headerSection);
+        detailsContent.appendChild(detailsGrid);
+
+        // Create modal
+        window.modalSystem.createModal({
+            title: 'Chi tiết tệp',
+            content: detailsContent,
+            buttons: [
+                {
+                    text: 'Tải xuống',
+                    className: 'btn-primary',
+                    onclick: () => {
+                        downloadFile(fileId, fileName);
+                        window.modalSystem.closeModal();
+                    }
+                },
+                {
+                    text: 'Đóng',
+                    className: 'btn-secondary',
+                    onclick: () => window.modalSystem.closeModal()
+                }
+            ]
+        });
+
+    } catch (error) {
+        console.error('Error fetching file details:', error);
+        window.toastSystem.error(`Lỗi tải thông tin tệp: ${error.message}`);
+    }
+};
+
+// Copy to clipboard utility
+window.copyToClipboard = async function(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        window.toastSystem.success('Đã sao chép vào clipboard');
+    } catch (error) {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        window.toastSystem.success('Đã sao chép vào clipboard');
     }
 };
 
@@ -414,18 +698,18 @@ function getEnhancedFileType(fileName, mimeType) {
     return { extension: ext };
 }
 
-// Preview file - Enhanced version with Vue Office support
+// Preview file - Enhanced version with PDF.js support
 window.previewFile = function(fileId, fileName, fileType) {
     console.log('Preview file called:', fileId, fileName, fileType);
-    
+
     const ext = fileName.toLowerCase().split('.').pop();
-    
-    // Use Vue Office for supported office documents
-    if (['pdf', 'doc', 'docx', 'xls', 'xlsx'].includes(ext)) {
-        if (window.vueOfficePreview) {
-            window.vueOfficePreview.openPreview(fileId, fileName, fileType);
+
+    // Use PDF.js preview system for supported documents
+    if (['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) {
+        if (window.pdfPreviewSystem) {
+            window.pdfPreviewSystem.openPreview(fileId, fileName, fileType);
         } else {
-            console.error('Vue Office Preview not initialized');
+            console.error('PDF Preview System not initialized');
             // Fallback to basic preview
             createBasicPreviewModal(fileId, fileName, fileType);
         }
@@ -617,12 +901,12 @@ function getPreviewContent(fileId, fileName, fileType, fileInfo) {
                 </div>
                 <div class="office-info">
                     <p>Tài liệu Microsoft Office</p>
-                    <p>Để xem trước tài liệu này, vui lòng tải xuống và mở bằng ứng dụng tương ứng.</p>
+                    <p>Sử dụng PDF.js Preview để xem trước tài liệu này.</p>
                 </div>
                 <div class="office-actions">
-                    <button class="btn-office-online" onclick="openOfficeOnline('${previewUrl}', '${fileName}')">
-                        <i class="fas fa-external-link-alt"></i>
-                        Xem trên Office Online
+                    <button class="btn-office-online" onclick="window.pdfPreviewSystem.openPreview('${fileId}', '${fileName}', '${fileType}')">
+                        <i class="fas fa-eye"></i>
+                        Xem trước với PDF.js
                     </button>
                 </div>
             </div>
@@ -762,10 +1046,18 @@ function loadTextContent(fileId, previewUrl) {
         });
 }
 
-// Open Office file in Office Online viewer
-window.openOfficeOnline = function(fileUrl, fileName) {
-    const officeOnlineUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(window.location.origin + fileUrl)}`;
-    window.open(officeOnlineUrl, '_blank');
+// Open file with PDF.js preview system
+window.openFilePreview = function(fileId, fileName, fileType) {
+    if (window.pdfPreviewSystem) {
+        window.pdfPreviewSystem.openPreview(fileId, fileName, fileType);
+    } else {
+        console.error('PDF Preview System not available');
+        if (window.toastSystem) {
+            window.toastSystem.error('Hệ thống xem trước chưa sẵn sàng', {
+                duration: 3000
+            });
+        }
+    }
 };
 
 // Close preview modal

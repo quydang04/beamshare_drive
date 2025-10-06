@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="../css/base.css">
     <link rel="stylesheet" href="../css/pages/myfiles.css">
     <link rel="stylesheet" href="../css/pages/upload.css">
+    <link rel="stylesheet" href="../css/simple-upload.css">
     <link rel="stylesheet" href="../css/pages/dashboard.css">
     <link rel="stylesheet" href="../css/pages/subscription.css">
+    <link rel="stylesheet" href="../css/pdf-preview.css">
 </head>
 <body>
     <!-- Header -->
@@ -69,8 +71,21 @@
     <script src="../js/pages/upload.js"></script>
     <script src="../js/pages/dashboard.js"></script>
     <script src="../js/pages/subscription.js"></script>
+
+    <!-- PDF.js Library v5.4.149 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf_viewer.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.js"></script>
+    <script src="../js/pdf-preview.js?v=2.0"></script>
     
     <script>
+        // Debug: Check for unwanted script loading
+        window.addEventListener('error', function(e) {
+            if (e.filename && (e.filename.includes('vue-preview.js') || e.filename.includes('vue-office-preview.js'))) {
+                console.error('Detected attempt to load removed Vue Office file:', e.filename);
+                console.error('This might be from browser cache or a cached reference');
+            }
+        });
+
         // Load page content dynamically
         document.addEventListener('DOMContentLoaded', function() {
             // Load default page (My Files)
@@ -126,5 +141,6 @@
             }
         }
     </script>
+    <script src="../js/simple-upload.js"></script>
 </body>
 </html>
