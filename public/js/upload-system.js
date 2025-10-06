@@ -1,10 +1,10 @@
-// Enhanced Upload System with Modern UI and Advanced Features
-class EnhancedUploadManager {
+// Unified Upload System - Combines enhanced UI with robust conflict resolution
+class UnifiedUploadSystem {
     constructor() {
         this.uploadQueue = [];
         this.activeUploads = new Map();
         this.maxConcurrentUploads = 3;
-        this.chunkSize = 1024 * 1024; // 1MB chunks for large files
+        this.chunkSize = 1024 * 1024; // 1MB chunks
         this.retryAttempts = 3;
         this.supportedFormats = {
             images: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'],
@@ -16,7 +16,7 @@ class EnhancedUploadManager {
         };
     }
 
-    // Initialize enhanced upload UI
+    // Initialize upload UI
     initializeUploadUI(containerId) {
         const container = document.getElementById(containerId);
         if (!container) {
@@ -32,8 +32,7 @@ class EnhancedUploadManager {
     // Create modern upload HTML
     createUploadHTML() {
         return `
-            <div class="enhanced-upload-container">
-                <!-- Upload Header -->
+            <div class="unified-upload-container">
                 <div class="upload-header">
                     <h2><i class="fas fa-cloud-upload-alt"></i> Tải lên tệp</h2>
                     <div class="upload-stats">
@@ -48,7 +47,6 @@ class EnhancedUploadManager {
                     </div>
                 </div>
 
-                <!-- Upload Drop Zone -->
                 <div class="upload-drop-zone" id="dropZone">
                     <div class="drop-zone-content">
                         <i class="fas fa-cloud-upload-alt drop-icon"></i>
@@ -61,7 +59,6 @@ class EnhancedUploadManager {
                     <input type="file" id="fileInput" multiple accept="*/*" style="display: none;">
                 </div>
 
-                <!-- Upload Queue -->
                 <div class="upload-queue" id="uploadQueue" style="display: none;">
                     <div class="queue-header">
                         <h3>Hàng đợi tải lên</h3>
@@ -80,7 +77,6 @@ class EnhancedUploadManager {
                     <div class="queue-list" id="queueList"></div>
                 </div>
 
-                <!-- Upload Progress Summary -->
                 <div class="upload-summary" id="uploadSummary" style="display: none;">
                     <div class="summary-progress">
                         <div class="progress-bar">
@@ -106,18 +102,12 @@ class EnhancedUploadManager {
         const pauseAllBtn = container.querySelector('#pauseAllBtn');
         const clearAllBtn = container.querySelector('#clearAllBtn');
 
-        // File input change
         fileInput.addEventListener('change', (e) => {
             this.handleFileSelection(Array.from(e.target.files));
-            e.target.value = ''; // Reset for next selection
+            e.target.value = '';
         });
 
-        // Browse button
-        browseBtn.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        // Queue control buttons
+        browseBtn.addEventListener('click', () => fileInput.click());
         startAllBtn.addEventListener('click', () => this.startAllUploads());
         pauseAllBtn.addEventListener('click', () => this.pauseAllUploads());
         clearAllBtn.addEventListener('click', () => this.clearAllUploads());
@@ -152,11 +142,10 @@ class EnhancedUploadManager {
         });
     }
 
-    // Handle file selection
+    // Handle file selection with validation
     handleFileSelection(files) {
         if (files.length === 0) return;
 
-        // Validate files
         const validFiles = [];
         const errors = [];
 
@@ -169,55 +158,41 @@ class EnhancedUploadManager {
             }
         });
 
-        // Show errors if any
         if (errors.length > 0) {
             this.showValidationErrors(errors);
         }
 
-        // Add valid files to queue
         if (validFiles.length > 0) {
             this.addFilesToQueue(validFiles);
         }
     }
 
-    // Validate individual file
+    // Validate file
     validateFile(file) {
         const maxSize = 2 * 1024 * 1024 * 1024; // 2GB
         
-        // Check file size
         if (file.size > maxSize) {
-            return {
-                valid: false,
-                error: `Tệp quá lớn (tối đa 2GB)`
-            };
+            return { valid: false, error: 'Tệp quá lớn (tối đa 2GB)' };
         }
 
-        // Check filename
         if (file.name.length > 255) {
-            return {
-                valid: false,
-                error: `Tên tệp quá dài (tối đa 255 ký tự)`
-            };
+            return { valid: false, error: 'Tên tệp quá dài (tối đa 255 ký tự)' };
         }
 
-        // Check for dangerous characters
         if (/[<>:"/\\|?*\x00-\x1f]/.test(file.name)) {
-            return {
-                valid: false,
-                error: `Tên tệp chứa ký tự không hợp lệ`
-            };
+            return { valid: false, error: 'Tên tệp chứa ký tự không hợp lệ' };
         }
 
         return { valid: true };
     }
 
-    // Add files to upload queue
+    // Add files to queue
     addFilesToQueue(files) {
         files.forEach(file => {
             const uploadItem = {
                 id: this.generateId(),
                 file: file,
-                status: 'pending', // pending, uploading, completed, failed, paused
+                status: 'pending',
                 progress: 0,
                 speed: 0,
                 error: null,
@@ -278,6 +253,141 @@ class EnhancedUploadManager {
         }
     }
 
+    // Check if file exists on server
+    async checkFileExists(filename) {
+        try {
+            const response = await fetch('/api/files/check-exists', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename })
+            });
+
+            if (!response.ok) return false;
+            const result = await response.json();
+            return result.exists;
+        } catch (error) {
+            console.error('Error checking file existence:', error);
+            return false;
+        }
+    }
+
+    // Generate suggested filenames for duplicates
+    generateSuggestedName(originalName) {
+        const lastDotIndex = originalName.lastIndexOf('.');
+        const nameWithoutExt = lastDotIndex > 0 ? originalName.substring(0, lastDotIndex) : originalName;
+        const extension = lastDotIndex > 0 ? originalName.substring(lastDotIndex) : '';
+        
+        const suggestions = [];
+        for (let i = 1; i <= 5; i++) {
+            suggestions.push(`${nameWithoutExt}(${i})${extension}`);
+        }
+        
+        return suggestions;
+    }
+
+    // Handle duplicate file with modal
+    async handleDuplicateFile(file) {
+        const suggestions = this.generateSuggestedName(file.name);
+        
+        const content = document.createElement('div');
+        content.innerHTML = `
+            <p>Tệp "<strong>${file.name}</strong>" đã tồn tại. Vui lòng chọn tên mới:</p>
+            <div class="duplicate-suggestions">
+                <p><strong>Gợi ý:</strong></p>
+                <ul>
+                    ${suggestions.map(name => `<li><button class="suggestion-btn" onclick="selectSuggestion('${name}')">${name}</button></li>`).join('')}
+                </ul>
+            </div>
+            <div class="custom-name-input">
+                <label for="custom-filename">Hoặc nhập tên tùy chỉnh:</label>
+                <input type="text" id="custom-filename" class="modal-input" placeholder="Tên tệp mới" />
+                <div class="filename-validation" id="filename-validation"></div>
+            </div>
+        `;
+
+        window.selectSuggestion = (suggestedName) => {
+            const input = document.getElementById('custom-filename');
+            if (input) {
+                input.value = suggestedName;
+                input.dispatchEvent(new Event('input'));
+            }
+        };
+
+        return new Promise((resolve) => {
+            const modal = window.modalSystem.createModal({
+                title: 'Tệp trùng tên',
+                content: content,
+                autoFocus: '#custom-filename',
+                buttons: [
+                    {
+                        text: 'Hủy',
+                        className: 'btn-secondary',
+                        onclick: () => {
+                            window.modalSystem.closeModal();
+                            resolve(null);
+                        }
+                    },
+                    {
+                        text: 'Sử dụng tên này',
+                        className: 'btn-primary',
+                        disabled: true,
+                        onclick: async () => {
+                            const input = document.getElementById('custom-filename');
+                            const newName = input.value.trim();
+
+                            if (newName && await this.validateNewFilename(newName)) {
+                                window.modalSystem.closeModal();
+                                resolve(newName);
+                            }
+                        }
+                    }
+                ]
+            });
+
+            const input = modal.querySelector('#custom-filename');
+            const validation = modal.querySelector('#filename-validation');
+            const confirmBtn = modal.querySelector('.btn-primary');
+
+            input.addEventListener('input', async () => {
+                const newName = input.value.trim();
+                const isValid = await this.validateNewFilename(newName, validation);
+                confirmBtn.disabled = !isValid;
+            });
+        });
+    }
+
+    // Validate new filename
+    async validateNewFilename(filename, validationElement = null) {
+        let isValid = true;
+        let message = '';
+
+        if (!filename) {
+            isValid = false;
+            message = 'Tên tệp không được để trống';
+        } else if (filename.length > 255) {
+            isValid = false;
+            message = 'Tên tệp quá dài (tối đa 255 ký tự)';
+        } else if (/[<>:"/\\|?*]/.test(filename)) {
+            isValid = false;
+            message = 'Tên tệp chứa ký tự không hợp lệ';
+        } else if (await this.checkFileExists(filename)) {
+            isValid = false;
+            message = 'Tên tệp này cũng đã tồn tại';
+        }
+
+        if (validationElement) {
+            if (isValid) {
+                validationElement.innerHTML = '<i class="fas fa-check text-success"></i> Tên tệp hợp lệ';
+                validationElement.className = 'filename-validation valid';
+            } else {
+                validationElement.innerHTML = `<i class="fas fa-exclamation-triangle text-error"></i> ${message}`;
+                validationElement.className = 'filename-validation invalid';
+            }
+        }
+
+        return isValid;
+    }
+
     // Update queue UI
     updateQueueUI() {
         const queueContainer = document.getElementById('uploadQueue');
@@ -290,54 +400,20 @@ class EnhancedUploadManager {
 
         queueContainer.style.display = 'block';
         queueList.innerHTML = this.uploadQueue.map(item => this.createQueueItemHTML(item)).join('');
-
-        // Add event listeners for action buttons
         this.setupActionButtonListeners(queueList);
-    }
-
-    // Setup action button listeners
-    setupActionButtonListeners(container) {
-        const buttons = container.querySelectorAll('[data-action]');
-        buttons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                const action = button.getAttribute('data-action');
-                const itemId = button.getAttribute('data-id');
-
-                switch (action) {
-                    case 'start':
-                        this.startUpload(itemId);
-                        break;
-                    case 'pause':
-                        this.pauseUpload(itemId);
-                        break;
-                    case 'retry':
-                        this.retryUpload(itemId);
-                        break;
-                    case 'remove':
-                        this.removeFromQueue(itemId);
-                        break;
-                    case 'view':
-                        this.viewFile(itemId);
-                        break;
-                }
-            });
-        });
     }
 
     // Create queue item HTML
     createQueueItemHTML(item) {
         const fileIcon = this.getFileIcon(item.file);
         const statusIcon = this.getStatusIcon(item.status);
-        const thumbnail = item.thumbnail ? 
-            `<img src="${item.thumbnail}" class="file-thumbnail" alt="thumbnail">` : 
+        const thumbnail = item.thumbnail ?
+            `<img src="${item.thumbnail}" class="file-thumbnail" alt="thumbnail">` :
             `<i class="${fileIcon} file-icon"></i>`;
 
         return `
             <div class="queue-item" data-id="${item.id}">
-                <div class="item-thumbnail">
-                    ${thumbnail}
-                </div>
+                <div class="item-thumbnail">${thumbnail}</div>
                 <div class="item-info">
                     <div class="item-name" title="${item.file.name}">${item.file.name}</div>
                     <div class="item-details">
@@ -358,24 +434,42 @@ class EnhancedUploadManager {
                     <i class="${statusIcon}"></i>
                     <span class="status-text">${this.getStatusText(item.status)}</span>
                 </div>
-                <div class="item-actions">
-                    ${this.getActionButtons(item)}
-                </div>
+                <div class="item-actions">${this.getActionButtons(item)}</div>
             </div>
         `;
     }
 
-    // Get file icon based on file type
+    // Setup action button listeners
+    setupActionButtonListeners(container) {
+        const buttons = container.querySelectorAll('[data-action]');
+        buttons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const action = button.getAttribute('data-action');
+                const itemId = button.getAttribute('data-id');
+
+                switch (action) {
+                    case 'start': this.startUpload(itemId); break;
+                    case 'pause': this.pauseUpload(itemId); break;
+                    case 'retry': this.retryUpload(itemId); break;
+                    case 'remove': this.removeFromQueue(itemId); break;
+                    case 'view': this.viewFile(itemId); break;
+                }
+            });
+        });
+    }
+
+    // Get file icon based on type
     getFileIcon(file) {
         const ext = file.name.split('.').pop().toLowerCase();
-        
+
         if (this.supportedFormats.images.includes(ext)) return 'fas fa-image';
         if (this.supportedFormats.documents.includes(ext)) return 'fas fa-file-alt';
         if (this.supportedFormats.archives.includes(ext)) return 'fas fa-file-archive';
         if (this.supportedFormats.audio.includes(ext)) return 'fas fa-file-audio';
         if (this.supportedFormats.video.includes(ext)) return 'fas fa-file-video';
         if (this.supportedFormats.code.includes(ext)) return 'fas fa-file-code';
-        
+
         return 'fas fa-file';
     }
 
@@ -405,7 +499,6 @@ class EnhancedUploadManager {
 
     // Get action buttons for queue item
     getActionButtons(item) {
-        const self = this;
         switch (item.status) {
             case 'pending':
             case 'paused':
@@ -509,17 +602,18 @@ class EnhancedUploadManager {
 
         try {
             // Check for conflicts first
-            const conflictCheck = await this.checkFileConflict(item.file.name);
-            if (conflictCheck.hasConflict) {
-                const resolution = await this.handleConflict(item, conflictCheck);
-                if (!resolution) {
+            if (await this.checkFileExists(item.file.name)) {
+                const newName = await this.handleDuplicateFile(item.file);
+                if (!newName) {
                     item.status = 'pending';
                     this.updateQueueItemUI(item);
                     return;
                 }
+                // Update item with new name
+                item.customName = newName;
             }
 
-            // Start upload
+            // Perform upload
             await this.performUpload(item);
 
         } catch (error) {
@@ -530,96 +624,15 @@ class EnhancedUploadManager {
         }
     }
 
-    // Check for file conflicts
-    async checkFileConflict(filename) {
-        try {
-            const response = await fetch('/api/files/check-conflict', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filename })
-            });
-            return await response.json();
-        } catch (error) {
-            console.warn('Could not check file conflict:', error);
-            return { hasConflict: false };
-        }
-    }
-
-    // Handle file conflict
-    async handleConflict(item, conflictInfo) {
-        return new Promise((resolve) => {
-            const modal = this.createConflictModal(item, conflictInfo, resolve);
-            document.body.appendChild(modal);
-        });
-    }
-
-    // Create conflict resolution modal
-    createConflictModal(item, conflictInfo, callback) {
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-
-        const replaceBtn = document.createElement('button');
-        replaceBtn.className = 'btn btn-primary';
-        replaceBtn.innerHTML = '<i class="fas fa-sync"></i> Thay thế tệp cũ';
-        replaceBtn.onclick = () => {
-            modal.remove();
-            callback({action: 'replace'});
-        };
-
-        const renameBtn = document.createElement('button');
-        renameBtn.className = 'btn btn-secondary';
-        renameBtn.innerHTML = '<i class="fas fa-edit"></i> Đổi tên tệp mới';
-        renameBtn.onclick = () => {
-            modal.remove();
-            callback({action: 'rename'});
-        };
-
-        const cancelBtn = document.createElement('button');
-        cancelBtn.className = 'btn btn-danger';
-        cancelBtn.innerHTML = '<i class="fas fa-times"></i> Bỏ qua';
-        cancelBtn.onclick = () => {
-            modal.remove();
-            callback(null);
-        };
-
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'modal-close';
-        closeBtn.innerHTML = '×';
-        closeBtn.onclick = () => {
-            modal.remove();
-            callback(null);
-        };
-
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Tệp trùng tên</h3>
-                </div>
-                <div class="modal-body">
-                    <p>Tệp "<strong>${item.file.name}</strong>" đã tồn tại. Bạn muốn làm gì?</p>
-                    <div class="conflict-options">
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Add buttons to modal
-        const header = modal.querySelector('.modal-header');
-        header.appendChild(closeBtn);
-
-        const options = modal.querySelector('.conflict-options');
-        options.appendChild(replaceBtn);
-        options.appendChild(renameBtn);
-        options.appendChild(cancelBtn);
-
-        return modal;
-    }
-
     // Perform actual upload
     async performUpload(item) {
         return new Promise((resolve, reject) => {
             const formData = new FormData();
             formData.append('files', item.file);
+
+            if (item.customName) {
+                formData.append('customName', item.customName);
+            }
 
             const xhr = new XMLHttpRequest();
             this.activeUploads.set(item.id, { xhr, item });
@@ -682,8 +695,7 @@ class EnhancedUploadManager {
     // Calculate upload speed
     calculateSpeed(item, loadedBytes) {
         if (!item.startTime) return 0;
-
-        const elapsed = (Date.now() - item.startTime) / 1000; // seconds
+        const elapsed = (Date.now() - item.startTime) / 1000;
         return elapsed > 0 ? loadedBytes / elapsed : 0;
     }
 
@@ -694,10 +706,7 @@ class EnhancedUploadManager {
             const newElement = document.createElement('div');
             newElement.innerHTML = this.createQueueItemHTML(item);
             const newItem = newElement.firstElementChild;
-
-            // Setup event listeners for the new item
             this.setupActionButtonListeners(newItem);
-
             itemElement.replaceWith(newItem);
         }
     }
@@ -707,7 +716,6 @@ class EnhancedUploadManager {
         const totalFiles = this.uploadQueue.length;
         const completedFiles = this.uploadQueue.filter(item => item.status === 'completed').length;
         const failedFiles = this.uploadQueue.filter(item => item.status === 'failed').length;
-
         const overallPercent = totalFiles > 0 ? (completedFiles / totalFiles) * 100 : 0;
 
         const progressBar = document.getElementById('overallProgress');
@@ -720,7 +728,6 @@ class EnhancedUploadManager {
         if (uploadedCount) uploadedCount.textContent = completedFiles;
         if (failedCount) failedCount.textContent = failedFiles;
 
-        // Show/hide summary
         const summary = document.getElementById('uploadSummary');
         if (summary) {
             summary.style.display = totalFiles > 0 ? 'block' : 'none';
@@ -730,7 +737,6 @@ class EnhancedUploadManager {
     // Process next item in queue
     processNextInQueue() {
         if (this.activeUploads.size >= this.maxConcurrentUploads) return;
-
         const nextItem = this.uploadQueue.find(item => item.status === 'pending');
         if (nextItem) {
             this.startUpload(nextItem.id);
@@ -768,7 +774,6 @@ class EnhancedUploadManager {
             upload.xhr.abort();
             this.activeUploads.delete(itemId);
         }
-
         this.uploadQueue = this.uploadQueue.filter(item => item.id !== itemId);
         this.updateQueueUI();
         this.updateStats();
@@ -778,7 +783,6 @@ class EnhancedUploadManager {
     viewFile(itemId) {
         const item = this.uploadQueue.find(i => i.id === itemId);
         if (item && item.status === 'completed') {
-            // Navigate to My Files page
             if (window.loadPage) {
                 window.loadPage('myfiles');
             }
@@ -799,7 +803,133 @@ class EnhancedUploadManager {
             console.log(`[${type.toUpperCase()}] ${message}`);
         }
     }
+
+    // Simple upload API for backward compatibility
+    async uploadFiles(files, progressCallback = null) {
+        const results = [];
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            this.showToast(`Đang xử lý "${file.name}" (${i + 1}/${files.length})...`, 'info');
+
+            const result = await this.processFileUpload(file, null, progressCallback);
+            results.push(result);
+
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        const successful = results.filter(r => r.success).length;
+        const failed = results.filter(r => !r.success).length;
+
+        if (successful > 0) {
+            this.showToast(`Đã tải lên thành công ${successful} tệp`, 'success');
+        }
+        if (failed > 0) {
+            this.showToast(`Lỗi tải lên ${failed} tệp`, 'error');
+        }
+
+        return results;
+    }
+
+    // Process single file upload (simple API)
+    async processFileUpload(file, customName = null, progressCallback = null) {
+        try {
+            if (await this.checkFileExists(file.name)) {
+                const newName = await this.handleDuplicateFile(file);
+                if (!newName) {
+                    return { success: false, cancelled: true };
+                }
+                customName = newName;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            if (customName) {
+                formData.append('customName', customName);
+            }
+
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable && progressCallback) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        progressCallback(percentComplete, file.name);
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    try {
+                        const result = JSON.parse(xhr.responseText);
+                        if (xhr.status === 200 && result.success) {
+                            this.showToast(`Đã tải lên "${result.file.displayName}"`, 'success');
+                            resolve({ success: true, filename: result.file.displayName, result });
+                        } else {
+                            throw new Error(result.error || 'Upload failed');
+                        }
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+
+                xhr.addEventListener('error', () => {
+                    reject(new Error('Network error during upload'));
+                });
+
+                xhr.open('POST', '/api/upload');
+                xhr.send(formData);
+            });
+
+        } catch (error) {
+            console.error('Upload error:', error);
+            this.showToast(`Lỗi tải lên "${file.name}": ${error.message}`, 'error');
+            return { success: false, error: error.message };
+        }
+    }
 }
 
-// Global instance
-window.enhancedUpload = new EnhancedUploadManager();
+// Global instances
+window.uploadSystem = new UnifiedUploadSystem();
+window.uploadManager = window.uploadSystem; // Backward compatibility
+
+// Enhanced drag and drop setup function
+window.setupEnhancedUpload = function(uploadAreaSelector) {
+    const uploadArea = document.querySelector(uploadAreaSelector);
+    if (!uploadArea) return;
+
+    const fileInput = uploadArea.querySelector('input[type="file"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                await window.uploadSystem.uploadFiles(files);
+                e.target.value = '';
+            }
+        });
+    }
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => {
+            uploadArea.classList.add('drag-over');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => {
+            uploadArea.classList.remove('drag-over');
+        });
+    });
+
+    uploadArea.addEventListener('drop', async (e) => {
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) {
+            await window.uploadSystem.uploadFiles(files);
+        }
+    });
+};
