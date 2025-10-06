@@ -14,6 +14,16 @@ class UnifiedUploadSystem {
             video: ['mp4', 'avi', 'mov', 'mkv', 'webm', 'wmv'],
             code: ['js', 'css', 'html', 'json', 'xml', 'py', 'java', 'cpp', 'c']
         };
+
+        // Conflict resolution preferences
+        this.conflictPreferences = {
+            defaultAction: 'ask', // 'ask', 'auto_rename', 'replace', 'skip'
+            autoBackup: true,
+            showDetailedInfo: true,
+            batchMode: true
+        };
+
+        this.loadConflictPreferences();
     }
 
     // Initialize upload UI
@@ -285,25 +295,244 @@ class UnifiedUploadSystem {
         return suggestions;
     }
 
-    // Handle duplicate file with modal
-    async handleDuplicateFile(file) {
-        const suggestions = this.generateSuggestedName(file.name);
-        
+    // Comprehensive conflict resolution modal with detailed file comparison
+    async handleDuplicateFile(file, conflictInfo = null) {
+        // Get detailed conflict information if not provided
+        if (!conflictInfo) {
+            conflictInfo = await this.getConflictInfo(file.name, file.size, file.type);
+        }
+
+        // Get detailed existing file information
+        const existingFileDetails = await this.getExistingFileDetails(file.name);
+        const suggestions = conflictInfo.suggestions || this.generateSuggestedName(file.name);
+
         const content = document.createElement('div');
         content.innerHTML = `
-            <p>Tệp "<strong>${file.name}</strong>" đã tồn tại. Vui lòng chọn tên mới:</p>
-            <div class="duplicate-suggestions">
-                <p><strong>Gợi ý:</strong></p>
-                <ul>
-                    ${suggestions.map(name => `<li><button class="suggestion-btn" onclick="selectSuggestion('${name}')">${name}</button></li>`).join('')}
-                </ul>
-            </div>
-            <div class="custom-name-input">
-                <label for="custom-filename">Hoặc nhập tên tùy chỉnh:</label>
-                <input type="text" id="custom-filename" class="modal-input" placeholder="Tên tệp mới" />
-                <div class="filename-validation" id="filename-validation"></div>
+            <div class="comprehensive-conflict-modal">
+                <div class="conflict-header">
+                    <div class="conflict-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="conflict-title">
+                        <h3>File Name Conflict Detected</h3>
+                        <p>A file with the name "<strong>${file.name}</strong>" already exists</p>
+                    </div>
+                </div>
+
+                <div class="file-comparison-section">
+                    <div class="file-comparison-grid">
+                        <div class="existing-file-panel">
+                            <h4><i class="fas fa-file-alt"></i> Existing File</h4>
+                            <div class="file-preview">
+                                ${existingFileDetails && existingFileDetails.thumbnail ?
+                                    `<img src="${existingFileDetails.thumbnail}" alt="Existing file preview" class="file-thumbnail-large">` :
+                                    `<div class="file-icon-large">
+                                        <i class="${this.getFileIcon(file)}"></i>
+                                    </div>`
+                                }
+                            </div>
+                            <div class="file-details">
+                                <div class="detail-row">
+                                    <span class="label">Name:</span>
+                                    <span class="value">${conflictInfo.existingFile?.displayName || file.name}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Size:</span>
+                                    <span class="value">${conflictInfo.existingFile?.formattedSize || 'Unknown'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Type:</span>
+                                    <span class="value">${conflictInfo.existingFile?.mimeType || 'Unknown'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Uploaded:</span>
+                                    <span class="value">${conflictInfo.existingFile?.uploadDate ?
+                                        new Date(conflictInfo.existingFile.uploadDate).toLocaleString('vi-VN') : 'Unknown'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Version:</span>
+                                    <span class="value">${conflictInfo.existingFile?.version || 1}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="comparison-arrow">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+
+                        <div class="new-file-panel">
+                            <h4><i class="fas fa-file-upload"></i> New File</h4>
+                            <div class="file-preview">
+                                ${file.type.startsWith('image/') ?
+                                    `<div class="file-thumbnail-large" id="new-file-preview">
+                                        <div class="loading-thumbnail">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            <span>Loading preview...</span>
+                                        </div>
+                                    </div>` :
+                                    `<div class="file-icon-large">
+                                        <i class="${this.getFileIcon(file)}"></i>
+                                    </div>`
+                                }
+                            </div>
+                            <div class="file-details">
+                                <div class="detail-row">
+                                    <span class="label">Name:</span>
+                                    <span class="value">${file.name}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Size:</span>
+                                    <span class="value">${this.formatFileSize(file.size)}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Type:</span>
+                                    <span class="value">${file.type}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Modified:</span>
+                                    <span class="value">${new Date(file.lastModified).toLocaleString('vi-VN')}</span>
+                                </div>
+                                <div class="detail-row size-comparison">
+                                    <span class="label">Size Difference:</span>
+                                    <span class="value ${this.getSizeDifferenceClass(file.size, conflictInfo.existingFile?.size)}">
+                                        ${this.formatSizeDifference(file.size, conflictInfo.existingFile?.size)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                ${conflictInfo.recommendations && conflictInfo.recommendations.length > 0 ? `
+                <div class="recommendations-section">
+                    <h4><i class="fas fa-lightbulb"></i> Smart Recommendations</h4>
+                    <div class="recommendations-list">
+                        ${conflictInfo.recommendations.map(rec => `
+                            <div class="recommendation-item ${rec.confidence}">
+                                <div class="rec-action">
+                                    <i class="fas ${this.getRecommendationIcon(rec.action)}"></i>
+                                    <strong>${this.getActionDisplayName(rec.action)}</strong>
+                                </div>
+                                <div class="rec-reason">${rec.reason}</div>
+                                <div class="rec-confidence">
+                                    <span class="confidence-badge ${rec.confidence}">${rec.confidence} confidence</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                <div class="resolution-options-section">
+                    <h4><i class="fas fa-cogs"></i> Choose Resolution Strategy</h4>
+
+                    <div class="resolution-options-grid">
+                        <div class="resolution-option ${conflictInfo.existingFile?.canBackup ? '' : 'disabled'}">
+                            <input type="radio" id="action-replace" name="conflict-action" value="replace"
+                                   ${conflictInfo.existingFile?.canBackup ? '' : 'disabled'}>
+                            <label for="action-replace" class="resolution-card">
+                                <div class="card-icon replace">
+                                    <i class="fas fa-sync-alt"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h5>Overwrite Existing File</h5>
+                                    <p>Replace the existing file with the new upload</p>
+                                    <div class="card-features">
+                                        <span class="feature"><i class="fas fa-shield-alt"></i> Automatic backup created</span>
+                                        <span class="feature"><i class="fas fa-undo"></i> Can be undone</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="resolution-option">
+                            <input type="radio" id="action-auto-rename" name="conflict-action" value="auto_rename" checked>
+                            <label for="action-auto-rename" class="resolution-card">
+                                <div class="card-icon auto-rename">
+                                    <i class="fas fa-magic"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h5>Auto-Generate Unique Name</h5>
+                                    <p>Automatically create a unique filename</p>
+                                    <div class="card-features">
+                                        <span class="feature"><i class="fas fa-check"></i> Safe - keeps both files</span>
+                                        <span class="feature"><i class="fas fa-robot"></i> Smart numbering system</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="resolution-option">
+                            <input type="radio" id="action-rename" name="conflict-action" value="rename">
+                            <label for="action-rename" class="resolution-card">
+                                <div class="card-icon manual-rename">
+                                    <i class="fas fa-edit"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h5>Choose Custom Name</h5>
+                                    <p>Manually specify a new filename</p>
+                                    <div class="card-features">
+                                        <span class="feature"><i class="fas fa-user"></i> Full control</span>
+                                        <span class="feature"><i class="fas fa-spell-check"></i> Real-time validation</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="resolution-option">
+                            <input type="radio" id="action-skip" name="conflict-action" value="skip">
+                            <label for="action-skip" class="resolution-card">
+                                <div class="card-icon skip">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h5>Skip This File</h5>
+                                    <p>Don't upload this file</p>
+                                    <div class="card-features">
+                                        <span class="feature"><i class="fas fa-ban"></i> No changes made</span>
+                                        <span class="feature"><i class="fas fa-fast-forward"></i> Continue with others</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="manual-rename-section" id="manual-rename-section" style="display: none;">
+                    <div class="rename-input-section">
+                        <h5><i class="fas fa-keyboard"></i> Enter Custom Filename</h5>
+
+                        <div class="suggestions-section">
+                            <label>Quick suggestions:</label>
+                            <div class="suggestions-grid">
+                                ${suggestions.map(name => `
+                                    <button type="button" class="suggestion-btn" onclick="selectSuggestion('${name.replace(/'/g, "\\'")}')">
+                                        ${name}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="custom-input-section">
+                            <label for="custom-filename">Or enter custom name:</label>
+                            <div class="input-with-validation">
+                                <input type="text" id="custom-filename" class="filename-input"
+                                       placeholder="Enter new filename" value="${file.name}" />
+                                <div class="filename-validation" id="filename-validation">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Enter a unique filename</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
+
+        // Generate preview for new image file
+        if (file.type.startsWith('image/')) {
+            this.generateNewFilePreview(file, content);
+        }
 
         window.selectSuggestion = (suggestedName) => {
             const input = document.getElementById('custom-filename');
@@ -315,12 +544,13 @@ class UnifiedUploadSystem {
 
         return new Promise((resolve) => {
             const modal = window.modalSystem.createModal({
-                title: 'Tệp trùng tên',
+                title: 'Resolve File Name Conflict',
                 content: content,
-                autoFocus: '#custom-filename',
+                size: 'large',
+                className: 'conflict-resolution-modal',
                 buttons: [
                     {
-                        text: 'Hủy',
+                        text: 'Cancel',
                         className: 'btn-secondary',
                         onclick: () => {
                             window.modalSystem.closeModal();
@@ -328,32 +558,192 @@ class UnifiedUploadSystem {
                         }
                     },
                     {
-                        text: 'Sử dụng tên này',
+                        text: 'Apply Resolution',
                         className: 'btn-primary',
-                        disabled: true,
                         onclick: async () => {
-                            const input = document.getElementById('custom-filename');
-                            const newName = input.value.trim();
+                            const selectedAction = modal.querySelector('input[name="conflict-action"]:checked').value;
+                            let result = { action: selectedAction };
 
-                            if (newName && await this.validateNewFilename(newName)) {
-                                window.modalSystem.closeModal();
-                                resolve(newName);
+                            if (selectedAction === 'rename') {
+                                const input = document.getElementById('custom-filename');
+                                const newName = input.value.trim();
+
+                                if (!newName) {
+                                    this.showToast('Please enter a filename', 'error');
+                                    return;
+                                }
+
+                                if (!(await this.validateNewFilename(newName))) {
+                                    return;
+                                }
+
+                                result.newName = newName;
                             }
+
+                            window.modalSystem.closeModal();
+                            resolve(result);
                         }
                     }
                 ]
             });
 
-            const input = modal.querySelector('#custom-filename');
-            const validation = modal.querySelector('#filename-validation');
-            const confirmBtn = modal.querySelector('.btn-primary');
+            this.setupConflictModalListeners(modal);
+        });
+    }
 
-            input.addEventListener('input', async () => {
-                const newName = input.value.trim();
-                const isValid = await this.validateNewFilename(newName, validation);
-                confirmBtn.disabled = !isValid;
+    // Get detailed conflict information with file analysis
+    async getConflictInfo(filename, fileSize = null, fileType = null) {
+        try {
+            const response = await fetch('/api/files/check-conflict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename,
+                    fileSize,
+                    fileType
+                })
+            });
+
+            if (!response.ok) return { hasConflict: false };
+            return await response.json();
+        } catch (error) {
+            console.error('Error getting conflict info:', error);
+            return { hasConflict: false };
+        }
+    }
+
+    // Get detailed existing file information
+    async getExistingFileDetails(filename) {
+        try {
+            const response = await fetch('/api/files/get-details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename })
+            });
+
+            if (!response.ok) return null;
+            return await response.json();
+        } catch (error) {
+            console.error('Error getting existing file details:', error);
+            return null;
+        }
+    }
+
+    // Generate preview for new image file
+    generateNewFilePreview(file, container) {
+        if (!file.type.startsWith('image/')) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const previewElement = container.querySelector('#new-file-preview');
+            if (previewElement) {
+                previewElement.innerHTML = `<img src="${e.target.result}" alt="New file preview" class="preview-image">`;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Get size difference class for styling
+    getSizeDifferenceClass(newSize, existingSize) {
+        if (!existingSize) return '';
+
+        const ratio = newSize / existingSize;
+        if (ratio > 1.5) return 'size-larger';
+        if (ratio < 0.5) return 'size-smaller';
+        return 'size-similar';
+    }
+
+    // Format size difference
+    formatSizeDifference(newSize, existingSize) {
+        if (!existingSize) return 'N/A';
+
+        const diff = newSize - existingSize;
+        const ratio = newSize / existingSize;
+
+        if (Math.abs(diff) < 1024) {
+            return `${diff > 0 ? '+' : ''}${diff} bytes`;
+        }
+
+        const formattedDiff = this.formatFileSize(Math.abs(diff));
+        const percentage = Math.round((ratio - 1) * 100);
+
+        if (diff > 0) {
+            return `+${formattedDiff} (${percentage}% larger)`;
+        } else {
+            return `-${formattedDiff} (${Math.abs(percentage)}% smaller)`;
+        }
+    }
+
+    // Get recommendation icon
+    getRecommendationIcon(action) {
+        const icons = {
+            'replace': 'fa-sync-alt',
+            'auto_rename': 'fa-magic',
+            'rename': 'fa-edit',
+            'skip': 'fa-times'
+        };
+        return icons[action] || 'fa-question';
+    }
+
+    // Get action display name
+    getActionDisplayName(action) {
+        const names = {
+            'replace': 'Overwrite File',
+            'auto_rename': 'Auto-Rename',
+            'rename': 'Manual Rename',
+            'skip': 'Skip File'
+        };
+        return names[action] || action;
+    }
+
+    // Setup conflict modal event listeners
+    setupConflictModalListeners(modal) {
+        const actionRadios = modal.querySelectorAll('input[name="conflict-action"]');
+        const manualRenameSection = modal.querySelector('#manual-rename-section');
+        const input = modal.querySelector('#custom-filename');
+        const validation = modal.querySelector('#filename-validation');
+
+        // Handle resolution option changes
+        actionRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                // Update card selection visual state
+                modal.querySelectorAll('.resolution-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+
+                const selectedCard = modal.querySelector(`label[for="${radio.id}"]`);
+                if (selectedCard) {
+                    selectedCard.classList.add('selected');
+                }
+
+                // Show/hide manual rename section
+                if (radio.value === 'rename') {
+                    manualRenameSection.style.display = 'block';
+                    setTimeout(() => input.focus(), 100);
+                } else {
+                    manualRenameSection.style.display = 'none';
+                }
             });
         });
+
+        // Set initial selection
+        const checkedRadio = modal.querySelector('input[name="conflict-action"]:checked');
+        if (checkedRadio) {
+            checkedRadio.dispatchEvent(new Event('change'));
+        }
+
+        // Handle filename validation
+        if (input && validation) {
+            input.addEventListener('input', async () => {
+                const newName = input.value.trim();
+                await this.validateNewFilename(newName, validation);
+            });
+
+            // Initial validation
+            setTimeout(() => {
+                input.dispatchEvent(new Event('input'));
+            }, 100);
+        }
     }
 
     // Validate new filename
@@ -559,9 +949,40 @@ class UnifiedUploadSystem {
         document.getElementById('total-size').textContent = this.formatFileSize(totalSize);
     }
 
-    // Start all uploads
+    // Enhanced start all uploads with batch conflict detection
     async startAllUploads() {
         const pendingItems = this.uploadQueue.filter(item => item.status === 'pending');
+
+        if (pendingItems.length === 0) return;
+
+        // Check for conflicts in batch
+        const conflictItems = [];
+        for (const item of pendingItems) {
+            const conflictInfo = await this.getConflictInfo(item.file.name);
+            if (conflictInfo.hasConflict) {
+                conflictItems.push({ item, conflictInfo });
+            }
+        }
+
+        // Handle batch conflicts if any
+        if (conflictItems.length > 0) {
+            const resolutions = await this.handleBatchConflicts(conflictItems);
+
+            if (!resolutions) {
+                // User cancelled
+                return;
+            }
+
+            // Apply resolutions
+            conflictItems.forEach((conflictItem, index) => {
+                const resolution = resolutions[index];
+                if (resolution) {
+                    conflictItem.item.conflictResolution = resolution;
+                }
+            });
+        }
+
+        // Start uploads
         for (const item of pendingItems) {
             if (this.activeUploads.size < this.maxConcurrentUploads) {
                 this.startUpload(item.id);
@@ -591,7 +1012,7 @@ class UnifiedUploadSystem {
         }
     }
 
-    // Start individual upload
+    // Start individual upload with enhanced conflict handling
     async startUpload(itemId) {
         const item = this.uploadQueue.find(i => i.id === itemId);
         if (!item || item.status === 'uploading' || item.status === 'completed') return;
@@ -602,15 +1023,30 @@ class UnifiedUploadSystem {
 
         try {
             // Check for conflicts first
-            if (await this.checkFileExists(item.file.name)) {
-                const newName = await this.handleDuplicateFile(item.file);
-                if (!newName) {
+            const conflictInfo = await this.getConflictInfo(item.file.name);
+
+            if (conflictInfo.hasConflict) {
+                const resolution = await this.handleDuplicateFile(item.file, conflictInfo);
+
+                if (!resolution) {
                     item.status = 'pending';
                     this.updateQueueItemUI(item);
                     return;
                 }
-                // Update item with new name
-                item.customName = newName;
+
+                // Apply resolution
+                item.conflictResolution = resolution;
+
+                if (resolution.action === 'rename') {
+                    item.customName = resolution.newName;
+                } else if (resolution.action === 'skip') {
+                    item.status = 'completed';
+                    item.progress = 100;
+                    item.skipped = true;
+                    this.updateQueueItemUI(item);
+                    this.processNextInQueue();
+                    return;
+                }
             }
 
             // Perform upload
@@ -624,15 +1060,172 @@ class UnifiedUploadSystem {
         }
     }
 
-    // Perform actual upload
+    // Batch conflict resolution for multiple files
+    async handleBatchConflicts(conflictItems) {
+        if (conflictItems.length === 0) return [];
+
+        const content = document.createElement('div');
+        content.innerHTML = `
+            <div class="batch-conflict-header">
+                <i class="fas fa-exclamation-triangle text-warning"></i>
+                <h4>Phát hiện ${conflictItems.length} tệp trùng tên</h4>
+                <p>Chọn cách xử lý cho từng tệp hoặc áp dụng cho tất cả:</p>
+            </div>
+
+            <div class="batch-actions">
+                <div class="global-actions">
+                    <h5>Áp dụng cho tất cả:</h5>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-primary" onclick="applyToAll('auto_rename')">
+                            <i class="fas fa-magic"></i> Tự động đổi tên tất cả
+                        </button>
+                        <button class="btn btn-sm btn-warning" onclick="applyToAll('replace')">
+                            <i class="fas fa-sync-alt"></i> Thay thế tất cả
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="applyToAll('skip')">
+                            <i class="fas fa-times"></i> Bỏ qua tất cả
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="conflict-list" id="conflict-list">
+                ${conflictItems.map((item, index) => this.createConflictItemHTML(item, index)).join('')}
+            </div>
+        `;
+
+        const resolutions = new Array(conflictItems.length).fill(null);
+
+        window.applyToAll = (action) => {
+            const selects = content.querySelectorAll('.conflict-action-select');
+            selects.forEach(select => {
+                select.value = action;
+                select.dispatchEvent(new Event('change'));
+            });
+        };
+
+        return new Promise((resolve) => {
+            const modal = window.modalSystem.createModal({
+                title: 'Xử lý tệp trùng tên hàng loạt',
+                content: content,
+                size: 'large',
+                buttons: [
+                    {
+                        text: 'Hủy tất cả',
+                        className: 'btn-secondary',
+                        onclick: () => {
+                            window.modalSystem.closeModal();
+                            resolve(null);
+                        }
+                    },
+                    {
+                        text: 'Áp dụng',
+                        className: 'btn-primary',
+                        onclick: () => {
+                            const results = [];
+                            const selects = content.querySelectorAll('.conflict-action-select');
+
+                            selects.forEach((select, index) => {
+                                const action = select.value;
+                                const result = { action };
+
+                                if (action === 'rename') {
+                                    const input = content.querySelector(`#custom-name-${index}`);
+                                    result.newName = input.value.trim();
+                                }
+
+                                results.push(result);
+                            });
+
+                            window.modalSystem.closeModal();
+                            resolve(results);
+                        }
+                    }
+                ]
+            });
+
+            // Setup event listeners for each conflict item
+            this.setupBatchConflictListeners(modal, conflictItems, resolutions);
+        });
+    }
+
+    // Create HTML for individual conflict item in batch
+    createConflictItemHTML(item, index) {
+        return `
+            <div class="conflict-item" data-index="${index}">
+                <div class="conflict-item-header">
+                    <div class="file-info">
+                        <i class="${this.getFileIcon(item.file)} file-icon"></i>
+                        <span class="file-name">${item.file.name}</span>
+                        <span class="file-size">(${this.formatFileSize(item.file.size)})</span>
+                    </div>
+                </div>
+
+                <div class="conflict-resolution">
+                    <select class="conflict-action-select" data-index="${index}">
+                        <option value="auto_rename" selected>Tự động đổi tên</option>
+                        <option value="replace">Thay thế</option>
+                        <option value="rename">Đổi tên thủ công</option>
+                        <option value="skip">Bỏ qua</option>
+                    </select>
+
+                    <div class="manual-rename" id="manual-rename-${index}" style="display: none;">
+                        <input type="text" id="custom-name-${index}" class="form-control"
+                               placeholder="Tên tệp mới" value="${item.file.name}">
+                        <div class="validation-message" id="validation-${index}"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Setup event listeners for batch conflict resolution
+    setupBatchConflictListeners(modal, conflictItems, resolutions) {
+        const selects = modal.querySelectorAll('.conflict-action-select');
+
+        selects.forEach((select, index) => {
+            select.addEventListener('change', () => {
+                const manualRename = modal.querySelector(`#manual-rename-${index}`);
+                const input = modal.querySelector(`#custom-name-${index}`);
+
+                if (select.value === 'rename') {
+                    manualRename.style.display = 'block';
+                    input.focus();
+                } else {
+                    manualRename.style.display = 'none';
+                }
+            });
+
+            const input = modal.querySelector(`#custom-name-${index}`);
+            if (input) {
+                input.addEventListener('input', async () => {
+                    const validation = modal.querySelector(`#validation-${index}`);
+                    await this.validateNewFilename(input.value.trim(), validation);
+                });
+            }
+        });
+    }
+
+    // Enhanced upload with conflict resolution
     async performUpload(item) {
         return new Promise((resolve, reject) => {
             const formData = new FormData();
             formData.append('files', item.file);
 
+            // Add conflict resolution parameters
             if (item.customName) {
                 formData.append('customName', item.customName);
             }
+
+            if (item.conflictResolution) {
+                formData.append('conflictAction', item.conflictResolution.action);
+                if (item.conflictResolution.newName) {
+                    formData.append('customName', item.conflictResolution.newName);
+                }
+            }
+
+            // Enable auto-resolve for smoother experience
+            formData.append('autoResolve', 'false'); // Let user handle conflicts
 
             const xhr = new XMLHttpRequest();
             this.activeUploads.set(item.id, { xhr, item });
@@ -656,10 +1249,35 @@ class UnifiedUploadSystem {
                 if (xhr.status === 200) {
                     try {
                         const result = JSON.parse(xhr.responseText);
+
                         if (result.success) {
                             item.status = 'completed';
                             item.progress = 100;
-                            this.showToast(`Đã tải lên "${item.file.name}"`, 'success');
+
+                            // Show appropriate success message
+                            const displayName = item.customName || item.file.name;
+                            if (item.conflictResolution) {
+                                switch (item.conflictResolution.action) {
+                                    case 'replace':
+                                        this.showToast(`Đã thay thế "${displayName}"`, 'success');
+                                        break;
+                                    case 'rename':
+                                    case 'auto_rename':
+                                        this.showToast(`Đã tải lên "${displayName}" với tên mới`, 'success');
+                                        break;
+                                    default:
+                                        this.showToast(`Đã tải lên "${displayName}"`, 'success');
+                                }
+                            } else {
+                                this.showToast(`Đã tải lên "${displayName}"`, 'success');
+                            }
+
+                            resolve(result);
+                        } else if (result.conflicts && result.conflicts.length > 0) {
+                            // Handle server-side conflict detection
+                            item.status = 'pending';
+                            item.progress = 0;
+                            this.handleServerConflicts(item, result.conflicts);
                             resolve(result);
                         } else {
                             throw new Error(result.error || 'Upload failed');
@@ -690,6 +1308,23 @@ class UnifiedUploadSystem {
             xhr.open('POST', '/api/upload');
             xhr.send(formData);
         });
+    }
+
+    // Handle server-side conflicts
+    async handleServerConflicts(item, conflicts) {
+        if (conflicts.length === 1) {
+            const conflict = conflicts[0];
+            const resolution = await this.handleDuplicateFile(item.file, {
+                hasConflict: true,
+                existingFile: conflict.existingFile,
+                suggestions: conflict.suggestions
+            });
+
+            if (resolution) {
+                item.conflictResolution = resolution;
+                this.startUpload(item.id);
+            }
+        }
     }
 
     // Calculate upload speed
@@ -883,6 +1518,121 @@ class UnifiedUploadSystem {
             console.error('Upload error:', error);
             this.showToast(`Lỗi tải lên "${file.name}": ${error.message}`, 'error');
             return { success: false, error: error.message };
+        }
+    }
+
+    // Load conflict preferences from localStorage
+    loadConflictPreferences() {
+        try {
+            const saved = localStorage.getItem('beamshare_conflict_preferences');
+            if (saved) {
+                this.conflictPreferences = { ...this.conflictPreferences, ...JSON.parse(saved) };
+            }
+        } catch (error) {
+            console.warn('Could not load conflict preferences:', error);
+        }
+    }
+
+    // Save conflict preferences to localStorage
+    saveConflictPreferences() {
+        try {
+            localStorage.setItem('beamshare_conflict_preferences', JSON.stringify(this.conflictPreferences));
+        } catch (error) {
+            console.warn('Could not save conflict preferences:', error);
+        }
+    }
+
+    // Show conflict preferences modal
+    showConflictPreferences() {
+        const content = document.createElement('div');
+        content.innerHTML = `
+            <div class="preferences-section">
+                <h4>Cài đặt xử lý tệp trùng tên</h4>
+                <p>Tùy chỉnh cách hệ thống xử lý khi phát hiện tệp trùng tên.</p>
+
+                <div class="preference-group">
+                    <label class="preference-label">Hành động mặc định:</label>
+                    <select id="default-action" class="preference-select">
+                        <option value="ask" ${this.conflictPreferences.defaultAction === 'ask' ? 'selected' : ''}>Hỏi người dùng</option>
+                        <option value="auto_rename" ${this.conflictPreferences.defaultAction === 'auto_rename' ? 'selected' : ''}>Tự động đổi tên</option>
+                        <option value="replace" ${this.conflictPreferences.defaultAction === 'replace' ? 'selected' : ''}>Thay thế tệp cũ</option>
+                        <option value="skip" ${this.conflictPreferences.defaultAction === 'skip' ? 'selected' : ''}>Bỏ qua tệp mới</option>
+                    </select>
+                </div>
+
+                <div class="preference-group">
+                    <label class="preference-checkbox">
+                        <input type="checkbox" id="auto-backup" ${this.conflictPreferences.autoBackup ? 'checked' : ''}>
+                        <span>Tự động sao lưu khi thay thế tệp</span>
+                    </label>
+                </div>
+
+                <div class="preference-group">
+                    <label class="preference-checkbox">
+                        <input type="checkbox" id="detailed-info" ${this.conflictPreferences.showDetailedInfo ? 'checked' : ''}>
+                        <span>Hiển thị thông tin chi tiết về tệp hiện có</span>
+                    </label>
+                </div>
+
+                <div class="preference-group">
+                    <label class="preference-checkbox">
+                        <input type="checkbox" id="batch-mode" ${this.conflictPreferences.batchMode ? 'checked' : ''}>
+                        <span>Cho phép xử lý hàng loạt nhiều tệp</span>
+                    </label>
+                </div>
+            </div>
+        `;
+
+        return new Promise((resolve) => {
+            const modal = window.modalSystem.createModal({
+                title: 'Cài đặt xử lý tệp trùng tên',
+                content: content,
+                buttons: [
+                    {
+                        text: 'Hủy',
+                        className: 'btn-secondary',
+                        onclick: () => {
+                            window.modalSystem.closeModal();
+                            resolve(false);
+                        }
+                    },
+                    {
+                        text: 'Lưu cài đặt',
+                        className: 'btn-primary',
+                        onclick: () => {
+                            // Save preferences
+                            this.conflictPreferences.defaultAction = modal.querySelector('#default-action').value;
+                            this.conflictPreferences.autoBackup = modal.querySelector('#auto-backup').checked;
+                            this.conflictPreferences.showDetailedInfo = modal.querySelector('#detailed-info').checked;
+                            this.conflictPreferences.batchMode = modal.querySelector('#batch-mode').checked;
+
+                            this.saveConflictPreferences();
+                            this.showToast('Đã lưu cài đặt xử lý tệp trùng tên', 'success');
+
+                            window.modalSystem.closeModal();
+                            resolve(true);
+                        }
+                    }
+                ]
+            });
+        });
+    }
+
+    // Apply default conflict resolution
+    async applyDefaultConflictResolution(item, conflictInfo) {
+        switch (this.conflictPreferences.defaultAction) {
+            case 'auto_rename':
+                return { action: 'auto_rename' };
+
+            case 'replace':
+                return { action: 'replace' };
+
+            case 'skip':
+                return { action: 'skip' };
+
+            case 'ask':
+            default:
+                return await this.handleDuplicateFile(item.file, conflictInfo);
         }
     }
 }
