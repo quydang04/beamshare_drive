@@ -25,6 +25,24 @@
             </div>
         </div>
         
+        <div class="file-filters">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="file-search" placeholder="Tìm kiếm tệp theo tên, loại..." aria-label="Tìm kiếm tệp">
+            </div>
+            <div class="sort-wrapper">
+                <label for="file-sort">Sắp xếp:</label>
+                <select id="file-sort" aria-label="Sắp xếp tệp">
+                    <option value="date-desc">Ngày tải lên (mới nhất)</option>
+                    <option value="date-asc">Ngày tải lên (cũ nhất)</option>
+                    <option value="name-asc">Tên (A-Z)</option>
+                    <option value="name-desc">Tên (Z-A)</option>
+                    <option value="size-desc">Dung lượng (lớn nhất)</option>
+                    <option value="size-asc">Dung lượng (nhỏ nhất)</option>
+                </select>
+            </div>
+        </div>
+
         <div class="files-content" id="files-content">
             <!-- Files will be loaded here -->
         </div>

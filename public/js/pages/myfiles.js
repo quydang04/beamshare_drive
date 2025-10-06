@@ -1,4 +1,10 @@
 // My Files Page JavaScript - Compact
+const DEFAULT_SORT_OPTION = 'date-desc';
+let allFiles = [];
+let filteredFiles = [];
+let activeSortOption = DEFAULT_SORT_OPTION;
+let searchDebounceTimer = null;
+
 window.initMyFiles = function() {
     console.log('Initializing My Files page...');
     
@@ -130,8 +136,32 @@ function initDragAndDrop() {
 
 // Simple initialization
 function initializeUI() {
-    // Simple UI setup if needed
+    setupSearchAndSort();
     console.log('UI initialized');
+}
+
+function setupSearchAndSort() {
+    const searchInput = document.getElementById('file-search');
+    const sortSelect = document.getElementById('file-sort');
+
+    if (sortSelect) {
+        sortSelect.value = activeSortOption;
+        sortSelect.addEventListener('change', event => {
+            activeSortOption = event.target.value || DEFAULT_SORT_OPTION;
+            applyFiltersAndRender();
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            if (searchDebounceTimer) {
+                clearTimeout(searchDebounceTimer);
+            }
+            searchDebounceTimer = setTimeout(() => {
+                applyFiltersAndRender();
+            }, 200);
+        });
+    }
 }
 
 // Load files from server
@@ -139,37 +169,12 @@ async function loadFiles() {
     try {
         const response = await fetch('/api/files');
         const files = await response.json();
-        
-        const filesContent = document.getElementById('files-content');
-        const emptyState = document.getElementById('empty-state');
-        
-        if (files && files.length > 0) {
-            // Hide empty state and show files
-            if (emptyState) emptyState.style.display = 'none';
-            if (filesContent) {
-                filesContent.classList.add('has-files');
-                filesContent.style.display = 'block';
-                filesContent.innerHTML = createFileListHTML(files);
-                
-                // Update file count
-                updateFileCount(files);
-                
-                // Add file interactions
-                addFileInteractions();
-            }
-            
-            console.log(`Loaded ${files.length} files successfully`);
+        const fetchedFiles = Array.isArray(files) ? files : [];
+        setAllFiles(fetchedFiles);
+
+        if (fetchedFiles.length > 0) {
+            console.log(`Loaded ${fetchedFiles.length} files successfully`);
         } else {
-            // Show empty state
-            if (emptyState) emptyState.style.display = 'block';
-            if (filesContent) {
-                filesContent.classList.remove('has-files');
-                filesContent.style.display = 'none';
-            }
-            
-            // Update file count
-            updateFileCount([]);
-            
             console.log('No files found');
         }
     } catch (error) {
@@ -182,15 +187,227 @@ async function loadFiles() {
     }
 }
 
+function setAllFiles(files) {
+    allFiles = Array.isArray(files) ? [...files] : [];
+    applyFiltersAndRender();
+}
+
+function applyFiltersAndRender() {
+    const searchInput = document.getElementById('file-search');
+    const sortSelect = document.getElementById('file-sort');
+
+    const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    const sortOption = sortSelect ? sortSelect.value || DEFAULT_SORT_OPTION : DEFAULT_SORT_OPTION;
+
+    activeSortOption = sortOption;
+
+    let workingFiles = [...allFiles];
+
+    if (searchTerm) {
+        workingFiles = workingFiles.filter(file => {
+            const name = (file.displayName || file.originalName || file.name || '').toLowerCase();
+            const type = (file.type || '').toLowerCase();
+            const extension = (file.extension || '').toLowerCase();
+            const tags = Array.isArray(file.tags) ? file.tags.join(' ').toLowerCase() : '';
+
+            return (
+                name.includes(searchTerm) ||
+                type.includes(searchTerm) ||
+                extension.includes(searchTerm) ||
+                tags.includes(searchTerm)
+            );
+        });
+    }
+
+    filteredFiles = sortFiles(workingFiles, sortOption);
+    renderFileList(filteredFiles);
+}
+
+function renderFileList(files) {
+    const filesContent = document.getElementById('files-content');
+    const emptyState = document.getElementById('empty-state');
+
+    if (!filesContent) {
+        return;
+    }
+
+    if (!allFiles.length) {
+        if (emptyState) emptyState.style.display = 'block';
+        filesContent.classList.remove('has-files');
+        filesContent.style.display = 'none';
+        filesContent.innerHTML = '';
+        updateFileCount([], 0);
+        return;
+    }
+
+    if (emptyState) emptyState.style.display = 'none';
+    filesContent.classList.add('has-files');
+    filesContent.style.display = 'block';
+
+    if (!files.length) {
+        filesContent.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <h3>Không tìm thấy tệp phù hợp</h3>
+                <p>Thử điều chỉnh từ khóa tìm kiếm hoặc thay đổi tiêu chí sắp xếp.</p>
+            </div>
+        `;
+        updateFileCount(files, allFiles.length);
+        return;
+    }
+
+    filesContent.innerHTML = createFileListHTML(files);
+    updateFileCount(files, allFiles.length);
+    addFileInteractions();
+}
+
+function sortFiles(files, sortOption) {
+    const sortedFiles = [...files];
+    sortedFiles.sort((a, b) => {
+        switch (sortOption) {
+            case 'name-asc':
+                return getComparableName(a).localeCompare(getComparableName(b), 'vi', { sensitivity: 'base' });
+            case 'name-desc':
+                return getComparableName(b).localeCompare(getComparableName(a), 'vi', { sensitivity: 'base' });
+            case 'date-asc':
+                return getUploadTimestamp(a) - getUploadTimestamp(b);
+            case 'size-asc':
+                return getFileSizeValue(a) - getFileSizeValue(b);
+            case 'size-desc':
+                return getFileSizeValue(b) - getFileSizeValue(a);
+            case 'date-desc':
+            default:
+                return getUploadTimestamp(b) - getUploadTimestamp(a);
+        }
+    });
+
+    return sortedFiles;
+}
+
+function getComparableName(file) {
+    return (file.displayName || file.originalName || file.name || '').toLowerCase();
+}
+
+function getUploadTimestamp(file) {
+    const candidates = [
+        file?.uploadDate,
+        file?.uploadedAt,
+        file?.createdAt,
+        file?.updatedAt,
+        file?.lastModified,
+        file?.metadata?.uploadDate,
+        file?.metadata?.uploadedAt,
+        file?.metadata?.createdAt,
+        file?.metadata?.updatedAt,
+        file?.metadata?.lastModified
+    ];
+
+    for (const candidate of candidates) {
+        const parsed = new Date(candidate);
+        if (!Number.isNaN(parsed.getTime())) {
+            return parsed.getTime();
+        }
+    }
+
+    return 0;
+}
+
+function getFileSizeValue(file) {
+    const size = typeof file.size === 'number' ? file.size : Number(file.size);
+    if (!Number.isNaN(size)) {
+        return size;
+    }
+
+    if (file.metadata && typeof file.metadata.size === 'number') {
+        return file.metadata.size;
+    }
+
+    return 0;
+}
+
+function getDisplayDateValue(file) {
+    const timestamp = getUploadTimestamp(file);
+    if (!timestamp) {
+        return null;
+    }
+
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) {
+        return null;
+    }
+
+    return date.toISOString();
+}
+
+function escapeHtml(value) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function escapeForJsString(value) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+
+    return String(value)
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r');
+}
+
 // Create sample files for demonstration
 window.createSampleFiles = function() {
+    const now = Date.now();
     const sampleFiles = [
-        { name: 'Tài liệu dự án.pdf', size: '2.5 MB', type: 'pdf', date: '2 giờ trước' },
-        { name: 'Hình ảnh logo.png', size: '890 KB', type: 'image', date: '1 ngày trước' },
-        { name: 'Bản trình bày.pptx', size: '5.2 MB', type: 'presentation', date: '3 ngày trước' },
-        { name: 'Dữ liệu bán hàng.xlsx', size: '1.8 MB', type: 'spreadsheet', date: '1 tuần trước' }
+        {
+            id: 'sample-doc',
+            originalName: 'Tài liệu dự án.pdf',
+            displayName: 'Tài liệu dự án.pdf',
+            size: 2.5 * 1024 * 1024,
+            type: 'application/pdf',
+            uploadDate: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
+            extension: '.pdf',
+            isDocument: true
+        },
+        {
+            id: 'sample-image',
+            originalName: 'Hình ảnh logo.png',
+            displayName: 'Hình ảnh logo.png',
+            size: 890 * 1024,
+            type: 'image/png',
+            uploadDate: new Date(now - 24 * 60 * 60 * 1000).toISOString(),
+            extension: '.png',
+            isImage: true
+        },
+        {
+            id: 'sample-presentation',
+            originalName: 'Bản trình bày.pptx',
+            displayName: 'Bản trình bày.pptx',
+            size: 5.2 * 1024 * 1024,
+            type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            uploadDate: new Date(now - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            extension: '.pptx'
+        },
+        {
+            id: 'sample-sheet',
+            originalName: 'Dữ liệu bán hàng.xlsx',
+            displayName: 'Dữ liệu bán hàng.xlsx',
+            size: 1.8 * 1024 * 1024,
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            uploadDate: new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString(),
+            extension: '.xlsx'
+        }
     ];
-    
+
     createFileList(sampleFiles);
     if (window.toastSystem) {
         window.toastSystem.success('Đã tạo 4 tệp mẫu để bạn trải nghiệm!', {
@@ -201,61 +418,97 @@ window.createSampleFiles = function() {
 
 // Create file list display
 function createFileList(files) {
-    const filesContent = document.getElementById('files-content');
-    const emptyState = document.getElementById('empty-state');
-    
-    if (emptyState) emptyState.style.display = 'none';
-    if (filesContent) {
-        filesContent.classList.add('has-files');
-        filesContent.style.display = 'block';
-        filesContent.innerHTML = createFileListHTML(files);
-        
-        // Update file count
-        updateFileCount(files);
-        
-        // Add file interactions
-        addFileInteractions();
-    }
+    setAllFiles(Array.isArray(files) ? files : []);
 }
 
 // Generate HTML for file list
 function createFileListHTML(files) {
     return `
         <div class="file-list list-view">
-            ${files.map(file => `
-                <div class="file-item" data-file-id="${file.id}" data-file-name="${file.originalName}">
-                    <div class="file-icon-wrapper ${file.isImage ? 'image-preview' : ''}" ${file.isImage ? `style="background-image: url('/api/preview/${file.id}'); background-size: cover; background-position: center;"` : ''}>
+            ${files.map(file => {
+                const shareState = getInitialShareState(file);
+                const displayNameRaw = file.displayName || file.originalName || file.name || 'Không có tên';
+                const originalNameRaw = file.originalName || displayNameRaw;
+                const fileIdRaw = file.id || file.internalName || originalNameRaw;
+                const mimeTypeRaw = file.type || '';
+                const typeLabelRaw = mimeTypeRaw || (file.extension ? file.extension.replace('.', '').toUpperCase() : 'Không xác định');
+                const sizeLabel = formatFileSize(file.size);
+                const dateValue = getDisplayDateValue(file);
+                const dateLabel = formatDate(dateValue);
+
+                const displayNameHtml = escapeHtml(displayNameRaw);
+                const fileIdAttr = escapeHtml(fileIdRaw);
+                const typeLabelHtml = escapeHtml(typeLabelRaw);
+                const sizeLabelHtml = escapeHtml(sizeLabel);
+                const dateLabelHtml = escapeHtml(dateLabel);
+
+                const fileIdJs = escapeForJsString(fileIdRaw);
+                const originalNameJs = escapeForJsString(originalNameRaw);
+                const mimeTypeJs = escapeForJsString(mimeTypeRaw);
+                const displayNameJs = escapeForJsString(displayNameRaw);
+
+                const previewBackground = file.isImage
+                    ? `style="background-image: url('/api/preview/${encodeURIComponent(fileIdRaw)}'); background-size: cover; background-position: center;"`
+                    : '';
+
+                return `
+                <div class="file-item" data-file-id="${fileIdAttr}" data-file-name="${displayNameHtml}" data-share-state="${shareState}">
+                    <div class="file-icon-wrapper ${file.isImage ? 'image-preview' : ''}" ${previewBackground}>
                         ${!file.isImage ? `<i class="fas ${getFileIconClass(file)}"></i>` : ''}
                     </div>
                     <div class="file-details">
-                        <div class="file-name" title="${file.originalName}">${file.originalName}</div>
+                        <div class="file-name" title="${displayNameHtml}">${displayNameHtml}</div>
                         <div class="file-meta">
-                            <span class="file-size">${formatFileSize(file.size)}</span>
-                            <span class="file-date">${formatDate(file.uploadDate)}</span>
-                            <span class="file-type">${file.type}</span>
+                            <span class="file-size">${sizeLabelHtml}</span>
+                            <span class="file-date">${dateLabelHtml}</span>
+                            <span class="file-type">${typeLabelHtml}</span>
                         </div>
                     </div>
                     <div class="file-actions">
-                        <button class="action-btn preview-btn" title="Xem trước" onclick="previewFile('${file.id}', '${file.originalName}', '${file.type}')">
+                        <button class="action-btn preview-btn" title="Xem trước" onclick="previewFile('${fileIdJs}', '${originalNameJs}', '${mimeTypeJs}')">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="action-btn details-btn" title="Xem chi tiết" onclick="viewFileDetails('${file.id}', '${file.originalName}')">
+                        <button class="action-btn details-btn" title="Xem chi tiết" onclick="viewFileDetails('${fileIdJs}', '${originalNameJs}')">
                             <i class="fas fa-info-circle"></i>
                         </button>
-                        <button class="action-btn download-btn" title="Tải xuống" onclick="downloadFile('${file.id}', '${file.originalName}')">
+                        <button class="action-btn download-btn" title="Tải xuống" onclick="downloadFile('${fileIdJs}', '${originalNameJs}')">
                             <i class="fas fa-download"></i>
                         </button>
-                        <button class="action-btn rename-btn" title="Đổi tên" onclick="renameFile('${file.id}', '${file.displayName || file.originalName}')">
+                        <button class="action-btn share-toggle-btn" title="${shareState === 'public' ? 'Đang công khai' : 'Đang riêng tư'}" data-share-state="${shareState}">
+                            <i class="fas ${shareState === 'public' ? 'fa-lock-open' : 'fa-lock'}"></i>
+                        </button>
+                        <button class="action-btn rename-btn" title="Đổi tên" onclick="renameFile('${fileIdJs}', '${displayNameJs}')">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="action-btn delete-btn" title="Xóa" onclick="deleteFile('${file.id}', '${file.displayName || file.originalName}')">
+                        <button class="action-btn delete-btn" title="Xóa" onclick="deleteFile('${fileIdJs}', '${displayNameJs}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </div>
-            `).join('')}
+            `}).join('')}
         </div>
     `;
+}
+
+function getInitialShareState(file) {
+    if (file && typeof file.isPublic === 'boolean') {
+        return file.isPublic ? 'public' : 'private';
+    }
+
+    if (!file || !file.metadata) {
+        return 'private';
+    }
+
+    const metadata = file.metadata;
+    if (metadata.shareStatus && ['public', 'private'].includes(metadata.shareStatus)) {
+        return metadata.shareStatus;
+    }
+
+    if (typeof metadata.isPublic === 'boolean') {
+        return metadata.isPublic ? 'public' : 'private';
+    }
+
+    return 'private';
 }
 
 // Get file icon class based on file object
@@ -278,18 +531,41 @@ function getFileIconClass(file) {
 
 // Format file size
 function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
+    const numericBytes = typeof bytes === 'number' ? bytes : Number(bytes);
+
+    if (!Number.isFinite(numericBytes) || numericBytes < 0) {
+        return 'Không xác định';
+    }
+
+    if (numericBytes === 0) {
+        return '0 Bytes';
+    }
+
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const index = Math.min(Math.floor(Math.log(numericBytes) / Math.log(k)), sizes.length - 1);
+    const scaledValue = numericBytes / Math.pow(k, index);
+
+    return `${parseFloat(scaledValue.toFixed(2))} ${sizes[index]}`;
 }
 
 // Format date
 function formatDate(dateString) {
+    if (!dateString) {
+        return 'Không xác định';
+    }
+
     const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) {
+        return 'Không xác định';
+    }
+
     const now = new Date();
     const diffTime = now - date; // Remove Math.abs to get correct direction
+    if (!Number.isFinite(diffTime)) {
+        return 'Không xác định';
+    }
+
     const diffMinutes = Math.floor(diffTime / (1000 * 60));
     const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -329,10 +605,19 @@ function formatDate(dateString) {
 }
 
 // Update file count display
-function updateFileCount(files) {
+function updateFileCount(files, totalFilesCount) {
     const fileCount = document.querySelector('.file-count');
-    if (fileCount) {
-        fileCount.textContent = `${files.length} tệp tin`;
+    if (!fileCount) {
+        return;
+    }
+
+    const currentCount = Array.isArray(files) ? files.length : Number(files) || 0;
+    const totalCount = typeof totalFilesCount === 'number' ? totalFilesCount : currentCount;
+
+    if (totalCount && totalCount !== currentCount) {
+        fileCount.textContent = `${currentCount}/${totalCount} tệp tin`;
+    } else {
+        fileCount.textContent = `${currentCount} tệp tin`;
     }
 }
 
@@ -340,7 +625,7 @@ function updateFileCount(files) {
 function addFileInteractions() {
     const fileItems = document.querySelectorAll('.file-item');
     const actionBtns = document.querySelectorAll('.action-btn');
-    
+
     fileItems.forEach(item => {
         item.addEventListener('click', function(e) {
             if (!e.target.closest('.action-btn')) {
@@ -355,11 +640,15 @@ function addFileInteractions() {
     });
     
     actionBtns.forEach(btn => {
+        if (btn.classList.contains('share-toggle-btn')) {
+            return;
+        }
+
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             const action = this.title;
             const fileName = this.closest('.file-item').getAttribute('data-file-name');
-            
+
             switch(action) {
                 case 'Tải xuống':
                     if (window.toastSystem) {
@@ -382,6 +671,53 @@ function addFileInteractions() {
             }
         });
     });
+
+    const shareToggleButtons = document.querySelectorAll('.share-toggle-btn');
+    shareToggleButtons.forEach(button => {
+        const state = button.getAttribute('data-share-state') || 'private';
+        updateShareToggleVisuals(button, state);
+
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const newState = toggleShareStatus(button);
+            const fileItem = button.closest('.file-item');
+            if (fileItem) {
+                fileItem.setAttribute('data-share-state', newState);
+
+                if (window.toastSystem) {
+                    const fileName = fileItem.getAttribute('data-file-name');
+                    const stateLabel = newState === 'public' ? 'công khai' : 'riêng tư';
+                    window.toastSystem.success(`Đã chuyển "${fileName}" sang chế độ ${stateLabel}`, {
+                        duration: 2500
+                    });
+                }
+            }
+        });
+    });
+}
+
+function toggleShareStatus(button) {
+    const currentState = button.getAttribute('data-share-state') === 'public' ? 'public' : 'private';
+    const newState = currentState === 'public' ? 'private' : 'public';
+    button.setAttribute('data-share-state', newState);
+    updateShareToggleVisuals(button, newState);
+    return newState;
+}
+
+function updateShareToggleVisuals(button, state) {
+    const icon = button.querySelector('i');
+    if (icon) {
+        icon.className = `fas ${state === 'public' ? 'fa-lock-open' : 'fa-lock'}`;
+    }
+
+    button.title = state === 'public' ? 'Đang công khai' : 'Đang riêng tư';
+    if (state === 'public') {
+        button.classList.add('is-public');
+    } else {
+        button.classList.remove('is-public');
+    }
 }
 
 // CRUD Operations
