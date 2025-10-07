@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeamShare - Đăng nhập</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-8oCOHYKT8pi7M/Wq3iCt3vEGI7XWuf5NTau62JXpkkn00L6UNkTpZ1PS8CNo2i7Tt2n7O6U6D3lWq2RfDX0X7Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../../../css/base.css">
+    <link rel="stylesheet" href="../../../css/modal-toast.css">
+    <link rel="stylesheet" href="../../../css/pages/sso/auth.css">
+</head>
+<body class="auth-body">
+    <div class="auth-page" data-page="login">
+        <section class="auth-illustration">
+            <div class="auth-illustration-content">
+                <div class="auth-brand">
+                    <i class="fas fa-cloud"></i>
+                    BeamShare Drive
+                </div>
+                <h2>Chào mừng trở lại!</h2>
+                <p>Đăng nhập để truy cập kho lưu trữ đám mây bảo mật, dễ dàng quản lý và chia sẻ tệp tin cùng đội ngũ của bạn.</p>
+                <div class="auth-highlights">
+                    <div class="auth-highlight">
+                        <div class="auth-highlight-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="auth-highlight-content">
+                            <h4>Bảo mật nhiều lớp</h4>
+                            <p>Dữ liệu của bạn được mã hóa đầu cuối và kiểm soát truy cập chi tiết.</p>
+                        </div>
+                    </div>
+                    <div class="auth-highlight">
+                        <div class="auth-highlight-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="auth-highlight-content">
+                            <h4>Truy cập siêu tốc</h4>
+                            <p>Đồng bộ đa thiết bị với tốc độ cao, tối ưu cho công việc linh hoạt.</p>
+                        </div>
+                    </div>
+                    <div class="auth-highlight">
+                        <div class="auth-highlight-icon">
+                            <i class="fas fa-people-group"></i>
+                        </div>
+                        <div class="auth-highlight-content">
+                            <h4>Cộng tác thông minh</h4>
+                            <p>Phân quyền chia sẻ chi tiết và theo dõi hoạt động thời gian thực.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="auth-card">
+            <div class="auth-header">
+                <div class="eyebrow">
+                    <i class="fas fa-lock"></i>
+                    Đăng nhập BeamShare
+                </div>
+                <h1>Truy cập không gian làm việc</h1>
+                <p>Nhập thông tin tài khoản để tiếp tục quản lý tệp và cộng tác cùng đội ngũ.</p>
+            </div>
+            <form class="auth-form" id="login-form" data-form-type="login" novalidate>
+                <div class="auth-alert" role="alert"></div>
+                <div class="form-field">
+                    <label class="form-label" for="login-email">Email công việc</label>
+                    <div class="field-control">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="login-email" name="email" class="form-input" placeholder="name@company.com" autocomplete="username" required>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="login-password">Mật khẩu</label>
+                    <div class="field-control">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="login-password" name="password" class="form-input" placeholder="••••••••" autocomplete="current-password" required minlength="6">
+                        <button type="button" class="password-toggle" aria-label="Hiển thị mật khẩu">Hiện</button>
+                    </div>
+                </div>
+                <div class="form-support">
+                    <label class="checkbox" for="login-remember">
+                        <input type="checkbox" id="login-remember" name="remember" checked>
+                        Ghi nhớ đăng nhập
+                    </label>
+                    <a href="forgot-password.html" class="link-button">Quên mật khẩu?</a>
+                </div>
+                <div class="auth-submit">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-arrow-right-to-bracket"></i>
+                        Đăng nhập
+                    </button>
+                    <div class="auth-divider">Hoặc đăng nhập nhanh</div>
+                    <div class="social-login">
+                        <button type="button">
+                            <i class="fab fa-google"></i>
+                            Google Workspace
+                        </button>
+                        <button type="button">
+                            <i class="fab fa-microsoft"></i>
+                            Microsoft 365
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div class="auth-footer">
+                Chưa có tài khoản?
+                <a class="link-button" href="register.html">Đăng ký ngay</a>
+            </div>
+        </section>
+    </div>
+    <script src="../../../js/toast-system.js"></script>
+    <script src="../../../js/pages/sso/auth.js"></script>
+</body>
+</html>
