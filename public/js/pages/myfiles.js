@@ -1,49 +1,19 @@
 // My Files Page JavaScript - Compact
 const DEFAULT_SORT_OPTION = 'date-desc';
+const DEFAULT_VIEW_MODE = 'list';
+const VIEW_MODE_STORAGE_KEY = 'myfiles:view-mode';
 let allFiles = [];
 let filteredFiles = [];
 let activeSortOption = DEFAULT_SORT_OPTION;
 let searchDebounceTimer = null;
+let activeViewMode = DEFAULT_VIEW_MODE;
 
 window.initMyFiles = function() {
     console.log('Initializing My Files page...');
-    
-    // Simple view toggle functionality
-    const viewToggle = document.querySelector('.view-toggle');
-    const filesContent = document.getElementById('files-content');
-    let currentView = 'list';
-    
-    if (viewToggle) {
-        viewToggle.addEventListener('click', function() {
-            currentView = currentView === 'list' ? 'grid' : 'list';
-            
-            // Update icon
-            const icon = this.querySelector('i');
-            icon.className = currentView === 'list' ? 'fas fa-list' : 'fas fa-th';
-            
-            // Apply view transformation (if files exist)
-            if (filesContent) {
-                if (currentView === 'grid') {
-                    filesContent.classList.add('grid-view');
-                    filesContent.classList.remove('list-view');
-                } else {
-                    filesContent.classList.add('list-view');
-                    filesContent.classList.remove('grid-view');
-                }
-            }
-            
-            // Show notification for view change
-            if (window.toastSystem) {
-                window.toastSystem.info(`Chế độ xem: ${currentView === 'grid' ? 'Lưới' : 'Danh sách'}`, {
-                    duration: 2000
-                });
-            }
-        });
-    }
-    
+
     // Initialize drag and drop for the entire page
     initDragAndDrop();
-    
+
     // Initialize UI
     initializeUI();
     
@@ -137,6 +107,7 @@ function initDragAndDrop() {
 // Simple initialization
 function initializeUI() {
     setupSearchAndSort();
+    setupViewToggles();
     console.log('UI initialized');
 }
 
@@ -161,6 +132,103 @@ function setupSearchAndSort() {
                 applyFiltersAndRender();
             }, 200);
         });
+    }
+}
+
+function setupViewToggles() {
+    const toggleButtons = Array.from(document.querySelectorAll('.view-toggle-btn'));
+
+    if (!toggleButtons.length) {
+        return;
+    }
+
+    setActiveViewMode(getStoredViewMode(), { skipStorage: true });
+
+    toggleButtons.forEach(button => {
+        const requestedMode = button.getAttribute('data-view');
+        const normalizedMode = requestedMode === 'grid' ? 'grid' : 'list';
+
+        button.setAttribute('aria-pressed', normalizedMode === activeViewMode ? 'true' : 'false');
+
+        button.addEventListener('click', () => {
+            const mode = button.getAttribute('data-view') === 'grid' ? 'grid' : 'list';
+            const hasChanged = setActiveViewMode(mode);
+
+            if (!hasChanged) {
+                return;
+            }
+
+            renderFileList(filteredFiles);
+
+            if (window.toastSystem) {
+                window.toastSystem.info(`Đang hiển thị dạng ${mode === 'grid' ? 'lưới' : 'danh sách'}`, {
+                    duration: 2000
+                });
+            }
+        });
+    });
+
+    syncViewToggleUI();
+    updateFilesContentView();
+}
+
+function setActiveViewMode(mode, options = {}) {
+    const normalized = mode === 'grid' ? 'grid' : 'list';
+    const hasChanged = normalized !== activeViewMode;
+    activeViewMode = normalized;
+
+    if (!options.skipStorage) {
+        saveViewMode(activeViewMode);
+    }
+
+    syncViewToggleUI();
+    updateFilesContentView();
+
+    return hasChanged;
+}
+
+function syncViewToggleUI() {
+    const toggleButtons = document.querySelectorAll('.view-toggle-btn');
+
+    toggleButtons.forEach(button => {
+        const buttonMode = button.getAttribute('data-view') === 'grid' ? 'grid' : 'list';
+        const isActive = buttonMode === activeViewMode;
+
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+}
+
+function updateFilesContentView(element) {
+    const filesContent = element || document.getElementById('files-content');
+
+    if (!filesContent) {
+        return;
+    }
+
+    filesContent.setAttribute('data-view-mode', activeViewMode);
+    filesContent.classList.toggle('grid-view', activeViewMode === 'grid');
+    filesContent.classList.toggle('list-view', activeViewMode !== 'grid');
+}
+
+function getStoredViewMode() {
+    try {
+        const stored = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+        if (stored === 'grid' || stored === 'list') {
+            return stored;
+        }
+    } catch (error) {
+        console.warn('Không thể truy cập localStorage để đọc chế độ xem:', error);
+    }
+
+    return DEFAULT_VIEW_MODE;
+}
+
+function saveViewMode(mode) {
+    try {
+        window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
+    } catch (error) {
+        console.warn('Không thể lưu chế độ xem vào localStorage:', error);
     }
 }
 
@@ -227,9 +295,13 @@ function renderFileList(files) {
     const filesContent = document.getElementById('files-content');
     const emptyState = document.getElementById('empty-state');
 
+    updateFilesContentView(filesContent);
+
     if (!filesContent) {
         return;
     }
+
+    const workingFiles = Array.isArray(files) ? files : filteredFiles;
 
     if (!allFiles.length) {
         if (emptyState) emptyState.style.display = 'block';
@@ -244,7 +316,7 @@ function renderFileList(files) {
     filesContent.classList.add('has-files');
     filesContent.style.display = 'block';
 
-    if (!files.length) {
+    if (!workingFiles.length) {
         filesContent.innerHTML = `
             <div class="no-results">
                 <i class="fas fa-search"></i>
@@ -252,12 +324,12 @@ function renderFileList(files) {
                 <p>Thử điều chỉnh từ khóa tìm kiếm hoặc thay đổi tiêu chí sắp xếp.</p>
             </div>
         `;
-        updateFileCount(files, allFiles.length);
+        updateFileCount(workingFiles, allFiles.length);
         return;
     }
 
-    filesContent.innerHTML = createFileListHTML(files);
-    updateFileCount(files, allFiles.length);
+    filesContent.innerHTML = createFileListHTML(workingFiles);
+    updateFileCount(workingFiles, allFiles.length);
     addFileInteractions();
 }
 
@@ -423,8 +495,10 @@ function createFileList(files) {
 
 // Generate HTML for file list
 function createFileListHTML(files) {
+    const listClassName = `file-list ${activeViewMode === 'grid' ? 'grid-view' : 'list-view'}`;
+
     return `
-        <div class="file-list list-view">
+        <div class="${listClassName}">
             ${files.map(file => {
                 const shareState = getInitialShareState(file);
                 const displayNameRaw = file.displayName || file.originalName || file.name || 'Không có tên';

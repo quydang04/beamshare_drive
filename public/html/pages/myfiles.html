@@ -12,10 +12,15 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="view-toggle" data-view="list" title="Chuyển chế độ xem">
-                    <i class="fas fa-list"></i>
-                </button>
-                <button class="view-toggle" onclick="refreshFiles()" title="Làm mới danh sách">
+                <div class="view-toggle-group" role="group" aria-label="Chế độ hiển thị">
+                    <button class="view-toggle-btn is-active" data-view="list" title="Hiển thị dạng danh sách">
+                        <i class="fas fa-list"></i>
+                    </button>
+                    <button class="view-toggle-btn" data-view="grid" title="Hiển thị dạng lưới">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                </div>
+                <button class="icon-button" onclick="refreshFiles()" title="Làm mới danh sách">
                     <i class="fas fa-sync-alt"></i>
                 </button>
                 <button class="btn-upload" onclick="window.loadPage('upload')">
