@@ -12,10 +12,15 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="view-toggle" data-view="list" title="Chuyển chế độ xem">
-                    <i class="fas fa-list"></i>
-                </button>
-                <button class="view-toggle" onclick="refreshFiles()" title="Làm mới danh sách">
+                <div class="view-toggle-group" role="group" aria-label="Chế độ hiển thị">
+                    <button class="view-toggle-btn is-active" data-view="list" title="Hiển thị dạng danh sách">
+                        <i class="fas fa-list"></i>
+                    </button>
+                    <button class="view-toggle-btn" data-view="grid" title="Hiển thị dạng lưới">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                </div>
+                <button class="icon-button" onclick="refreshFiles()" title="Làm mới danh sách">
                     <i class="fas fa-sync-alt"></i>
                 </button>
                 <button class="btn-upload" onclick="window.loadPage('upload')">
@@ -25,6 +30,24 @@
             </div>
         </div>
         
+        <div class="file-filters">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="file-search" placeholder="Tìm kiếm tệp theo tên, loại..." aria-label="Tìm kiếm tệp">
+            </div>
+            <div class="sort-wrapper">
+                <label for="file-sort">Sắp xếp:</label>
+                <select id="file-sort" aria-label="Sắp xếp tệp">
+                    <option value="date-desc">Ngày tải lên (mới nhất)</option>
+                    <option value="date-asc">Ngày tải lên (cũ nhất)</option>
+                    <option value="name-asc">Tên (A-Z)</option>
+                    <option value="name-desc">Tên (Z-A)</option>
+                    <option value="size-desc">Dung lượng (lớn nhất)</option>
+                    <option value="size-asc">Dung lượng (nhỏ nhất)</option>
+                </select>
+            </div>
+        </div>
+
         <div class="files-content" id="files-content">
             <!-- Files will be loaded here -->
         </div>
