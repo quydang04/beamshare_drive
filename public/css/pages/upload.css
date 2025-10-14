@@ -228,6 +228,27 @@
     border: 1px solid #e2e8f0;
 }
 
+.upload-progress-item.is-active {
+    border-color: #c3dafe;
+    background: #f0f7ff;
+}
+
+.upload-progress-item.is-success {
+    border-color: #9ae6b4;
+    background: #f0fff4;
+}
+
+.upload-progress-item.is-error {
+    border-color: #feb2b2;
+    background: #fff5f5;
+}
+
+.upload-progress-item.is-skipped {
+    border-color: #d8dee6;
+    background: #f7fafc;
+    opacity: 0.8;
+}
+
 .upload-progress-item .file-info {
     display: flex;
     align-items: center;
@@ -269,11 +290,177 @@
     transition: width 0.3s ease;
 }
 
+.upload-progress-item.is-success .progress-fill {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.upload-progress-item.is-error .progress-fill {
+    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+}
+
+.upload-progress-item.is-skipped .progress-fill {
+    background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+}
+
 .upload-progress-item .progress-text {
     color: #667eea;
     font-weight: 600;
     min-width: 40px;
     text-align: right;
+}
+
+.upload-progress-item.is-success .progress-text {
+    color: #2f855a;
+}
+
+.upload-progress-item.is-error .progress-text {
+    color: #c53030;
+}
+
+.upload-progress-item.is-skipped .progress-text {
+    color: #4a5568;
+}
+
+.upload-progress-item .file-name.is-renamed {
+    color: #2b6cb0;
+    position: relative;
+}
+
+.upload-progress-item .file-name.is-renamed::after {
+    content: '\f044';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    margin-left: 6px;
+    color: #3182ce;
+    font-size: 12px;
+}
+
+.conflict-dialog {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.conflict-summary {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: #f7fafc;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.conflict-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+
+.conflict-title {
+    color: #2d3748;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.conflict-meta {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    color: #4a5568;
+    font-size: 14px;
+}
+
+.conflict-meta li {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.conflict-meta strong {
+    color: #2d3748;
+}
+
+.conflict-recommendation {
+    background: #f0f4ff;
+    padding: 14px 16px;
+    border-radius: 10px;
+    color: #2d3748;
+    border: 1px dashed #c3dafe;
+    font-size: 14px;
+}
+
+.conflict-recommendation-label {
+    margin-right: 8px;
+    color: #4c51bf;
+    font-weight: 600;
+}
+
+.conflict-rename-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.conflict-label {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.conflict-rename-input {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e0;
+    font-size: 15px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.conflict-rename-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+    outline: none;
+}
+
+.conflict-rename-input.has-error {
+    border-color: #f56565;
+    box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.2);
+}
+
+.conflict-error {
+    color: #c53030;
+    font-size: 13px;
+}
+
+.conflict-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.conflict-suggestion-chip {
+    background: #edf2f7;
+    border: 1px solid #cbd5e0;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: #2d3748;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.conflict-suggestion-chip:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
 }
 
 .btn-upload-primary,

@@ -1,39 +1,31 @@
 // Base JavaScript - Common functionality and navigation
 document.addEventListener('DOMContentLoaded', function() {
-    // Get all navigation items and pages
     const navItems = document.querySelectorAll('.nav-item');
     const pages = document.querySelectorAll('.page');
-    
-    // Handle navigation clicks
-    navItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Remove active class from all nav items
-            navItems.forEach(nav => nav.classList.remove('active'));
-            
-            // Add active class to clicked item
-            this.classList.add('active');
-            
-            // Hide all pages
-            pages.forEach(page => page.classList.remove('active'));
-            
-            // Show selected page
-            const targetPage = this.getAttribute('data-page');
-            const targetElement = document.getElementById(targetPage + '-page');
-            if (targetElement) {
-                targetElement.classList.add('active');
-            }
-            
-            // Update user info based on page
-            updateUserInfo(targetPage);
-            
-            // Load page-specific functionality
-            loadPageFunctionality(targetPage);
+    const hasDynamicRouter = typeof window.loadPage === 'function';
+
+    if (!hasDynamicRouter && navItems.length) {
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                navItems.forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+
+                pages.forEach(page => page.classList.remove('active'));
+
+                const targetPage = this.getAttribute('data-page');
+                const targetElement = document.getElementById(targetPage + '-page');
+                if (targetElement) {
+                    targetElement.classList.add('active');
+                }
+
+                updateUserInfo(targetPage);
+                loadPageFunctionality(targetPage);
+            });
         });
-    });
-    
-    // Update user info function
+    }
+
     function updateUserInfo(page) {
         const userInitial = document.getElementById('user-initial');
         const userName = document.getElementById('user-name');
@@ -70,9 +62,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Global functions
     window.updateUserInfo = updateUserInfo;
     window.switchToPage = function(pageName) {
-        const navItem = document.querySelector(`[data-page="${pageName}"]`);
-        if (navItem) {
-            navItem.click();
+        if (hasDynamicRouter && typeof window.loadPage === 'function') {
+            window.loadPage(pageName);
+        } else {
+            const navItem = document.querySelector(`[data-page="${pageName}"]`);
+            if (navItem) {
+                navItem.click();
+            }
         }
     };
 });

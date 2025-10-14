@@ -25,23 +25,44 @@ app.use(express.static(path.join(__dirname)));
 // Use API routes
 app.use('/api', apiRoutes.getRouter());
 
-// Serve static files (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname)));
-
 // All API routes are now handled by the ApiRoutes module
 // Upload routes are now handled by the UploadHandler and ApiRoutes modules
 // All file operations are now handled by the ApiRoutes module
-// Route cho trang chính
-app.get('/', (_req, res) => {
+// Utilities
+const sendIndex = (_req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+};
+
+const sendSsoPage = (res, page) => {
+    res.sendFile(
+        path.join(__dirname, 'public', 'html', 'pages', 'sso', `${page}.html`),
+        (error) => {
+            if (error) {
+                console.error(`Không thể tải trang SSO "${page}":`, error.message);
+                res.redirect(302, '/');
+            }
+        }
+    );
+};
+
+// Route cho trang chính
+app.get('/', sendIndex);
+
+app.get('/auth', (_req, res) => {
+    res.redirect(302, '/auth/login');
 });
+
+// Route dành riêng cho các trang SSO độc lập
+app.get('/auth/login', (_req, res) => sendSsoPage(res, 'login'));
+app.get('/auth/register', (_req, res) => sendSsoPage(res, 'register'));
+app.get('/auth/forgot-password', (_req, res) => sendSsoPage(res, 'forgot-password'));
 
 // Route cho các trang khác (SPA routing)
 app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: 'API endpoint not found' });
     }
-    res.sendFile(path.join(__dirname, 'index.html'));
+    sendIndex(req, res);
 });
 
 // Start server

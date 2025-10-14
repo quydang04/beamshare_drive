@@ -41,6 +41,10 @@ window.initSubscription = function() {
             
             // Start from 0 and animate to target width
             usageProgress.style.width = '0%';
+
+    window.cleanupSubscription = function cleanupSubscription() {
+        // No persistent subscriptions to remove yet; placeholder for symmetry
+    };
             setTimeout(() => {
                 usageProgress.style.transition = 'width 1.5s ease-out';
                 usageProgress.style.width = targetWidth;

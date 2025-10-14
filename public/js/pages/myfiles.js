@@ -2,14 +2,339 @@
 const DEFAULT_SORT_OPTION = 'date-desc';
 const DEFAULT_VIEW_MODE = 'list';
 const VIEW_MODE_STORAGE_KEY = 'myfiles:view-mode';
+const SHARE_STATE_STORAGE_KEY = 'myfiles:share-overrides';
+const DETAIL_SNAPSHOT_STORAGE_KEY = 'myfiles:detail-snapshots';
 let allFiles = [];
 let filteredFiles = [];
 let activeSortOption = DEFAULT_SORT_OPTION;
 let searchDebounceTimer = null;
 let activeViewMode = DEFAULT_VIEW_MODE;
+let myFilesAutoRefreshIntervalId = null;
+let shareOverrides = {};
+let detailSnapshots = {};
+
+function normalizeFileId(fileOrId) {
+    if (!fileOrId) {
+        return null;
+    }
+
+    if (typeof fileOrId === 'string') {
+        return fileOrId;
+    }
+
+    return (
+        fileOrId.id ||
+        fileOrId.internalFilename ||
+        fileOrId.internalName ||
+        fileOrId.internal ||
+        fileOrId.name ||
+        fileOrId.originalName ||
+        null
+    );
+}
+
+function loadShareOverrides() {
+    try {
+        const stored = localStorage.getItem(SHARE_STATE_STORAGE_KEY);
+        shareOverrides = stored ? JSON.parse(stored) : {};
+    } catch (error) {
+        console.warn('Không thể tải trạng thái chia sẻ, sẽ sử dụng mặc định.', error);
+        shareOverrides = {};
+    }
+}
+
+function saveShareOverrides() {
+    try {
+        localStorage.setItem(SHARE_STATE_STORAGE_KEY, JSON.stringify(shareOverrides));
+    } catch (error) {
+        console.warn('Không thể lưu trạng thái chia sẻ.', error);
+    }
+}
+
+function loadDetailSnapshots() {
+    try {
+        const stored = localStorage.getItem(DETAIL_SNAPSHOT_STORAGE_KEY);
+        detailSnapshots = stored ? JSON.parse(stored) : {};
+    } catch (error) {
+        console.warn('Không thể tải lịch sử chi tiết tệp.', error);
+        detailSnapshots = {};
+    }
+}
+
+function saveDetailSnapshots() {
+    try {
+        localStorage.setItem(DETAIL_SNAPSHOT_STORAGE_KEY, JSON.stringify(detailSnapshots));
+    } catch (error) {
+        console.warn('Không thể lưu lịch sử chi tiết tệp.', error);
+    }
+}
+
+function getShareStateForFile(file) {
+    if (!file) {
+        return 'private';
+    }
+
+    const fileId = normalizeFileId(file);
+    if (fileId && shareOverrides[fileId] && shareOverrides[fileId].state) {
+        return shareOverrides[fileId].state;
+    }
+
+    if (typeof file.isPublic === 'boolean') {
+        return file.isPublic ? 'public' : 'private';
+    }
+
+    const metadata = file.metadata || {};
+    if (metadata.shareStatus && ['public', 'private'].includes(metadata.shareStatus)) {
+        return metadata.shareStatus;
+    }
+
+    if (typeof metadata.isPublic === 'boolean') {
+        return metadata.isPublic ? 'public' : 'private';
+    }
+
+    return 'private';
+}
+
+function applyShareOverrideToFile(file) {
+    const nextFile = { ...file };
+    const fileId = normalizeFileId(file);
+    const override = fileId ? shareOverrides[fileId] : null;
+
+    if (override && override.state) {
+        nextFile.isPublic = override.state === 'public';
+        nextFile.metadata = {
+            ...(nextFile.metadata || {}),
+            shareStatus: override.state,
+            shareUpdatedAt: override.updatedAt
+        };
+    }
+
+    return nextFile;
+}
+
+function persistShareOverride(fileId, state) {
+    if (!fileId) {
+        return;
+    }
+
+    shareOverrides[fileId] = {
+        state,
+        updatedAt: new Date().toISOString()
+    };
+    saveShareOverrides();
+
+    detailSnapshots[fileId] = {
+        ...(detailSnapshots[fileId] || {}),
+        shareState: state,
+        shareUpdatedAt: shareOverrides[fileId].updatedAt,
+        fetchedAt: new Date().toISOString()
+    };
+    saveDetailSnapshots();
+
+    const applyState = (file) => {
+        if (normalizeFileId(file) === fileId) {
+            return applyShareOverrideToFile({ ...file, isPublic: state === 'public' });
+        }
+        return file;
+    };
+
+    allFiles = allFiles.map(applyState);
+    filteredFiles = filteredFiles.map(applyState);
+}
+
+function mergeFileDetailsIntoState(fileId, details) {
+    if (!fileId || !details) {
+        return;
+    }
+
+    const updatedDetails = applyShareOverrideToFile({ ...details });
+    let merged = false;
+
+    allFiles = allFiles.map(file => {
+        if (normalizeFileId(file) === fileId) {
+            merged = true;
+            return {
+                ...file,
+                ...updatedDetails,
+                displayName: updatedDetails.displayName || updatedDetails.originalName || file.displayName
+            };
+        }
+        return file;
+    });
+
+    if (!merged) {
+        allFiles.push({ ...updatedDetails, id: fileId });
+    }
+
+    applyFiltersAndRender();
+}
+
+function hydrateFileDetails(serverDetails = {}, fallbackFile = {}) {
+    const merged = {
+        ...fallbackFile,
+        ...serverDetails
+    };
+
+    merged.displayName = serverDetails.displayName || serverDetails.originalName || fallbackFile.displayName || fallbackFile.originalName || serverDetails.name;
+    merged.originalName = serverDetails.originalName || merged.displayName;
+    merged.size = typeof serverDetails.size === 'number' ? serverDetails.size : fallbackFile.size;
+    merged.type = serverDetails.type || serverDetails.mimeType || fallbackFile.type;
+    merged.uploadDate = serverDetails.uploadDate || fallbackFile.uploadDate;
+    merged.modifiedDate = serverDetails.modifiedDate || fallbackFile.modifiedDate || fallbackFile.uploadDate;
+    merged.shareState = getShareStateForFile(merged);
+
+    const fileId = normalizeFileId(merged);
+    const shareOverride = fileId ? shareOverrides[fileId] : null;
+    merged.shareUpdatedAt = shareOverride?.updatedAt || fallbackFile.shareUpdatedAt || fallbackFile.metadata?.shareUpdatedAt;
+
+    if (fileId) {
+        detailSnapshots[fileId] = {
+            name: merged.displayName,
+            shareState: merged.shareState,
+            version: merged.version || fallbackFile.version || 1,
+            size: merged.size,
+            updatedAt: merged.modifiedDate || merged.uploadDate,
+            shareUpdatedAt: merged.shareUpdatedAt,
+            fetchedAt: new Date().toISOString()
+        };
+        saveDetailSnapshots();
+    }
+
+    return merged;
+}
+
+function buildFileDetailsModal(fileDetails) {
+    const container = document.createElement('div');
+    container.className = 'file-details-modal';
+
+    const fileId = normalizeFileId(fileDetails);
+    const shareState = getShareStateForFile(fileDetails);
+    const shareChipClass = shareState === 'public' ? 'details-chip is-public' : 'details-chip is-private';
+    const formattedSize = formatReadableFileSize(fileDetails.size);
+    const uploadLabel = formatAbsoluteDateTime(fileDetails.uploadDate);
+    const modifiedLabel = formatAbsoluteDateTime(fileDetails.modifiedDate);
+    const timelineItems = createTimelineItems(fileDetails, detailSnapshots[fileId]);
+    const hashHtml = fileDetails.hash
+        ? `<div class="details-hash-row"><code>${escapeHtml(fileDetails.hash)}</code><button class="hash-copy-btn" onclick="copyToClipboard('${escapeForJsString(fileDetails.hash)}')"><i class="fas fa-copy"></i></button></div>`
+        : 'Đang tạo...';
+
+    container.innerHTML = `
+        <div class="file-details-hero">
+            <div class="file-icon-bubble">
+                <i class="fas ${getFileIconClass(fileDetails)}"></i>
+            </div>
+            <div class="file-details-heading">
+                <h4 title="${escapeHtml(fileDetails.displayName || '')}">${escapeHtml(fileDetails.displayName || '')}</h4>
+                <div class="file-detail-meta">
+                    <span class="details-chip"><i class="fas fa-database"></i>${escapeHtml(fileDetails.type || 'Không xác định')}</span>
+                    <span class="${shareChipClass}"><i class="fas ${shareState === 'public' ? 'fa-lock-open' : 'fa-lock'}"></i>${shareState === 'public' ? 'Đang công khai' : 'Đang riêng tư'}</span>
+                    <span class="details-chip"><i class="fas fa-code-branch"></i>Phiên bản ${escapeHtml(String(fileDetails.version || '1.0'))}</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const detailsGrid = document.createElement('div');
+    detailsGrid.className = 'file-details-grid';
+    detailsGrid.innerHTML = `
+        <div class="details-card">
+            <span class="label">Dung lượng</span>
+            <span class="value">${escapeHtml(formattedSize)}</span>
+        </div>
+        <div class="details-card">
+            <span class="label">Tải lên</span>
+            <span class="value">${escapeHtml(uploadLabel || '—')}</span>
+        </div>
+        <div class="details-card">
+            <span class="label">Cập nhật</span>
+            <span class="value">${escapeHtml(modifiedLabel || '—')}</span>
+        </div>
+        <div class="details-card">
+            <span class="label">Mã Hash</span>
+            <span class="value">${hashHtml}</span>
+        </div>
+    `;
+
+    const overview = document.createElement('div');
+    overview.className = 'file-details-overview';
+    overview.innerHTML = `
+        <div class="file-details-section">
+            <h5>Ghi chú nhanh</h5>
+            <p>Bạn có thể đổi tên, cập nhật quyền chia sẻ hoặc tải xuống tệp trực tiếp từ trang này. Thông tin luôn được đồng bộ mỗi khi mở cửa sổ chi tiết.</p>
+        </div>
+    `;
+
+    if (timelineItems.length) {
+        const timelineWrapper = document.createElement('div');
+        timelineWrapper.className = 'file-activity-timeline';
+        timelineWrapper.innerHTML = timelineItems.map(item => `
+            <div class="timeline-item">
+                <div class="timeline-icon"><i class="fas ${item.icon}"></i></div>
+                <div class="timeline-content">
+                    <div class="timeline-title">${escapeHtml(item.title)}</div>
+                    <div class="timeline-subtitle">${escapeHtml(item.subtitle)}</div>
+                </div>
+            </div>
+        `).join('');
+
+        overview.appendChild(timelineWrapper);
+    }
+
+    container.appendChild(detailsGrid);
+    container.appendChild(overview);
+
+    return container;
+}
+
+function createTimelineItems(fileDetails, snapshot = {}) {
+    const items = [];
+
+    if (fileDetails.uploadDate) {
+        items.push({
+            icon: 'fa-cloud-upload-alt',
+            title: 'Tải lên thành công',
+            subtitle: formatAbsoluteDateTime(fileDetails.uploadDate) || '—'
+        });
+    }
+
+    if (fileDetails.modifiedDate && fileDetails.modifiedDate !== fileDetails.uploadDate) {
+        items.push({
+            icon: 'fa-sync-alt',
+            title: 'Chỉnh sửa lần cuối',
+            subtitle: formatAbsoluteDateTime(fileDetails.modifiedDate) || '—'
+        });
+    }
+
+    const shareState = (snapshot && snapshot.shareState) || fileDetails.shareState;
+    if (shareState) {
+        const shareUpdatedAt = (snapshot && (snapshot.shareUpdatedAt || snapshot.updatedAt)) || fileDetails.shareUpdatedAt;
+        items.push({
+            icon: shareState === 'public' ? 'fa-unlock' : 'fa-lock',
+            title: shareState === 'public' ? 'Đang công khai' : 'Đang riêng tư',
+            subtitle: shareUpdatedAt ? formatRelativeDate(shareUpdatedAt) : 'Cập nhật ngay'
+        });
+    }
+
+    return items;
+}
+
+function getLatestActivityTimestamp(files = allFiles) {
+    let latest = 0;
+    files.forEach(file => {
+        const modified = coerceToDate(file.modifiedDate) || coerceToDate(file.metadata?.lastModified) || coerceToDate(file.uploadDate);
+        if (modified) {
+            latest = Math.max(latest, modified.getTime());
+        }
+    });
+
+    return latest ? new Date(latest) : null;
+}
 
 window.initMyFiles = function() {
     console.log('Initializing My Files page...');
+
+    loadShareOverrides();
+    loadDetailSnapshots();
 
     // Initialize drag and drop for the entire page
     initDragAndDrop();
@@ -20,8 +345,13 @@ window.initMyFiles = function() {
     // Load existing files from server
     loadFiles();
     
+    // Clear previous refresh interval if it exists
+    if (myFilesAutoRefreshIntervalId) {
+        clearInterval(myFilesAutoRefreshIntervalId);
+    }
+
     // Auto refresh every 10 seconds to show new uploads
-    setInterval(loadFiles, 10000);
+    myFilesAutoRefreshIntervalId = setInterval(loadFiles, 10000);
     
     console.log('My Files page initialized successfully');
 };
@@ -256,7 +586,7 @@ async function loadFiles() {
 }
 
 function setAllFiles(files) {
-    allFiles = Array.isArray(files) ? [...files] : [];
+    allFiles = Array.isArray(files) ? files.map(applyShareOverrideToFile) : [];
     applyFiltersAndRender();
 }
 
@@ -309,6 +639,7 @@ function renderFileList(files) {
         filesContent.style.display = 'none';
         filesContent.innerHTML = '';
         updateFileCount([], 0);
+        updateFileInsights([]);
         return;
     }
 
@@ -325,11 +656,13 @@ function renderFileList(files) {
             </div>
         `;
         updateFileCount(workingFiles, allFiles.length);
+        updateFileInsights(allFiles);
         return;
     }
 
     filesContent.innerHTML = createFileListHTML(workingFiles);
     updateFileCount(workingFiles, allFiles.length);
+    updateFileInsights(allFiles);
     addFileInteractions();
 }
 
@@ -506,15 +839,17 @@ function createFileListHTML(files) {
                 const fileIdRaw = file.id || file.internalName || originalNameRaw;
                 const mimeTypeRaw = file.type || '';
                 const typeLabelRaw = mimeTypeRaw || (file.extension ? file.extension.replace('.', '').toUpperCase() : 'Không xác định');
-                const sizeLabel = formatFileSize(file.size);
+                const sizeLabel = formatReadableFileSize(file.size);
                 const dateValue = getDisplayDateValue(file);
-                const dateLabel = formatDate(dateValue);
+                const dateLabel = formatRelativeDate(dateValue);
+                const dateTitle = formatAbsoluteDateTime(dateValue);
 
                 const displayNameHtml = escapeHtml(displayNameRaw);
                 const fileIdAttr = escapeHtml(fileIdRaw);
                 const typeLabelHtml = escapeHtml(typeLabelRaw);
                 const sizeLabelHtml = escapeHtml(sizeLabel);
                 const dateLabelHtml = escapeHtml(dateLabel);
+                const dateTitleHtml = escapeHtml(dateTitle);
 
                 const fileIdJs = escapeForJsString(fileIdRaw);
                 const originalNameJs = escapeForJsString(originalNameRaw);
@@ -534,7 +869,7 @@ function createFileListHTML(files) {
                         <div class="file-name" title="${displayNameHtml}">${displayNameHtml}</div>
                         <div class="file-meta">
                             <span class="file-size">${sizeLabelHtml}</span>
-                            <span class="file-date">${dateLabelHtml}</span>
+                            <span class="file-date" title="${dateTitleHtml}">${dateLabelHtml}</span>
                             <span class="file-type">${typeLabelHtml}</span>
                         </div>
                     </div>
@@ -542,7 +877,7 @@ function createFileListHTML(files) {
                         <button class="action-btn preview-btn" title="Xem trước" onclick="previewFile('${fileIdJs}', '${originalNameJs}', '${mimeTypeJs}')">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="action-btn details-btn" title="Xem chi tiết" onclick="viewFileDetails('${fileIdJs}', '${originalNameJs}')">
+                        <button class="action-btn details-btn" title="Xem chi tiết" onclick="viewFileDetails('${fileIdJs}')">
                             <i class="fas fa-info-circle"></i>
                         </button>
                         <button class="action-btn download-btn" title="Tải xuống" onclick="downloadFile('${fileIdJs}', '${originalNameJs}')">
@@ -565,24 +900,7 @@ function createFileListHTML(files) {
 }
 
 function getInitialShareState(file) {
-    if (file && typeof file.isPublic === 'boolean') {
-        return file.isPublic ? 'public' : 'private';
-    }
-
-    if (!file || !file.metadata) {
-        return 'private';
-    }
-
-    const metadata = file.metadata;
-    if (metadata.shareStatus && ['public', 'private'].includes(metadata.shareStatus)) {
-        return metadata.shareStatus;
-    }
-
-    if (typeof metadata.isPublic === 'boolean') {
-        return metadata.isPublic ? 'public' : 'private';
-    }
-
-    return 'private';
+    return getShareStateForFile(file) || 'private';
 }
 
 // Get file icon class based on file object
@@ -604,7 +922,7 @@ function getFileIconClass(file) {
 }
 
 // Format file size
-function formatFileSize(bytes) {
+function formatReadableFileSize(bytes) {
     const numericBytes = typeof bytes === 'number' ? bytes : Number(bytes);
 
     if (!Number.isFinite(numericBytes) || numericBytes < 0) {
@@ -624,18 +942,33 @@ function formatFileSize(bytes) {
 }
 
 // Format date
-function formatDate(dateString) {
-    if (!dateString) {
-        return 'Không xác định';
+function coerceToDate(value) {
+    if (!value && value !== 0) {
+        return null;
     }
 
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) {
+    if (value instanceof Date) {
+        return Number.isNaN(value.getTime()) ? null : value;
+    }
+
+    if (typeof value === 'number') {
+        const fromNumber = new Date(value);
+        return Number.isNaN(fromNumber.getTime()) ? null : fromNumber;
+    }
+
+    const fromInput = new Date(value);
+    return Number.isNaN(fromInput.getTime()) ? null : fromInput;
+}
+
+function formatRelativeDate(value) {
+    const date = coerceToDate(value);
+    if (!date) {
         return 'Không xác định';
     }
 
     const now = new Date();
-    const diffTime = now - date; // Remove Math.abs to get correct direction
+    const diffTime = now.getTime() - date.getTime();
+
     if (!Number.isFinite(diffTime)) {
         return 'Không xác định';
     }
@@ -644,38 +977,46 @@ function formatDate(dateString) {
     const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    // Handle future dates (shouldn't happen but just in case)
     if (diffTime < 0) {
         return date.toLocaleDateString('vi-VN');
     }
 
-    // Less than 1 minute
     if (diffMinutes < 1) {
         return 'Vừa xong';
     }
 
-    // Less than 1 hour
     if (diffMinutes < 60) {
         return `${diffMinutes} phút trước`;
     }
 
-    // Less than 24 hours
     if (diffHours < 24) {
         return `${diffHours} giờ trước`;
     }
 
-    // Exactly 1 day
     if (diffDays === 1) {
         return 'Hôm qua';
     }
 
-    // Less than 7 days
     if (diffDays < 7) {
         return `${diffDays} ngày trước`;
     }
 
-    // More than a week - show actual date
     return date.toLocaleDateString('vi-VN');
+}
+
+function formatAbsoluteDateTime(value) {
+    const date = coerceToDate(value);
+    if (!date) {
+        return 'Không xác định';
+    }
+
+    return date.toLocaleString('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
 // Update file count display
@@ -695,6 +1036,56 @@ function updateFileCount(files, totalFilesCount) {
     }
 }
 
+function updateFileInsights(files = allFiles) {
+    const insightsContainer = document.getElementById('file-insights');
+    if (!insightsContainer) {
+        return;
+    }
+
+    const safeFiles = Array.isArray(files) ? files : [];
+    const totalFiles = safeFiles.length;
+    const publicCount = safeFiles.filter(file => getShareStateForFile(file) === 'public').length;
+    const totalSize = safeFiles.reduce((sum, file) => sum + getFileSizeValue(file), 0);
+    const lastActivity = getLatestActivityTimestamp(safeFiles);
+
+    const totalCard = insightsContainer.querySelector('[data-insight="total-files"]');
+    if (totalCard) {
+        const valueEl = totalCard.querySelector('.insight-value');
+        const subEl = totalCard.querySelector('.insight-sub');
+        if (valueEl) {
+            valueEl.textContent = totalFiles.toString();
+        }
+        if (subEl) {
+            subEl.textContent = publicCount ? `${publicCount} tệp công khai` : 'Tất cả đang riêng tư';
+        }
+    }
+
+    const storageCard = insightsContainer.querySelector('[data-insight="storage-used"]');
+    if (storageCard) {
+        const valueEl = storageCard.querySelector('.insight-value');
+        const subEl = storageCard.querySelector('.insight-sub');
+        if (valueEl) {
+            valueEl.textContent = formatReadableFileSize(totalSize);
+        }
+        if (subEl) {
+            subEl.textContent = lastActivity ? `Cập nhật ${formatRelativeDate(lastActivity)}` : 'Chưa có hoạt động';
+        }
+    }
+
+    const publicCard = insightsContainer.querySelector('[data-insight="public-files"]');
+    if (publicCard) {
+        const valueEl = publicCard.querySelector('.insight-value');
+        const subEl = publicCard.querySelector('.insight-sub');
+        if (valueEl) {
+            valueEl.textContent = publicCount.toString();
+        }
+        if (subEl) {
+            const privateCount = totalFiles - publicCount;
+            subEl.textContent = privateCount ? `${privateCount} tệp riêng tư` : 'Tất cả đang công khai';
+        }
+    }
+}
+
 // Add file interaction handlers
 function addFileInteractions() {
     const fileItems = document.querySelectorAll('.file-item');
@@ -703,12 +1094,8 @@ function addFileInteractions() {
     fileItems.forEach(item => {
         item.addEventListener('click', function(e) {
             if (!e.target.closest('.action-btn')) {
-                const fileName = this.getAttribute('data-file-name');
-                if (window.toastSystem) {
-                    window.toastSystem.info(`Đang mở tệp: ${fileName}`, {
-                        duration: 2000
-                    });
-                }
+                const fileId = this.getAttribute('data-file-id');
+                viewFileDetails(fileId);
             }
         });
     });
@@ -759,6 +1146,9 @@ function addFileInteractions() {
             const fileItem = button.closest('.file-item');
             if (fileItem) {
                 fileItem.setAttribute('data-share-state', newState);
+                const fileId = fileItem.getAttribute('data-file-id');
+                persistShareOverride(fileId, newState);
+                updateFileInsights(allFiles);
 
                 if (window.toastSystem) {
                     const fileName = fileItem.getAttribute('data-file-name');
@@ -981,107 +1371,74 @@ window.renameFile = async function(fileId, currentName) {
     }
 };
 
-// View file details
-window.viewFileDetails = async function(fileId, fileName) {
-    // Prevent double-click by checking if modal is already open
+// View file details with live refresh
+window.viewFileDetails = async function(fileId) {
     if (window.modalSystem.activeModal) {
         return;
     }
 
+    const normalizedId = normalizeFileId(fileId);
+    if (!normalizedId) {
+        return;
+    }
+
+    const cachedFile = allFiles.find(file => normalizeFileId(file) === normalizedId) || filteredFiles.find(file => normalizeFileId(file) === normalizedId) || null;
+
+    if (window.toastSystem) {
+        window.toastSystem.info('Đang tải chi tiết tệp...', {
+            duration: 1500,
+            dismissible: false
+        });
+    }
+
     try {
-        // Fetch detailed file information
-        const response = await fetch(`/api/files/${fileId}/details`);
-        const fileDetails = await response.json();
+        const response = await fetch(`/api/files/${encodeURIComponent(normalizedId)}/details?ts=${Date.now()}`, {
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
+        });
+        const serverDetails = await response.json();
 
         if (!response.ok) {
-            throw new Error(fileDetails.error || 'Failed to fetch file details');
+            throw new Error(serverDetails.error || 'Failed to fetch file details');
         }
 
-        // Create file details content
-        const detailsContent = document.createElement('div');
-        detailsContent.className = 'file-details-container';
+        const hydratedDetails = hydrateFileDetails(serverDetails, cachedFile);
+        mergeFileDetailsIntoState(normalizedId, hydratedDetails);
 
-        // File icon and basic info
-        const headerSection = document.createElement('div');
-        headerSection.className = 'file-details-header';
-        headerSection.innerHTML = `
-            <div class="file-icon-large">
-                <i class="fas ${getFileIconClass(fileDetails)}"></i>
-            </div>
-            <div class="file-basic-info">
-                <h4>${fileDetails.originalName}</h4>
-                <p class="file-type">${fileDetails.type || 'Unknown'}</p>
-            </div>
-        `;
+        const modalContent = buildFileDetailsModal(hydratedDetails);
+        const downloadName = hydratedDetails.displayName || hydratedDetails.originalName || hydratedDetails.name || 'download';
+        const shareUrl = `${window.location.origin}/api/download/${encodeURIComponent(normalizedId)}`;
 
-        // Details grid
-        const detailsGrid = document.createElement('div');
-        detailsGrid.className = 'file-details-grid';
-
-        const details = [
-            { label: 'Tên tệp', value: fileDetails.originalName },
-            { label: 'Kích thước', value: formatFileSize(fileDetails.size) },
-            { label: 'Loại MIME', value: fileDetails.type || 'Không xác định' },
-            { label: 'Thời điểm tải lên', value: formatDate(fileDetails.uploadDate) },
-            { label: 'Người sở hữu', value: fileDetails.owner || 'User' },
-            { label: 'Quyền truy cập', value: fileDetails.permissions || 'Riêng tư' }
-        ];
-
-        if (fileDetails.hash) {
-            details.push({
-                label: 'SHA-256 Hash',
-                value: `
-                    <div class="file-hash-container">
-                        <code class="file-hash">${fileDetails.hash}</code>
-                        <button class="copy-hash-btn" onclick="copyToClipboard('${fileDetails.hash}')">
-                            <i class="fas fa-copy"></i> Sao chép
-                        </button>
-                    </div>
-                `
-            });
-        }
-
-        if (fileDetails.version) {
-            details.push({ label: 'Phiên bản', value: fileDetails.version });
-        }
-
-        details.forEach(detail => {
-            const item = document.createElement('div');
-            item.className = 'file-details-item';
-            item.innerHTML = `
-                <div class="file-details-label">${detail.label}</div>
-                <div class="file-details-value">${detail.value}</div>
-            `;
-            detailsGrid.appendChild(item);
-        });
-
-        detailsContent.appendChild(headerSection);
-        detailsContent.appendChild(detailsGrid);
-
-        // Create modal
         window.modalSystem.createModal({
             title: 'Chi tiết tệp',
-            content: detailsContent,
+            content: modalContent,
             buttons: [
+                {
+                    text: 'Sao chép liên kết',
+                    className: 'btn-secondary',
+                    onclick: () => {
+                        copyToClipboard(shareUrl);
+                    }
+                },
                 {
                     text: 'Tải xuống',
                     className: 'btn-primary',
                     onclick: () => {
-                        downloadFile(fileId, fileName);
+                        downloadFile(normalizedId, downloadName);
                         window.modalSystem.closeModal();
                     }
-                },
-                {
-                    text: 'Đóng',
-                    className: 'btn-secondary',
-                    onclick: () => window.modalSystem.closeModal()
                 }
             ]
         });
 
     } catch (error) {
         console.error('Error fetching file details:', error);
-        window.toastSystem.error(`Lỗi tải thông tin tệp: ${error.message}`);
+        if (window.toastSystem) {
+            window.toastSystem.error(`Lỗi tải thông tin tệp: ${error.message}`, {
+                duration: 4000
+            });
+        }
     }
 };
 
@@ -1475,6 +1832,14 @@ window.closePreviewModal = function() {
     const modal = document.getElementById('file-preview-modal');
     if (modal) {
         modal.remove();
+    }
+};
+
+// Cleanup when navigating away from the page
+window.cleanupMyFiles = function() {
+    if (myFilesAutoRefreshIntervalId) {
+        clearInterval(myFilesAutoRefreshIntervalId);
+        myFilesAutoRefreshIntervalId = null;
     }
 };
 

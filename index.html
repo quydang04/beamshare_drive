@@ -1,43 +1,29 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">    <!-- Vue 3 CDN -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    
-    <!-- Vue Office Library -->
-    <script src="https://unpkg.com/@vue-office/docx@latest/lib/index.umd.js"></script>
-    <script src="https://unpkg.com/@vue-office/excel@latest/lib/index.umd.js"></script>
-    <script src="https://unpkg.com/@vue-office/pdf@latest/lib/index.umd.js"></script>
-    
-    <script src="public/js/base.js"></script>
-    <script src="public/js/modal-system.js"></script>
-    <script src="public/js/toast-system.js"></script>
-    <script src="public/js/conflict-resolution.js"></script>
-    <script src="public/js/upload-system.js"></script>
-    <script src="public/js/vue-office-preview.js"></script>
-    <script src="public/js/pages/myfiles.js"></script>
-
-    <script src="public/js/pages/dashboard.js"></script>
-    <script src="public/js/pages/subscription.js"></script> <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BeamShare - Cloud Storage</title>
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Vue 3 CDN -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="public/css/base.css">
     <link rel="stylesheet" href="public/css/modal-toast.css">
-    <link rel="stylesheet" href="public/css/vue-office-preview.css">
+    <link rel="stylesheet" href="public/css/pdf-preview.css">
+    <link rel="stylesheet" href="public/css/responsive.css">
     <link rel="stylesheet" href="public/css/pages/myfiles.css">
+    <link rel="stylesheet" href="public/css/pages/myfiles-list.css">
+    <link rel="stylesheet" href="public/css/pages/myfiles-components.css">
     <link rel="stylesheet" href="public/css/pages/upload.css">
-    <link rel="stylesheet" href="public/css/enhanced-upload.css">
     <link rel="stylesheet" href="public/css/pages/dashboard.css">
     <link rel="stylesheet" href="public/css/pages/subscription.css">
-    <link rel="stylesheet" href="public/css/resolution.css">
-    <link rel="stylesheet" href="public/css/responsive.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="header-left">
+            <button class="menu-toggle" id="sidebar-toggle" aria-label="Mở menu điều hướng">
+                <i class="fas fa-bars"></i>
+            </button>
             <i class="fas fa-cloud"></i>
             <span class="logo">BeamShare</span>
         </div>
@@ -79,6 +65,7 @@
                 </a>
             </nav>
         </aside>
+        <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
 
         <!-- Main Content -->
         <main class="main-content" id="main-content">
@@ -86,9 +73,37 @@
         </main>
     </div>
 
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Điều hướng di động">
+        <a href="#" class="nav-item" data-page="dashboard">
+            <i class="fas fa-th-large"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-page="upload">
+            <i class="fas fa-upload"></i>
+            <span>Upload</span>
+        </a>
+        <a href="#" class="nav-item active" data-page="myfiles">
+            <i class="fas fa-folder"></i>
+            <span>My Files</span>
+        </a>
+        <a href="#" class="nav-item" data-page="subscription">
+            <i class="fas fa-credit-card"></i>
+            <span>Subscription</span>
+        </a>
+    </nav>
+
     <!-- Scripts -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://unpkg.com/@vue-office/docx@latest/lib/index.umd.js"></script>
+    <script src="https://unpkg.com/@vue-office/excel@latest/lib/index.umd.js"></script>
+    <script src="https://unpkg.com/@vue-office/pdf@latest/lib/index.umd.js"></script>
+
     <script src="public/js/base.js"></script>
-    <script src="public/js/vue-preview.js"></script>
+    <script src="public/js/modal-system.js"></script>
+    <script src="public/js/toast-system.js"></script>
+    <script src="public/js/upload-system.js"></script>
+    <script src="public/js/pdf-preview.js"></script>
     <script src="public/js/pages/myfiles.js"></script>
     <script src="public/js/pages/upload.js"></script>
     <script src="public/js/pages/dashboard.js"></script>
@@ -97,6 +112,46 @@
     <script>
         // Load page content dynamically
         document.addEventListener('DOMContentLoaded', function() {
+            const body = document.body;
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+            const closeSidebar = () => {
+                sidebar?.classList.remove('is-open');
+                sidebarBackdrop?.classList.remove('is-visible');
+                body.classList.remove('sidebar-open');
+            };
+
+            const openSidebar = () => {
+                sidebar?.classList.add('is-open');
+                sidebarBackdrop?.classList.add('is-visible');
+                body.classList.add('sidebar-open');
+            };
+
+            const handleToggleClick = () => {
+                if (sidebar?.classList.contains('is-open')) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            };
+
+            sidebarToggle?.addEventListener('click', handleToggleClick);
+            sidebarBackdrop?.addEventListener('click', closeSidebar);
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeSidebar();
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 1024) {
+                    closeSidebar();
+                }
+            });
+
             // Load default page (My Files)
             loadPage('myfiles');
             
@@ -105,36 +160,86 @@
             navItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
-                    
-                    // Update active nav item
-                    navItems.forEach(nav => nav.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Load page content
                     const page = this.getAttribute('data-page');
                     loadPage(page);
+
+                    if (window.innerWidth <= 1024) {
+                        closeSidebar();
+                    }
                 });
             });
         });
         
+        let activePageName = null;
+        let pendingInitTimeoutId = null;
+
         async function loadPage(pageName) {
+            const navItems = document.querySelectorAll('.nav-item');
+            const matchingNavs = document.querySelectorAll(`.nav-item[data-page="${pageName}"]`);
+            if (navItems.length) {
+                navItems.forEach(nav => nav.classList.remove('active'));
+                matchingNavs.forEach(nav => nav.classList.add('active'));
+            }
+
+            if (typeof window.updateUserInfo === 'function') {
+                window.updateUserInfo(pageName);
+            }
+
             try {
+                if (activePageName) {
+                    const teardownMap = {
+                        myfiles: 'cleanupMyFiles',
+                        upload: 'cleanupUpload',
+                        dashboard: 'cleanupDashboard',
+                        subscription: 'cleanupSubscription'
+                    };
+
+                    const teardownFunctionName = teardownMap[activePageName];
+                    const teardownFn = teardownFunctionName ? window[teardownFunctionName] : undefined;
+
+                    if (typeof teardownFn === 'function') {
+                        try {
+                            teardownFn();
+                        } catch (teardownError) {
+                            console.error(`Error executing teardown for ${activePageName}:`, teardownError);
+                        }
+                    }
+                }
+
                 const response = await fetch(`public/html/pages/${pageName}.html`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const content = await response.text();
                 document.getElementById('main-content').innerHTML = content;
+                activePageName = pageName;
                 
                 // Initialize page-specific functionality
-                const initFunctionName = `init${pageName.charAt(0).toUpperCase() + pageName.slice(1)}`;
+                const initMap = {
+                    myfiles: 'initMyFiles',
+                    upload: 'initUpload',
+                    dashboard: 'initDashboard',
+                    subscription: 'initSubscription'
+                };
+                const initFunctionName = initMap[pageName] || `init${pageName.charAt(0).toUpperCase() + pageName.slice(1)}`;
                 console.log(`Looking for init function: ${initFunctionName}`);
                 console.log(`Function exists:`, typeof window[initFunctionName] === 'function');
                 
                 if (window[initFunctionName]) {
                     console.log(`Calling ${initFunctionName}...`);
                     // Add a small delay to ensure DOM is ready
-                    setTimeout(() => {
+                    if (pendingInitTimeoutId) {
+                        clearTimeout(pendingInitTimeoutId);
+                    }
+
+                    pendingInitTimeoutId = setTimeout(() => {
+                        pendingInitTimeoutId = null;
+
+                        if (activePageName !== pageName) {
+                            console.warn(`Skipping ${initFunctionName} because active page changed to ${activePageName}`);
+                            return;
+                        }
+
                         try {
                             window[initFunctionName]();
                             console.log(`${initFunctionName} called successfully`);
@@ -144,6 +249,10 @@
                     }, 100);
                 } else {
                     console.warn(`Init function ${initFunctionName} not found`);
+                    if (pendingInitTimeoutId) {
+                        clearTimeout(pendingInitTimeoutId);
+                        pendingInitTimeoutId = null;
+                    }
                 }
             } catch (error) {
                 console.error(`Error loading ${pageName} page:`, error);
@@ -164,6 +273,8 @@
                 `;
             }
         }
+
+        window.loadPage = loadPage;
     </script>
 </body>
 </html>

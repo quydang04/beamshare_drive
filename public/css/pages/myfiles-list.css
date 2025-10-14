@@ -1,0 +1,266 @@
+/* My Files - File list and grid presentation */
+.file-list {
+    padding: 20px;
+}
+
+.file-list.list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.file-list.grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.file-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.file-item:hover {
+    background: white;
+    border-color: #667eea;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+.file-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.file-icon.pdf {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.file-icon.doc {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+}
+
+.file-icon.image {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+}
+
+.file-icon.video {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    color: white;
+}
+
+.file-icon.audio {
+    background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+    color: white;
+}
+
+.file-icon.archive {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    color: white;
+}
+
+.file-icon.code {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    color: white;
+}
+
+.file-icon.text {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    color: white;
+}
+
+.file-icon.default {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.file-list.grid-view .file-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+}
+
+.file-icon-wrapper {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.file-list.grid-view .file-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+}
+
+.file-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-name {
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-list.grid-view .file-name {
+    white-space: normal;
+    text-align: center;
+    font-size: 14px;
+}
+
+.file-list.grid-view .file-meta {
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+}
+
+.file-actions {
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.file-item:hover .file-actions {
+    opacity: 1;
+}
+
+.file-list.grid-view .file-actions {
+    justify-content: center;
+    margin-top: 8px;
+    opacity: 1;
+}
+
+.action-btn {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #718096;
+    transition: all 0.2s ease;
+    font-size: 12px;
+}
+
+.action-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: scale(1.1);
+}
+
+.action-btn.share-toggle-btn.is-public {
+    background: #e6fffa;
+    border-color: #38b2ac;
+    color: #2c7a7b;
+}
+
+.action-btn.share-toggle-btn.is-public:hover {
+    background: #38b2ac;
+    color: white;
+    border-color: #38b2ac;
+}
+
+.action-btn.preview-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+.action-btn.download-btn:hover {
+    background: #10b981;
+    color: white;
+}
+
+.action-btn.rename-btn:hover {
+    background: #f59e0b;
+    color: white;
+}
+
+.action-btn.delete-btn:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.myfiles-container.drag-over {
+    background: linear-gradient(145deg, #f0f4ff 0%, #e0e7ff 100%);
+    border-radius: 20px;
+}
+
+.myfiles-container.drag-over::after {
+    content: '🚀 Thả tệp để tải lên nhanh!';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 40px;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    z-index: 1000;
+    animation: bounce 0.5s ease infinite alternate;
+}
+
+@keyframes bounce {
+    from { transform: translate(-50%, -50%) scale(1); }
+    to { transform: translate(-50%, -50%) scale(1.05); }
+}
+
+.file-icon-wrapper.image-preview {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.file-icon-wrapper.image-preview i {
+    display: none;
+}
+
+.file-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    color: #718096;
+    flex-wrap: wrap;
+}
+
+.file-type {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+}

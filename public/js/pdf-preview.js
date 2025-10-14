@@ -1,4 +1,9 @@
 // PDF.js Preview System with Enhanced Office File Support
+const PDFJS_MAIN_SRC = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+const PDFJS_MAIN_WORKER = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+const PDFJS_FALLBACK_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+const PDFJS_FALLBACK_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
 class PDFPreviewSystem {
     constructor() {
         this.currentModal = null;
@@ -8,37 +13,95 @@ class PDFPreviewSystem {
         this.scale = 1.0;
         this.rotation = 0;
         this.pdfjsLib = null;
+        this.pdfjsReadyPromise = null;
+        this.boundKeyHandler = this.handleKeyboard.bind(this);
 
         // Initialize PDF.js
         this.initPDFJS();
     }
 
     initPDFJS() {
-        // Use PDF.js v5.4.149 from CDN
-        if (typeof pdfjsLib !== 'undefined') {
-            this.pdfjsLib = pdfjsLib;
-            this.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.js';
-            console.log('PDF.js v5.4.149 loaded successfully');
-        } else {
-            // Fallback initialization
-            console.warn('PDF.js not found, attempting fallback...');
-            this.initFallbackPDFJS();
+        if (typeof window.pdfjsLib !== 'undefined') {
+            this.configurePdfjs(window.pdfjsLib, PDFJS_MAIN_WORKER);
+            console.log('PDF.js detected globally');
+            return;
+        }
+
+        if (!this.pdfjsReadyPromise) {
+            this.pdfjsReadyPromise = this.loadPdfjsScript(PDFJS_MAIN_SRC, PDFJS_MAIN_WORKER)
+                .catch((mainError) => {
+                    console.warn('Failed to load primary PDF.js build:', mainError);
+                    return this.loadPdfjsScript(PDFJS_FALLBACK_SRC, PDFJS_FALLBACK_WORKER);
+                })
+                .catch((fallbackError) => {
+                    console.error('Unable to load any PDF.js build:', fallbackError);
+                    throw fallbackError;
+                });
         }
     }
 
-    initFallbackPDFJS() {
-        // Fallback to older version if main version fails
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-        script.onload = () => {
-            this.pdfjsLib = window.pdfjsLib;
-            this.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-            console.log('PDF.js fallback loaded successfully');
-        };
-        script.onerror = () => {
-            console.error('Failed to load PDF.js fallback');
-        };
-        document.head.appendChild(script);
+    async ensurePdfjsReady() {
+        if (this.pdfjsLib) return this.pdfjsLib;
+
+        if (typeof window.pdfjsLib !== 'undefined') {
+            this.configurePdfjs(window.pdfjsLib, PDFJS_MAIN_WORKER);
+            return this.pdfjsLib;
+        }
+
+        if (!this.pdfjsReadyPromise) {
+            this.initPDFJS();
+        }
+
+        if (!this.pdfjsReadyPromise) {
+            throw new Error('PDF.js script loading was not initiated');
+        }
+
+        return this.pdfjsReadyPromise;
+    }
+
+    loadPdfjsScript(src, workerSrc) {
+        return new Promise((resolve, reject) => {
+            if (document.querySelector(`script[src="${src}"]`)) {
+                // Script tag already present; wait a tick for global to appear
+                setTimeout(() => {
+                    if (typeof window.pdfjsLib !== 'undefined') {
+                        this.configurePdfjs(window.pdfjsLib, workerSrc);
+                        resolve(this.pdfjsLib);
+                    } else {
+                        reject(new Error('PDF.js global not available after existing script load'));
+                    }
+                }, 0);
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = src;
+            script.async = true;
+            script.crossOrigin = 'anonymous';
+            script.onload = () => {
+                if (typeof window.pdfjsLib === 'undefined') {
+                    script.remove();
+                    reject(new Error('PDF.js global missing after script load'));
+                    return;
+                }
+                this.configurePdfjs(window.pdfjsLib, workerSrc);
+                console.log(`PDF.js loaded from ${src}`);
+                resolve(this.pdfjsLib);
+            };
+            script.onerror = (event) => {
+                script.remove();
+                reject(new Error(`Failed to load PDF.js script: ${event?.message || src}`));
+            };
+            document.head.appendChild(script);
+        });
+    }
+
+    configurePdfjs(library, workerSrc) {
+        this.pdfjsLib = library;
+        if (this.pdfjsLib?.GlobalWorkerOptions) {
+            this.pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+        }
     }
     
     async openPreview(fileId, fileName, fileType) {
@@ -182,10 +245,10 @@ class PDFPreviewSystem {
         modal.querySelector('#prev-page').addEventListener('click', () => this.previousPage());
         modal.querySelector('#next-page').addEventListener('click', () => this.nextPage());
         modal.querySelector('#zoom-in').addEventListener('click', () => this.zoomIn());
-        modal.querySelector('#zoom-out').addEventListener('click', () => this.zoomOut());
+    modal.querySelector('#zoom-out').addEventListener('click', () => this.zoomOut());
         
-        // Keyboard shortcuts
-        document.addEventListener('keydown', this.handleKeyboard.bind(this));
+    // Keyboard shortcuts
+    document.addEventListener('keydown', this.boundKeyHandler);
     }
     
     handleKeyboard(e) {
@@ -213,14 +276,12 @@ class PDFPreviewSystem {
     
     async loadPDF(url) {
         try {
-            // Wait for PDF.js to be ready
-            if (!this.pdfjsLib) {
-                this.initPDFJS();
-                // Wait a bit more for initialization
-                await new Promise(resolve => setTimeout(resolve, 1000));
+            const pdfjs = await this.ensurePdfjsReady();
+            if (!pdfjs) {
+                throw new Error('PDF.js library is unavailable');
             }
 
-            const loadingTask = this.pdfjsLib.getDocument(url);
+            const loadingTask = pdfjs.getDocument(url);
             this.currentPdf = await loadingTask.promise;
             this.totalPages = this.currentPdf.numPages;
             this.currentPage = 1;
@@ -670,25 +731,16 @@ class PDFPreviewSystem {
         }
         
         // Remove keyboard listener
-        document.removeEventListener('keydown', this.handleKeyboard.bind(this));
+        document.removeEventListener('keydown', this.boundKeyHandler);
     }
 }
 
 // Initialize PDF Preview System when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Wait for PDF.js to be available
-    const initPreviewSystem = () => {
-        if (typeof pdfjsLib !== 'undefined') {
-            window.pdfPreviewSystem = new PDFPreviewSystem();
-            console.log('PDF Preview System initialized successfully');
-        } else {
-            console.warn('PDF.js not ready, retrying in 500ms...');
-            setTimeout(initPreviewSystem, 500);
-        }
-    };
-
-    // Try immediate initialization, then retry if needed
-    initPreviewSystem();
+    if (!window.pdfPreviewSystem) {
+        window.pdfPreviewSystem = new PDFPreviewSystem();
+        console.log('PDF Preview System initialized');
+    }
 });
 
 // Global function for compatibility
