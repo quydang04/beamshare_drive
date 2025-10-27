@@ -33,6 +33,35 @@ function normalizeFileId(fileOrId) {
     );
 }
 
+function openShareTabForFile(fileId, displayName) {
+    if (!fileId) {
+        if (window.toastSystem) {
+            window.toastSystem.error('Không thể xác định tệp để chia sẻ.', {
+                duration: 4000
+            });
+        }
+        return;
+    }
+
+    const shareUrl = `/share?driveFile=${encodeURIComponent(fileId)}`;
+    const shareWindow = window.open(shareUrl, '_blank', 'noopener');
+
+    if (!shareWindow) {
+        if (window.toastSystem) {
+            window.toastSystem.error('Trình duyệt đã chặn cửa sổ chia sẻ. Vui lòng cho phép cửa sổ bật lên.', {
+                duration: 5000
+            });
+        }
+        return;
+    }
+
+    if (window.toastSystem && displayName) {
+        window.toastSystem.info(`Đang mở BeamShare Share cho: ${displayName}`, {
+            duration: 3500
+        });
+    }
+}
+
 function loadShareOverrides() {
     try {
         const stored = localStorage.getItem(SHARE_STATE_STORAGE_KEY);
@@ -883,6 +912,9 @@ function createFileListHTML(files) {
                         <button class="action-btn download-btn" title="Tải xuống" onclick="downloadFile('${fileIdJs}', '${originalNameJs}')">
                             <i class="fas fa-download"></i>
                         </button>
+                        <button class="action-btn lan-share-btn" title="Gửi qua Share">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
                         <button class="action-btn share-toggle-btn" title="${shareState === 'public' ? 'Đang công khai' : 'Đang riêng tư'}" data-share-state="${shareState}">
                             <i class="fas ${shareState === 'public' ? 'fa-lock-open' : 'fa-lock'}"></i>
                         </button>
@@ -1101,7 +1133,7 @@ function addFileInteractions() {
     });
     
     actionBtns.forEach(btn => {
-        if (btn.classList.contains('share-toggle-btn')) {
+        if (btn.classList.contains('share-toggle-btn') || btn.classList.contains('lan-share-btn')) {
             return;
         }
 
@@ -1158,6 +1190,25 @@ function addFileInteractions() {
                     });
                 }
             }
+        });
+    });
+
+    const lanShareButtons = document.querySelectorAll('.lan-share-btn');
+    lanShareButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const fileItem = this.closest('.file-item');
+            if (!fileItem) {
+                openShareTabForFile(null);
+                return;
+            }
+
+            const fileId = fileItem.getAttribute('data-file-id');
+            const fileName = fileItem.getAttribute('data-file-name') || 'tệp đã chọn';
+
+            openShareTabForFile(fileId, fileName);
         });
     });
 }

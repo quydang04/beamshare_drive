@@ -29,6 +29,7 @@ class PairDrop {
         this.headerUI = new HeaderUI();
         this.centerUI = new CenterUI();
         this.footerUI = new FooterUI();
+        this._urlParamsEvaluated = false;
 
         this.initialize()
             .then(_ => {
@@ -65,6 +66,9 @@ class PairDrop {
         // Evaluate url params as soon as ws is connected
         console.log("Evaluate URL params as soon as websocket connection is established.");
         Events.on('ws-connected', _ => this.evaluateUrlParams(), {once: true});
+
+        // Evaluate URL params at least once even if websocket connection is delayed
+        await this.evaluateUrlParams();
     }
 
     registerServiceWorker() {
@@ -156,17 +160,95 @@ class PairDrop {
         });
     }
 
+    _escapeHtml(value) {
+        if (typeof value !== 'string') {
+            return '';
+        }
+
+        return value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    _dialogExists(id) {
+        if (typeof document === 'undefined') {
+            return false;
+        }
+
+        return !!document.getElementById(id);
+    }
+
+    async prepareDriveFileShare(fileId) {
+        if (!fileId) {
+            return;
+        }
+
+        try {
+            Events.fire('notify-user', Localization.getTranslation('notifications.drive-share-prepare'));
+
+            const encodedId = encodeURIComponent(fileId);
+            const detailsResponse = await fetch(`/api/files/${encodedId}/details`, {
+                method: 'GET',
+                credentials: 'same-origin'
+            });
+
+            if (!detailsResponse.ok) {
+                throw new Error(`Failed to fetch drive file details: ${detailsResponse.status}`);
+            }
+
+            const details = await detailsResponse.json();
+            const downloadResponse = await fetch(`/api/download/${encodedId}`, {
+                method: 'GET',
+                credentials: 'same-origin'
+            });
+
+            if (!downloadResponse.ok) {
+                throw new Error(`Failed to download drive file: ${downloadResponse.status}`);
+            }
+
+            const blob = await downloadResponse.blob();
+            const fileName = details.originalName || details.name || fileId;
+            const fileType = details.type || blob.type || 'application/octet-stream';
+            const lastModified = details.modifiedDate ? new Date(details.modifiedDate).getTime() : Date.now();
+
+            let fileObject;
+            if (typeof File === 'function') {
+                fileObject = new File([blob], fileName, { type: fileType, lastModified });
+            } else {
+                fileObject = blob;
+                fileObject.name = fileName;
+                fileObject.lastModified = lastModified;
+            }
+
+            Events.fire('activate-share-mode', { files: [fileObject] });
+
+            const safeName = this._escapeHtml(fileName);
+            Events.fire('notify-user', {
+                message: Localization.getTranslation('notifications.drive-share-ready', null, { name: safeName }),
+            });
+        } catch (error) {
+            console.error('Failed to prepare drive file for sharing', error);
+            Events.fire('notify-user', {
+                message: Localization.getTranslation('notifications.drive-share-error'),
+                persistent: true
+            });
+        }
+    }
+
     async hydrate() {
         this.aboutUI = new AboutUI();
         this.peersUI = new PeersUI();
-        this.languageSelectDialog = new LanguageSelectDialog();
-        this.receiveFileDialog = new ReceiveFileDialog();
-        this.receiveRequestDialog = new ReceiveRequestDialog();
-        this.sendTextDialog = new SendTextDialog();
-        this.receiveTextDialog = new ReceiveTextDialog();
-        this.base64Dialog = new Base64Dialog();
-        this.shareTextDialog = new ShareTextDialog();
-        this.toast = new Toast();
+        this.languageSelectDialog = this._dialogExists('language-select-dialog') ? new LanguageSelectDialog() : null;
+        this.receiveFileDialog = this._dialogExists('receive-file-dialog') ? new ReceiveFileDialog() : null;
+        this.receiveRequestDialog = this._dialogExists('receive-request-dialog') ? new ReceiveRequestDialog() : null;
+        this.sendTextDialog = this._dialogExists('send-text-dialog') ? new SendTextDialog() : null;
+        this.receiveTextDialog = this._dialogExists('receive-text-dialog') ? new ReceiveTextDialog() : null;
+        this.base64Dialog = this._dialogExists('base64-dialog') ? new Base64Dialog() : null;
+        this.shareTextDialog = this._dialogExists('share-text-dialog') ? new ShareTextDialog() : null;
+        this.toast = this._dialogExists('toast') ? new Toast() : null;
         this.notifications = new Notifications();
         this.networkStatusUI = new NetworkStatusUI();
         this.webShareTargetUI = new WebShareTargetUI();
@@ -178,6 +260,12 @@ class PairDrop {
     }
 
     async evaluateUrlParams() {
+        if (this._urlParamsEvaluated) {
+            return;
+        }
+
+        this._urlParamsEvaluated = true;
+
         // get url params
         const urlParams = new URLSearchParams(window.location.search);
         const hash = window.location.hash.substring(1);
@@ -200,6 +288,9 @@ class PairDrop {
         }
         else if (urlParams.has("file_handler")) {
             await this.webFileHandlersUI.evaluateLaunchQueue();
+        }
+        else if (urlParams.has("driveFile")) {
+            await this.prepareDriveFileShare(urlParams.get("driveFile"));
         }
         else if (urlParams.has("init")) {
             // legacy parameters related to remote pairing are ignored
