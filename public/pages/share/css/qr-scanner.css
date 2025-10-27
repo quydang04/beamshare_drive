@@ -1,0 +1,140 @@
+/* QR Scanner Styles */
+.qr-scanner-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.qr-scanner-video {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    display: block;
+}
+
+.qr-scanner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.qr-scanner-viewfinder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+}
+
+.qr-scanner-corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #2196f3;
+}
+
+.qr-scanner-corner.top-left {
+    top: -3px;
+    left: -3px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.qr-scanner-corner.top-right {
+    top: -3px;
+    right: -3px;
+    border-left: none;
+    border-bottom: none;
+}
+
+.qr-scanner-corner.bottom-left {
+    bottom: -3px;
+    left: -3px;
+    border-right: none;
+    border-top: none;
+}
+
+.qr-scanner-corner.bottom-right {
+    bottom: -3px;
+    right: -3px;
+    border-left: none;
+    border-top: none;
+}
+
+.qr-scanner-message {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.qr-scanner-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.qr-scanner-error {
+    text-align: center;
+    padding: 20px;
+    color: #f44336;
+    background: #ffebee;
+    border-radius: 8px;
+    margin: 16px 0;
+}
+
+.qr-scanner-success {
+    text-align: center;
+    padding: 20px;
+    color: #4caf50;
+    background: #e8f5e8;
+    border-radius: 8px;
+    margin: 16px 0;
+}
+
+.qr-scanner-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.qr-scanner-loading mdui-circular-progress {
+    margin-bottom: 16px;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    .qr-scanner-container {
+        max-width: 300px;
+    }
+    
+    .qr-scanner-video {
+        height: 250px;
+    }
+    
+    .qr-scanner-viewfinder {
+        width: 150px;
+        height: 150px;
+    }
+}

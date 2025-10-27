@@ -1,0 +1,284 @@
+/* BeamShare Custom Theme */
+
+/* Global Background Animation - Disabled to prevent white frames */
+/*
+body::before {
+    font-size: 22px;
+    color: rgba(231, 76, 60, 0.9);
+    margin-left: auto;
+}
+*/
+
+.about-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    position: relative;
+    margin: 0;
+    border-radius: 20px 20px 0 0;
+}
+
+.about-header .dialog-title {
+    color: white;
+    flex: 1;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.close-about-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    z-index: 1;
+}
+
+.about-content {
+    padding: 30px 20px;
+    background: var(--dialog-bg-color);
+}
+
+.about-logo {
+    margin-bottom: 20px;
+}
+
+.title-wrapper {
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.title-wrapper h1 {
+    margin: 0;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 28px;
+}
+
+.version-badge {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.about-description {
+    font-size: 16px;
+    color: rgb(var(--text-color));
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.github-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.github-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 25px;
+    background: linear-gradient(135deg, #333, #555);
+    color: white;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.github-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, #444, #666);
+    color: white;
+}
+
+.github-icon {
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.github-link:hover .github-icon {
+    transform: scale(1.1);
+}
+
+.about-footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+    margin-top: 10px;
+}
+
+.copyright {
+    margin: 0;
+    font-size: 12px;
+    color: rgb(var(--text-color));
+    opacity: 0.7;
+}
+
+/* Language Select Dialog Styling */
+body #language-select-dialog x-background {
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(18px);
+    padding: clamp(14px, 4vw, 32px);
+}
+
+body.dark-theme #language-select-dialog x-background {
+    background: rgba(4, 9, 20, 0.75);
+}
+
+body #language-select-dialog x-paper {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 248, 255, 0.9));
+    border-radius: 26px;
+    border: 1px solid rgba(231, 76, 60, 0.14);
+    padding: 32px;
+    gap: 24px;
+    box-shadow: 0 28px 65px rgba(15, 23, 42, 0.2);
+}
+
+body.dark-theme #language-select-dialog x-paper {
+    background: linear-gradient(150deg, rgba(30, 35, 52, 0.95), rgba(17, 20, 35, 0.92));
+    border-color: rgba(231, 76, 60, 0.3);
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.5);
+}
+
+#language-select-dialog .dialog-title {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.2;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+#language-select-dialog .language-buttons {
+    gap: 16px;
+}
+
+#language-select-dialog .language-buttons .btn {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(231, 76, 60, 0.15);
+    border-radius: 18px;
+    padding: 16px 22px;
+    gap: 6px;
+    font-weight: 600;
+    color: rgb(var(--text-color));
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+#language-select-dialog .language-buttons .btn span:first-child {
+    font-size: 16px;
+}
+
+#language-select-dialog .language-buttons .btn .language-subtitle {
+    font-size: 13px;
+    opacity: 0.75;
+}
+
+#language-select-dialog .language-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 25px rgba(231, 76, 60, 0.18);
+    border-color: rgba(231, 76, 60, 0.35);
+}
+
+#language-select-dialog .language-buttons .btn:focus-visible {
+    outline: 3px solid rgba(231, 76, 60, 0.4);
+    outline-offset: 3px;
+}
+
+#language-select-dialog .language-buttons .btn.current {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.12), rgba(231, 76, 60, 0.22));
+    border-color: rgba(231, 76, 60, 0.4);
+    box-shadow: 0 18px 35px rgba(231, 76, 60, 0.25);
+}
+
+#language-select-dialog .language-buttons .btn.current span:first-child {
+    color: var(--primary-color);
+}
+
+body #language-select-dialog .language-buttons .btn.current::after {
+    content: "\2713";
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: #fff;
+    font-size: 16px;
+    box-shadow: 0 10px 25px rgba(231, 76, 60, 0.35);
+}
+
+body.dark-theme #language-select-dialog .language-buttons .btn {
+    background: rgba(32, 38, 58, 0.88);
+    border-color: rgba(231, 76, 60, 0.28);
+    color: rgba(248, 250, 255, 0.92);
+}
+
+body.dark-theme #language-select-dialog .language-buttons .btn:hover {
+    box-shadow: 0 14px 30px rgba(231, 76, 60, 0.3);
+}
+
+body.dark-theme #language-select-dialog .language-buttons .btn.current {
+    background: linear-gradient(150deg, rgba(231, 76, 60, 0.25), rgba(231, 76, 60, 0.35));
+}
+
+body.dark-theme #language-select-dialog .language-buttons .btn .language-subtitle {
+    color: rgba(248, 250, 255, 0.76);
+}
+
+@media (max-width: 520px) {
+    #language-select-dialog x-paper {
+        padding: 24px;
+        border-radius: 22px;
+    }
+
+    #language-select-dialog .language-buttons .btn {
+        padding: 14px 18px;
+    }
+}
+
+/* Mobile responsive for about modal */
+@media (max-width: 768px) {
+    #about-modal x-paper {
+        width: 95%;
+        max-height: 85vh;
+    }
+    
+    .about-content {
+        padding: 20px 15px;
+    }
+    
+    .github-link {
+        padding: 12px 20px;
+        font-size: 13px;
+        gap: 10px;
+    }
+    
+    .github-icon {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .title-wrapper h1 {
+        font-size: 24px;
+    }
+}

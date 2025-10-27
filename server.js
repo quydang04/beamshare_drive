@@ -20,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Serve static files (HTML, CSS, JS)
+app.use('/share', express.static(path.join(__dirname, 'public', 'pages', 'share')));
 app.use(express.static(path.join(__dirname)));
 
 // Use API routes
