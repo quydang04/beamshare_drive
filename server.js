@@ -4,6 +4,7 @@ const FileMetadataManager = require('./file-metadata.js');
 const UploadHandler = require('./modules/upload-handler.js');
 const ConflictHandler = require('./modules/conflict-handler.js');
 const ApiRoutes = require('./modules/api-routes.js');
+const ShareWsServer = require('./modules/share-ws-server.js');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -67,10 +68,13 @@ app.get('*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const serverInstance = app.listen(PORT, () => {
     console.log(`BeamShare Drive đang chạy trên port ${PORT}`);
     console.log(`Truy cập: http://localhost:${PORT}`);
 });
+
+// Initialize WebSocket signaling for the share experience
+new ShareWsServer(serverInstance);
 
 // Handle graceful shutdown
 process.on('SIGINT', () => {
