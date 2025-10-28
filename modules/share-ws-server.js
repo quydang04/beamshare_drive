@@ -3,7 +3,7 @@ const { Server: WebSocketServer } = WebSocket;
 const crypto = require('crypto');
 
 const DEFAULT_OPTIONS = {
-    path: '/share/server',
+    path: '/beamshare/server',
     rtcConfig: {
         iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },

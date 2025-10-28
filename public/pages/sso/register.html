@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeamShare - Đăng ký</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-8oCOHYKT8pi7M/Wq3iCt3vEGI7XWuf5NTau62JXpkkn00L6UNkTpZ1PS8CNo2i7Tt2n7O6U6D3lWq2RfDX0X7Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/public/css/base.css">
+    <link rel="stylesheet" href="/public/pages/sso/css/auth.css">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card" data-page="register">
+            <div class="auth-logo">
+                <i class="fas fa-cloud"></i>
+            </div>
+            <div class="auth-header">
+                <h1>Tạo tài khoản mới</h1>
+                <p>Đăng ký nhanh để bắt đầu lưu trữ và chia sẻ.</p>
+            </div>
+            <form class="auth-form" id="register-form" data-form-type="register">
+                <div class="auth-alert" role="alert"></div>
+                <div class="form-field">
+                    <label for="register-name">Họ và tên</label>
+                    <input type="text" id="register-name" name="fullName" placeholder="Nguyễn Văn A" autocomplete="name" required>
+                </div>
+                <div class="form-field">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" name="email" placeholder="name@email.com" autocomplete="email" required>
+                </div>
+                <div class="form-field password-field">
+                    <label for="register-password">Mật khẩu</label>
+                    <input type="password" id="register-password" name="password" placeholder="Tối thiểu 6 ký tự" minlength="6" required>
+                    <button type="button" class="password-toggle" aria-label="Hiển thị mật khẩu">Hiện</button>
+                </div>
+                <div class="form-field password-field">
+                    <label for="register-confirm">Nhập lại mật khẩu</label>
+                    <input type="password" id="register-confirm" name="confirm" placeholder="Nhập lại mật khẩu" minlength="6" required>
+                    <button type="button" class="password-toggle" aria-label="Hiển thị mật khẩu">Hiện</button>
+                </div>
+                <div class="form-support">
+                    <label>
+                        <input type="checkbox" name="terms" required>
+                        Tôi đồng ý với điều khoản sử dụng
+                    </label>
+                </div>
+                <div class="auth-actions">
+                    <button type="submit" class="btn-primary">Đăng ký</button>
+                </div>
+            </form>
+            <div class="auth-switch">
+                Đã có tài khoản? <a href="/auth/login">Đăng nhập</a>
+            </div>
+        </div>
+    </div>
+    <script src="/public/pages/sso/js/auth.js" defer></script>
+</body>
+</html>

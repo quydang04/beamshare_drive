@@ -1,0 +1,50 @@
+<section class="page change-page" id="change-password-page">
+    <div class="page-header change-page__header">
+        <div class="change-page__heading">
+            <h1>Đổi mật khẩu</h1>
+            <p>Tăng cường bảo mật cho tài khoản của bạn bằng mật khẩu mới.</p>
+        </div>
+        <button class="change-back-link" type="button" data-action="go-dashboard">
+            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+            <span>Quay lại Dashboard</span>
+        </button>
+    </div>
+
+    <div class="change-layout">
+        <article class="change-card" aria-labelledby="change-password-title">
+            <header class="change-card__header">
+                <h2 id="change-password-title">Cập nhật bảo mật</h2>
+                <p>Chọn mật khẩu dài tối thiểu 6 ký tự và khác với mật khẩu hiện tại.</p>
+            </header>
+
+            <ul class="change-tips">
+                <li>Sử dụng chữ hoa, chữ thường, số hoặc ký tự đặc biệt để tăng độ mạnh.</li>
+                <li>Không nên tái sử dụng mật khẩu đã dùng ở những dịch vụ khác.</li>
+            </ul>
+
+            <form id="change-password-form" class="change-form" novalidate>
+                <div class="form-group">
+                    <label for="change-password-current">Mật khẩu hiện tại</label>
+                    <input type="password" id="change-password-current" name="currentPassword" autocomplete="current-password" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="change-password-new">Mật khẩu mới</label>
+                    <input type="password" id="change-password-new" name="newPassword" autocomplete="new-password" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="change-password-confirm">Nhập lại mật khẩu mới</label>
+                    <input type="password" id="change-password-confirm" autocomplete="new-password" required />
+                </div>
+
+                <div class="form-error" data-role="form-error" role="alert" aria-live="assertive"></div>
+
+                <div class="change-actions">
+                    <button class="btn btn-secondary" type="button" data-action="go-dashboard">Hủy</button>
+                    <button class="btn btn-primary" type="submit" id="change-password-submit">Đổi mật khẩu</button>
+                </div>
+            </form>
+        </article>
+    </div>
+</section>

@@ -2,6 +2,49 @@
 (function() {
     const DASHBOARD_QUOTA_BYTES = 10 * 1024 * 1024 * 1024; // 10 GB
     const TYPE_COLORS = ['#6366f1', '#f97316', '#10b981', '#ec4899', '#0ea5e9'];
+    const KNOWN_MIME_LABELS = {
+        'application/pdf': 'Tệp PDF',
+        'application/msword': 'Tài liệu Word',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Tài liệu Word',
+        'application/vnd.ms-excel': 'Bảng tính Excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Bảng tính Excel',
+        'application/vnd.ms-powerpoint': 'Trình chiếu PowerPoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'Trình chiếu PowerPoint',
+        'text/plain': 'Tệp văn bản',
+        'application/json': 'Tệp JSON',
+        'image/jpeg': 'Ảnh JPEG',
+        'image/png': 'Ảnh PNG',
+        'image/gif': 'Ảnh GIF',
+        'video/mp4': 'Video MP4',
+        'audio/mpeg': 'Âm thanh MP3'
+    };
+    const KNOWN_EXTENSION_LABELS = {
+        pdf: 'Tệp PDF',
+        doc: 'Tài liệu Word',
+        docx: 'Tài liệu Word',
+        xls: 'Bảng tính Excel',
+        xlsx: 'Bảng tính Excel',
+        ppt: 'Trình chiếu PowerPoint',
+        pptx: 'Trình chiếu PowerPoint',
+        txt: 'Tệp văn bản',
+        csv: 'Tệp CSV',
+        json: 'Tệp JSON',
+        jpg: 'Ảnh JPEG',
+        jpeg: 'Ảnh JPEG',
+        png: 'Ảnh PNG',
+        gif: 'Ảnh GIF',
+        svg: 'Ảnh SVG',
+        mp4: 'Video MP4',
+        mov: 'Video MOV',
+        avi: 'Video AVI',
+        mkv: 'Video MKV',
+        mp3: 'Âm thanh MP3',
+        wav: 'Âm thanh WAV',
+        flac: 'Âm thanh FLAC',
+        zip: 'Tệp nén ZIP',
+        rar: 'Tệp nén RAR',
+        '7z': 'Tệp nén 7z'
+    };
 
     const formatBytes = typeof window.formatFileSize === 'function'
         ? window.formatFileSize
@@ -103,13 +146,118 @@
     };
 
     const elements = {};
+    let hasProfileListener = false;
+    const onUserProfileUpdated = (event) => {
+        applyDashboardUserProfile(event?.detail?.profile || window.currentUserProfile || null);
+    };
 
     window.initDashboard = function initDashboard() {
         cacheElements();
         bindEvents();
         renderQuotaLabel();
+        attachProfileListener();
+        refreshDashboardUserProfile();
         fetchDashboardData();
     };
+
+    function attachProfileListener() {
+        if (hasProfileListener) {
+            return;
+        }
+        document.addEventListener('userprofile:updated', onUserProfileUpdated);
+        hasProfileListener = true;
+    }
+
+    function detachProfileListener() {
+        if (!hasProfileListener) {
+            return;
+        }
+        document.removeEventListener('userprofile:updated', onUserProfileUpdated);
+        hasProfileListener = false;
+    }
+
+    function refreshDashboardUserProfile() {
+        const existingProfile = window.currentUserProfile || null;
+        if (existingProfile) {
+            applyDashboardUserProfile(existingProfile);
+            return;
+        }
+
+        if (typeof window.getCurrentUserProfile === 'function') {
+            window.getCurrentUserProfile()
+                .then((profile) => {
+                    applyDashboardUserProfile(profile || null);
+                })
+                .catch(() => {
+                    applyDashboardUserProfile(null);
+                });
+        } else {
+            applyDashboardUserProfile(null);
+        }
+    }
+
+    function applyDashboardUserProfile(profile) {
+        if (!elements.dashboardAvatar || !elements.dashboardInitial) {
+            return;
+        }
+
+        const compute = typeof window.getUserDisplayInfo === 'function'
+            ? window.getUserDisplayInfo
+            : (user) => {
+                const fallbackName = user && (user.fullName || user.email) ? (user.fullName || user.email) : 'User';
+                const trimmed = fallbackName.trim();
+                return {
+                    displayName: trimmed || 'User',
+                    initial: (trimmed.charAt(0) || 'U').toUpperCase(),
+                    color: '#8b5cf6'
+                };
+            };
+
+    const info = compute(profile || null);
+    const displayName = info.displayName || 'User';
+    const initials = info.initials || info.initial || 'U';
+
+    elements.dashboardInitial.textContent = initials;
+    elements.dashboardAvatar.style.background = info.color || '#8b5cf6';
+        elements.dashboardAvatar.setAttribute('title', displayName);
+
+        if (elements.dashboardName) {
+            elements.dashboardName.textContent = `Xin chào, ${displayName}`;
+        }
+    }
+
+    function determineTypeLabel(file) {
+        if (!file) {
+            return 'Khác';
+        }
+
+        const extensionSource = (file.extension || file.originalName || file.displayName || file.name || '').toString();
+        const normalizedExtension = extensionSource.includes('.')
+            ? extensionSource.split('.').pop().toLowerCase()
+            : extensionSource.toLowerCase();
+
+        if (normalizedExtension && KNOWN_EXTENSION_LABELS[normalizedExtension]) {
+            return KNOWN_EXTENSION_LABELS[normalizedExtension];
+        }
+
+        const mime = (file.type || '').toLowerCase();
+        if (mime && KNOWN_MIME_LABELS[mime]) {
+            return KNOWN_MIME_LABELS[mime];
+        }
+
+        if (mime.startsWith('image/')) return 'Hình ảnh';
+        if (mime.startsWith('video/')) return 'Video';
+        if (mime.startsWith('audio/')) return 'Âm thanh';
+        if (mime.includes('presentation')) return 'Trình chiếu';
+        if (mime.includes('spreadsheet') || mime.includes('excel')) return 'Bảng tính';
+        if (mime.includes('word') || mime.includes('document')) return 'Tài liệu';
+        if (mime.includes('pdf')) return 'Tệp PDF';
+        if (mime.includes('zip') || mime.includes('compressed')) return 'Tệp nén';
+        if (mime.includes('text')) return 'Tệp văn bản';
+        if (mime.includes('json')) return 'Tệp JSON';
+
+        return 'Khác';
+    }
 
     function cacheElements() {
         elements.tabButtons = document.querySelectorAll('.tab-btn[data-tab]');
@@ -118,6 +266,9 @@
         elements.statStorageUsed = document.querySelector('[data-stat="storage-used"]');
         elements.statRecentCount = document.querySelector('[data-stat="recent-count"]');
         elements.statTopType = document.querySelector('[data-stat="top-type"]');
+        elements.dashboardAvatar = document.getElementById('dashboard-user-avatar');
+        elements.dashboardInitial = document.getElementById('dashboard-user-initial');
+        elements.dashboardName = document.getElementById('dashboard-user-name');
         elements.storageQuota = document.querySelector('[data-storage="quota"]');
         elements.storageProgress = document.querySelector('[data-storage="progress"]');
         elements.storageUsed = document.querySelector('[data-storage="used"]');
@@ -440,8 +591,7 @@
 
         const counts = new Map();
         files.forEach((file) => {
-            const raw = file.type || file.extension || 'Khác';
-            const label = (raw || 'Khác').toString().split('/').pop().toUpperCase();
+            const label = determineTypeLabel(file);
             counts.set(label, (counts.get(label) || 0) + 1);
         });
 
@@ -477,6 +627,7 @@
     }
 
     window.cleanupDashboard = function cleanupDashboard() {
+        detachProfileListener();
         Object.keys(elements).forEach((key) => {
             elements[key] = null;
         });

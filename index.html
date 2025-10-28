@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="public/css/pages/upload.css">
     <link rel="stylesheet" href="public/css/pages/dashboard.css">
     <link rel="stylesheet" href="public/css/pages/subscription.css">
+    <link rel="stylesheet" href="public/pages/change/thongtin/css/style.css">
+    <link rel="stylesheet" href="public/pages/change/matkhau/css/style.css">
 </head>
 <body>
     <!-- Header -->
@@ -29,8 +31,35 @@
         </div>
         <div class="header-center"></div>
         <div class="header-right">
-            <div class="user-avatar">
-                <span>U</span>
+            <div class="header-user-menu" id="header-user-menu-container">
+                <button class="user-menu-button" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="header-user-menu" aria-label="Mở menu người dùng">
+                    <i class="fas fa-bars" aria-hidden="true"></i>
+                </button>
+                <div class="user-menu-panel" id="header-user-menu" role="menu">
+                    <div class="user-menu-header">
+                        <div class="user-menu-avatar" id="header-menu-avatar">
+                            <span id="header-menu-initial">U</span>
+                        </div>
+                        <div class="user-menu-details">
+                            <strong id="header-menu-name">User</strong>
+                            <span id="header-menu-email">user@example.com</span>
+                        </div>
+                    </div>
+                    <div class="user-menu-actions">
+                        <button class="user-menu-item" type="button" id="header-user-menu-profile" role="menuitem">
+                            <i class="fas fa-user-edit" aria-hidden="true"></i>
+                            Thay đổi thông tin
+                        </button>
+                        <button class="user-menu-item" type="button" id="header-user-menu-password" role="menuitem">
+                            <i class="fas fa-key" aria-hidden="true"></i>
+                            Đổi mật khẩu
+                        </button>
+                        <button class="user-menu-item user-menu-item-danger" type="button" id="header-user-menu-logout" role="menuitem">
+                            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                            Đăng xuất
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -40,10 +69,14 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="user-info">
-                <div class="user-avatar-large">
+                <div class="user-avatar-large" id="sidebar-user-avatar">
                     <span id="user-initial">U</span>
                 </div>
                 <div class="user-name" id="user-name">User</div>
+                <button class="logout-button" id="logout-button" type="button">
+                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                    <span>Đăng xuất</span>
+                </button>
             </div>
             
             <nav class="nav-menu">
@@ -99,6 +132,7 @@
     <script src="https://unpkg.com/@vue-office/excel@latest/lib/index.umd.js"></script>
     <script src="https://unpkg.com/@vue-office/pdf@latest/lib/index.umd.js"></script>
 
+    <script src="public/pages/sso/logout.js"></script>
     <script src="public/js/base.js"></script>
     <script src="public/js/modal-system.js"></script>
     <script src="public/js/toast-system.js"></script>
@@ -108,10 +142,11 @@
     <script src="public/js/pages/upload.js"></script>
     <script src="public/js/pages/dashboard.js"></script>
     <script src="public/js/pages/subscription.js"></script>
-    
+    <script src="public/pages/change/thongtin/js/main.js"></script>
+    <script src="public/pages/change/matkhau/js/main.js"></script>
+
     <script>
-        // Load page content dynamically
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
             const body = document.body;
             const sidebar = document.querySelector('.sidebar');
             const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -152,129 +187,218 @@
                 }
             });
 
-            // Load default page (My Files)
-            loadPage('myfiles');
-            
-            // Handle navigation
+            const PAGE_CONFIG = {
+                dashboard: {
+                    template: 'public/html/pages/dashboard.html',
+                    init: 'initDashboard',
+                    cleanup: 'cleanupDashboard',
+                    path: '/dashboard'
+                },
+                upload: {
+                    template: 'public/html/pages/upload.html',
+                    init: 'initUpload',
+                    cleanup: 'cleanupUpload',
+                    path: '/upload'
+                },
+                myfiles: {
+                    template: 'public/html/pages/myfiles.html',
+                    init: 'initMyFiles',
+                    cleanup: 'cleanupMyFiles',
+                    path: '/myfiles'
+                },
+                subscription: {
+                    template: 'public/html/pages/subscription.html',
+                    init: 'initSubscription',
+                    cleanup: 'cleanupSubscription',
+                    path: '/subscription'
+                },
+                'change-thongtin': {
+                    template: 'public/pages/change/thongtin/index.html',
+                    init: 'initChangeThongtin',
+                    cleanup: 'cleanupChangeThongtin',
+                    path: '/change/thongtin'
+                },
+                'change-matkhau': {
+                    template: 'public/pages/change/matkhau/index.html',
+                    init: 'initChangeMatkhau',
+                    cleanup: 'cleanupChangeMatkhau',
+                    path: '/change/matkhau'
+                }
+            };
+
+            const defaultPage = 'myfiles';
             const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = this.getAttribute('data-page');
-                    loadPage(page);
+            const mainContent = document.getElementById('main-content');
+            let activePageName = null;
+            let pendingInitTimeoutId = null;
+
+            const normalizePath = (pathname) => {
+                if (!pathname) {
+                    return '/';
+                }
+                if (pathname !== '/' && pathname.endsWith('/')) {
+                    return pathname.slice(0, -1);
+                }
+                return pathname || '/';
+            };
+
+            const getPageNameFromPath = (pathname) => {
+                const normalizedPath = normalizePath(pathname);
+                for (const [pageKey, config] of Object.entries(PAGE_CONFIG)) {
+                    const targetPath = config.path || `/${pageKey}`;
+                    if (normalizePath(targetPath) === normalizedPath) {
+                        return pageKey;
+                    }
+                }
+                return defaultPage;
+            };
+
+            const updateNavState = (pageName) => {
+                navItems.forEach((nav) => {
+                    if (nav.getAttribute('data-page') === pageName) {
+                        nav.classList.add('active');
+                    } else {
+                        nav.classList.remove('active');
+                    }
+                });
+            };
+
+            async function loadPage(pageName, options = {}) {
+                const config = PAGE_CONFIG[pageName];
+                if (!config) {
+                    console.warn(`Không tìm thấy cấu hình cho trang ${pageName}.`);
+                    if (pageName !== defaultPage) {
+                        return loadPage(defaultPage, options);
+                    }
+                    return;
+                }
+
+                const { skipHistory = false, replaceHistory = false } = options;
+
+                updateNavState(pageName);
+
+                if (typeof window.updateUserInfo === 'function') {
+                    window.updateUserInfo(pageName);
+                }
+
+                if (activePageName) {
+                    const previousConfig = PAGE_CONFIG[activePageName];
+                    const teardownFnName = previousConfig?.cleanup;
+                    const teardownFn = teardownFnName ? window[teardownFnName] : undefined;
+
+                    if (typeof teardownFn === 'function') {
+                        try {
+                            teardownFn();
+                        } catch (teardownError) {
+                            console.error(`Lỗi khi dọn trang ${activePageName}:`, teardownError);
+                        }
+                    }
+                }
+
+                try {
+                    const templateUrl = (typeof config.template === 'string' && config.template.length > 0)
+                        ? (config.template.startsWith('/') || config.template.startsWith('http'))
+                            ? config.template
+                            : `/${config.template.replace(/^\/+/,'')}`
+                        : config.template;
+                    const response = await fetch(templateUrl);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const content = await response.text();
+                    if (mainContent) {
+                        mainContent.innerHTML = content;
+                    }
+                    activePageName = pageName;
+
+                    if (pendingInitTimeoutId) {
+                        clearTimeout(pendingInitTimeoutId);
+                        pendingInitTimeoutId = null;
+                    }
+
+                    pendingInitTimeoutId = setTimeout(() => {
+                        pendingInitTimeoutId = null;
+                        if (activePageName !== pageName) {
+                            return;
+                        }
+
+                        const initFnName = config.init;
+                        const initFn = initFnName ? window[initFnName] : undefined;
+
+                        if (typeof initFn === 'function') {
+                            try {
+                                initFn();
+                            } catch (error) {
+                                console.error(`Lỗi khi khởi tạo trang ${pageName}:`, error);
+                            }
+                        } else if (initFnName) {
+                            console.warn(`Không tìm thấy hàm khởi tạo ${initFnName} cho trang ${pageName}.`);
+                        }
+                    }, 90);
+
+                    if (!skipHistory) {
+                        const targetPath = config.path || `/${pageName}`;
+                        const state = { page: pageName };
+                        if (replaceHistory) {
+                            window.history.replaceState(state, '', targetPath);
+                        } else {
+                            window.history.pushState(state, '', targetPath);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error loading ${pageName} page:`, error);
+                    if (mainContent) {
+                        mainContent.innerHTML = `
+                            <div class="page active">
+                                <div class="page-header">
+                                    <h1>Lỗi tải trang</h1>
+                                </div>
+                                <div class="empty-state">
+                                    <div class="empty-icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <h3>Không thể tải trang ${pageName}</h3>
+                                    <p>Vui lòng thử lại sau.</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }
+
+            window.loadPage = loadPage;
+
+            navItems.forEach((item) => {
+                const pageName = item.getAttribute('data-page');
+                const config = pageName ? PAGE_CONFIG[pageName] : undefined;
+                if (config?.path) {
+                    item.setAttribute('href', config.path);
+                }
+
+                item.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    if (!pageName) {
+                        return;
+                    }
+
+                    loadPage(pageName);
 
                     if (window.innerWidth <= 1024) {
                         closeSidebar();
                     }
                 });
             });
+
+            window.addEventListener('popstate', (event) => {
+                const statePage = event.state?.page;
+                const pageName = statePage || getPageNameFromPath(window.location.pathname);
+                loadPage(pageName, { skipHistory: true });
+            });
+
+            const initialPage = getPageNameFromPath(window.location.pathname);
+            loadPage(initialPage, { replaceHistory: true });
         });
-        
-        let activePageName = null;
-        let pendingInitTimeoutId = null;
-
-        async function loadPage(pageName) {
-            const navItems = document.querySelectorAll('.nav-item');
-            const matchingNavs = document.querySelectorAll(`.nav-item[data-page="${pageName}"]`);
-            if (navItems.length) {
-                navItems.forEach(nav => nav.classList.remove('active'));
-                matchingNavs.forEach(nav => nav.classList.add('active'));
-            }
-
-            if (typeof window.updateUserInfo === 'function') {
-                window.updateUserInfo(pageName);
-            }
-
-            try {
-                if (activePageName) {
-                    const teardownMap = {
-                        myfiles: 'cleanupMyFiles',
-                        upload: 'cleanupUpload',
-                        dashboard: 'cleanupDashboard',
-                        subscription: 'cleanupSubscription'
-                    };
-
-                    const teardownFunctionName = teardownMap[activePageName];
-                    const teardownFn = teardownFunctionName ? window[teardownFunctionName] : undefined;
-
-                    if (typeof teardownFn === 'function') {
-                        try {
-                            teardownFn();
-                        } catch (teardownError) {
-                            console.error(`Error executing teardown for ${activePageName}:`, teardownError);
-                        }
-                    }
-                }
-
-                const response = await fetch(`public/html/pages/${pageName}.html`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const content = await response.text();
-                document.getElementById('main-content').innerHTML = content;
-                activePageName = pageName;
-                
-                // Initialize page-specific functionality
-                const initMap = {
-                    myfiles: 'initMyFiles',
-                    upload: 'initUpload',
-                    dashboard: 'initDashboard',
-                    subscription: 'initSubscription'
-                };
-                const initFunctionName = initMap[pageName] || `init${pageName.charAt(0).toUpperCase() + pageName.slice(1)}`;
-                console.log(`Looking for init function: ${initFunctionName}`);
-                console.log(`Function exists:`, typeof window[initFunctionName] === 'function');
-                
-                if (window[initFunctionName]) {
-                    console.log(`Calling ${initFunctionName}...`);
-                    // Add a small delay to ensure DOM is ready
-                    if (pendingInitTimeoutId) {
-                        clearTimeout(pendingInitTimeoutId);
-                    }
-
-                    pendingInitTimeoutId = setTimeout(() => {
-                        pendingInitTimeoutId = null;
-
-                        if (activePageName !== pageName) {
-                            console.warn(`Skipping ${initFunctionName} because active page changed to ${activePageName}`);
-                            return;
-                        }
-
-                        try {
-                            window[initFunctionName]();
-                            console.log(`${initFunctionName} called successfully`);
-                        } catch (error) {
-                            console.error(`Error calling ${initFunctionName}:`, error);
-                        }
-                    }, 100);
-                } else {
-                    console.warn(`Init function ${initFunctionName} not found`);
-                    if (pendingInitTimeoutId) {
-                        clearTimeout(pendingInitTimeoutId);
-                        pendingInitTimeoutId = null;
-                    }
-                }
-            } catch (error) {
-                console.error(`Error loading ${pageName} page:`, error);
-                // Fallback content
-                document.getElementById('main-content').innerHTML = `
-                    <div class="page active">
-                        <div class="page-header">
-                            <h1>Lỗi tải trang</h1>
-                        </div>
-                        <div class="empty-state">
-                            <div class="empty-icon">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </div>
-                            <h3>Không thể tải trang ${pageName}</h3>
-                            <p>Vui lòng thử lại sau.</p>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        window.loadPage = loadPage;
     </script>
 </body>
 </html>

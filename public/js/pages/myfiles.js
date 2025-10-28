@@ -33,7 +33,7 @@ function normalizeFileId(fileOrId) {
     );
 }
 
-function openShareTabForFile(fileId, displayName) {
+function openShareTabForFile(fileId, displayName, options = {}) {
     if (!fileId) {
         if (window.toastSystem) {
             window.toastSystem.error('Không thể xác định tệp để chia sẻ.', {
@@ -43,7 +43,20 @@ function openShareTabForFile(fileId, displayName) {
         return;
     }
 
-    const shareUrl = `/share?driveFile=${encodeURIComponent(fileId)}`;
+    const { shareToken = null, visibility = null } = options;
+    const effectiveState = visibility || getShareStateForFile({ id: fileId }) || 'private';
+    const effectiveToken = shareToken || getShareTokenForFile(fileId, null);
+    const shareUrl = getShareUrlForFile(fileId, effectiveState === 'public' ? buildShareUrl(fileId, effectiveToken) : null);
+
+    if (effectiveState !== 'public' || !shareUrl) {
+        if (window.toastSystem) {
+            window.toastSystem.warning('Tệp đang ở chế độ riêng tư hoặc chưa có liên kết chia sẻ.', {
+                duration: 4000
+            });
+        }
+        return;
+    }
+
     const shareWindow = window.open(shareUrl, '_blank', 'noopener');
 
     if (!shareWindow) {
@@ -56,8 +69,29 @@ function openShareTabForFile(fileId, displayName) {
     }
 
     if (window.toastSystem && displayName) {
-        window.toastSystem.info(`Đang mở BeamShare Share cho: ${displayName}`, {
+        window.toastSystem.info(`Đang mở trang chia sẻ cho: ${displayName}`, {
             duration: 3500
+        });
+    }
+}
+
+function openBeamShareWorkspace(displayName) {
+    const beamshareWindow = window.open('/beamshare/', '_blank', 'noopener');
+
+    if (!beamshareWindow) {
+        window.toastSystem?.error('Trình duyệt đã chặn cửa sổ BeamShare. Vui lòng cho phép cửa sổ bật lên.', {
+            duration: 5000
+        });
+        return;
+    }
+
+    if (displayName) {
+        window.toastSystem?.info(`Đang mở BeamShare Live để gửi: ${displayName}`, {
+            duration: 3500
+        });
+    } else {
+        window.toastSystem?.info('Đang mở BeamShare Live.', {
+            duration: 3000
         });
     }
 }
@@ -136,26 +170,54 @@ function applyShareOverrideToFile(file) {
             shareStatus: override.state,
             shareUpdatedAt: override.updatedAt
         };
+
+        if (Object.prototype.hasOwnProperty.call(override, 'shareToken')) {
+            nextFile.metadata.shareToken = override.shareToken;
+            nextFile.shareToken = override.shareToken;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(override, 'shareUrl')) {
+            nextFile.metadata.shareUrl = override.shareUrl;
+            nextFile.shareUrl = override.shareUrl;
+        }
     }
 
     return nextFile;
 }
 
-function persistShareOverride(fileId, state) {
+function persistShareOverride(fileId, state, options = {}) {
     if (!fileId) {
         return;
     }
 
-    shareOverrides[fileId] = {
+    const previous = shareOverrides[fileId] || {};
+    const override = {
         state,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        shareToken: Object.prototype.hasOwnProperty.call(options, 'shareToken') ? options.shareToken : previous.shareToken,
+        shareUrl: Object.prototype.hasOwnProperty.call(options, 'shareUrl') ? options.shareUrl : previous.shareUrl
     };
+
+    if (override.state === 'public' && !override.shareUrl && override.shareToken) {
+        override.shareUrl = buildShareUrl(fileId, override.shareToken);
+    }
+
+    if (override.state !== 'public') {
+        override.shareUrl = null;
+        if (Object.prototype.hasOwnProperty.call(options, 'shareToken') && options.shareToken === null) {
+            override.shareToken = null;
+        }
+    }
+
+    shareOverrides[fileId] = override;
     saveShareOverrides();
 
     detailSnapshots[fileId] = {
         ...(detailSnapshots[fileId] || {}),
         shareState: state,
-        shareUpdatedAt: shareOverrides[fileId].updatedAt,
+        shareUpdatedAt: override.updatedAt,
+        shareToken: override.shareToken,
+        shareUrl: override.shareUrl,
         fetchedAt: new Date().toISOString()
     };
     saveDetailSnapshots();
@@ -169,6 +231,308 @@ function persistShareOverride(fileId, state) {
 
     allFiles = allFiles.map(applyState);
     filteredFiles = filteredFiles.map(applyState);
+
+    updateShareControlsUI(fileId, {
+        shareState: override.state,
+        shareUrl: override.shareUrl,
+        shareToken: override.shareToken
+    });
+}
+
+function findFileById(fileId) {
+    if (!fileId) {
+        return null;
+    }
+
+    return (
+        allFiles.find(file => normalizeFileId(file) === fileId) ||
+        filteredFiles.find(file => normalizeFileId(file) === fileId) ||
+        null
+    );
+}
+
+function getShareOverride(fileId) {
+    if (!fileId) {
+        return null;
+    }
+    return shareOverrides[fileId] || null;
+}
+
+function buildShareUrl(fileId, shareToken) {
+    if (!fileId || !shareToken) {
+        return null;
+    }
+
+    try {
+    const shareUrl = new URL('/file', window.location.origin);
+        shareUrl.searchParams.set('driveFile', fileId);
+        shareUrl.searchParams.set('token', shareToken);
+        return shareUrl.toString();
+    } catch (error) {
+    return `/file?driveFile=${encodeURIComponent(fileId)}&token=${encodeURIComponent(shareToken)}`;
+    }
+}
+
+function getShareTokenForFile(fileId, fallbackToken = null) {
+    if (!fileId) {
+        return null;
+    }
+
+    const override = getShareOverride(fileId);
+    if (override && Object.prototype.hasOwnProperty.call(override, 'shareToken') && override.shareToken) {
+        return override.shareToken;
+    }
+
+    const snapshot = detailSnapshots[fileId];
+    if (snapshot && snapshot.shareToken) {
+        return snapshot.shareToken;
+    }
+
+    const file = findFileById(fileId);
+    if (file) {
+        const metadata = file.metadata || {};
+        return file.shareToken || metadata.shareToken || fallbackToken;
+    }
+
+    return fallbackToken;
+}
+
+function getShareUrlForFile(fileId, fallbackUrl = null) {
+    if (!fileId) {
+        return null;
+    }
+
+    const override = getShareOverride(fileId);
+    if (override && override.shareUrl) {
+        return override.shareUrl;
+    }
+
+    const snapshot = detailSnapshots[fileId];
+    if (snapshot && snapshot.shareUrl) {
+        return snapshot.shareUrl;
+    }
+
+    const file = findFileById(fileId);
+    if (file) {
+        const metadata = file.metadata || {};
+        const token = file.shareToken || metadata.shareToken;
+        if (metadata.shareUrl) {
+            return metadata.shareUrl;
+        }
+        if (token) {
+            return buildShareUrl(fileId, token);
+        }
+    }
+
+    const token = getShareTokenForFile(fileId, null);
+    if (token) {
+        return buildShareUrl(fileId, token);
+    }
+
+    return fallbackUrl;
+}
+
+function findShareElement(selector, fileId) {
+    const elements = document.querySelectorAll(selector);
+    for (const element of elements) {
+        if (element.getAttribute('data-file-id') === fileId) {
+            return element;
+        }
+    }
+    return null;
+}
+
+function getFileItemElement(fileId) {
+    const items = document.querySelectorAll('.file-item');
+    for (const item of items) {
+        if (item.getAttribute('data-file-id') === fileId) {
+            return item;
+        }
+    }
+    return null;
+}
+
+function updateShareButtonState(button, state) {
+    if (!button) {
+        return;
+    }
+
+    const normalizedState = state === 'public' ? 'public' : 'private';
+    const icon = button.querySelector('i');
+
+    button.setAttribute('data-share-state', normalizedState);
+    if (normalizedState === 'public') {
+        button.classList.add('is-public');
+        button.title = 'Đang công khai - quản lý chia sẻ';
+        if (icon) {
+            icon.className = 'fas fa-share-square';
+        }
+    } else {
+        button.classList.remove('is-public');
+        button.title = 'Chia sẻ tệp';
+        if (icon) {
+            icon.className = 'fas fa-share-alt';
+        }
+    }
+}
+
+function updateShareControlsUI(fileId, options = {}) {
+    if (!fileId) {
+        return;
+    }
+
+    const override = getShareOverride(fileId);
+    const shareState = options.shareState || override?.state || 'private';
+    const shareUrl = options.shareUrl !== undefined ? options.shareUrl : getShareUrlForFile(fileId, null);
+    const shareToken = options.shareToken !== undefined ? options.shareToken : getShareTokenForFile(fileId, null);
+
+    const isPublic = shareState === 'public';
+    const hasLink = Boolean(shareUrl);
+
+    const shareInput = findShareElement('.file-share-input', fileId);
+    if (shareInput) {
+        if (hasLink) {
+            shareInput.value = shareUrl;
+            shareInput.disabled = false;
+            shareInput.placeholder = 'Liên kết chia sẻ';
+            shareInput.title = shareUrl;
+        } else {
+            shareInput.value = '';
+            shareInput.disabled = true;
+            shareInput.placeholder = 'Tệp đang ở chế độ riêng tư';
+            shareInput.removeAttribute('title');
+        }
+    }
+
+    const copyBtn = findShareElement('.file-share-copy-btn', fileId);
+    if (copyBtn) {
+        copyBtn.disabled = !(isPublic && hasLink);
+    }
+
+    const openBtn = findShareElement('.file-share-open-btn', fileId);
+    if (openBtn) {
+        openBtn.disabled = !(isPublic && hasLink);
+    }
+
+    const regenerateBtn = findShareElement('.file-share-regenerate', fileId);
+    if (regenerateBtn) {
+        regenerateBtn.disabled = !isPublic;
+    }
+
+    const footerCopyBtn = findShareElement('.btn-copy-share', fileId);
+    if (footerCopyBtn) {
+        footerCopyBtn.disabled = !(isPublic && hasLink);
+    }
+
+    const helper = findShareElement('.file-share-helper', fileId);
+    if (helper) {
+        helper.textContent = isPublic
+            ? 'Chia sẻ liên kết này với mọi người bạn muốn cấp quyền truy cập. Tạo liên kết mới để thu hồi liên kết cũ.'
+            : 'Tệp đang ở chế độ riêng tư. Bật chế độ công khai để tạo liên kết chia sẻ.';
+    }
+
+    const stateChip = findShareElement('.share-state-chip', fileId);
+    if (stateChip) {
+        stateChip.classList.toggle('is-public', isPublic);
+        stateChip.classList.toggle('is-private', !isPublic);
+        stateChip.innerHTML = `<i class="fas ${isPublic ? 'fa-lock-open' : 'fa-lock'}"></i>${isPublic ? 'Đang công khai' : 'Đang riêng tư'}`;
+    }
+
+    // Store the latest link in overrides for downstream usage
+    if (override) {
+        let hasChanged = false;
+        if (isPublic && hasLink && override.shareUrl !== shareUrl) {
+            override.shareUrl = shareUrl;
+            hasChanged = true;
+        }
+        if (shareToken && override.shareToken !== shareToken) {
+            override.shareToken = shareToken;
+            hasChanged = true;
+        }
+        if (!isPublic && override.shareUrl !== null) {
+            override.shareUrl = null;
+            hasChanged = true;
+        }
+        if (hasChanged) {
+            saveShareOverrides();
+        }
+    }
+}
+
+async function changeFileVisibility(fileId, targetState, options = {}) {
+    const { regenerateToken = false, showToast = true } = options;
+
+    if (!fileId) {
+        throw new Error('Thiếu thông tin tệp cần cập nhật.');
+    }
+
+    if (!['public', 'private'].includes(targetState)) {
+        throw new Error('Tùy chọn chia sẻ không hợp lệ.');
+    }
+
+    try {
+        const response = await fetch(`/api/files/${encodeURIComponent(fileId)}/share`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                visibility: targetState,
+                regenerateToken
+            })
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok || result.success !== true) {
+            throw new Error(result.error || 'Không thể cập nhật quyền chia sẻ.');
+        }
+
+        const nextState = result.visibility || targetState;
+        const shareToken = result.shareToken ?? getShareTokenForFile(fileId, null);
+        const shareUrl = nextState === 'public'
+            ? (result.shareUrl || (shareToken ? buildShareUrl(fileId, shareToken) : null))
+            : null;
+
+        persistShareOverride(fileId, nextState, {
+            shareToken: shareToken ?? null,
+            shareUrl
+        });
+
+        const fileItem = getFileItemElement(fileId);
+        if (fileItem) {
+            fileItem.setAttribute('data-share-state', nextState);
+            if (nextState === 'public' && shareToken) {
+                fileItem.setAttribute('data-share-token', shareToken);
+            } else {
+                fileItem.removeAttribute('data-share-token');
+            }
+        }
+
+        const shareButton = findShareElement('.share-manage-btn', fileId);
+        if (shareButton) {
+            updateShareButtonState(shareButton, nextState);
+        }
+
+        updateFileInsights(allFiles);
+
+        if (showToast) {
+            const fileName = fileItem?.getAttribute('data-file-name') || 'tệp đã chọn';
+            const stateLabel = nextState === 'public' ? 'công khai' : 'riêng tư';
+            const extra = nextState === 'public' && shareUrl ? ' (đã tạo liên kết chia sẻ)' : '';
+            window.toastSystem?.success(`Đã chuyển "${fileName}" sang chế độ ${stateLabel}${extra}`, {
+                duration: 3000
+            });
+        }
+
+        return {
+            visibility: nextState,
+            shareToken: shareToken ?? null,
+            shareUrl
+        };
+    } catch (error) {
+        throw error instanceof Error ? error : new Error('Không thể cập nhật quyền chia sẻ.');
+    }
 }
 
 function mergeFileDetailsIntoState(fileId, details) {
@@ -198,6 +562,125 @@ function mergeFileDetailsIntoState(fileId, details) {
     applyFiltersAndRender();
 }
 
+function getFriendlyFileType(mimeType, extension) {
+    if (!mimeType || mimeType === 'Không xác định') {
+        if (extension) {
+            return extension.toUpperCase().replace(/^\./, '') + ' File';
+        }
+        return 'Tệp';
+    }
+
+    // Map MIME types to friendly names
+    const mimeTypeMap = {
+        // Documents
+        'application/pdf': 'Tài liệu PDF',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Tài liệu Word',
+        'application/msword': 'Tài liệu Word',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Bảng tính Excel',
+        'application/vnd.ms-excel': 'Bảng tính Excel',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'Bản trình chiếu PowerPoint',
+        'application/vnd.ms-powerpoint': 'Bản trình chiếu PowerPoint',
+        'application/vnd.oasis.opendocument.text': 'Tài liệu OpenDocument',
+        'application/vnd.oasis.opendocument.spreadsheet': 'Bảng tính OpenDocument',
+        'application/vnd.oasis.opendocument.presentation': 'Bản trình chiếu OpenDocument',
+        'application/rtf': 'Tệp Rich Text',
+        'text/plain': 'Tệp văn bản',
+        'text/csv': 'Tệp CSV',
+        
+        // Images
+        'image/jpeg': 'Hình ảnh JPEG',
+        'image/jpg': 'Hình ảnh JPEG',
+        'image/png': 'Hình ảnh PNG',
+        'image/gif': 'Hình ảnh GIF',
+        'image/webp': 'Hình ảnh WebP',
+        'image/svg+xml': 'Hình ảnh SVG',
+        'image/bmp': 'Hình ảnh BMP',
+        'image/tiff': 'Hình ảnh TIFF',
+        'image/x-icon': 'Biểu tượng',
+        
+        // Videos
+        'video/mp4': 'Video MP4',
+        'video/mpeg': 'Video MPEG',
+        'video/quicktime': 'Video QuickTime',
+        'video/x-msvideo': 'Video AVI',
+        'video/x-ms-wmv': 'Video WMV',
+        'video/webm': 'Video WebM',
+        'video/x-flv': 'Video FLV',
+        'video/3gpp': 'Video 3GP',
+        
+        // Audio
+        'audio/mpeg': 'Âm thanh MP3',
+        'audio/mp3': 'Âm thanh MP3',
+        'audio/wav': 'Âm thanh WAV',
+        'audio/ogg': 'Âm thanh OGG',
+        'audio/webm': 'Âm thanh WebM',
+        'audio/aac': 'Âm thanh AAC',
+        'audio/flac': 'Âm thanh FLAC',
+        'audio/x-m4a': 'Âm thanh M4A',
+        
+        // Archives
+        'application/zip': 'Tệp nén ZIP',
+        'application/x-rar-compressed': 'Tệp nén RAR',
+        'application/x-7z-compressed': 'Tệp nén 7Z',
+        'application/x-tar': 'Tệp nén TAR',
+        'application/gzip': 'Tệp nén GZIP',
+        'application/x-bzip2': 'Tệp nén BZIP2',
+        
+        // Code
+        'text/html': 'Trang HTML',
+        'text/css': 'Tệp CSS',
+        'text/javascript': 'Tệp JavaScript',
+        'application/javascript': 'Tệp JavaScript',
+        'application/json': 'Tệp JSON',
+        'application/xml': 'Tệp XML',
+        'text/xml': 'Tệp XML',
+        'application/x-python': 'Mã Python',
+        'text/x-python': 'Mã Python',
+        'application/x-java': 'Mã Java',
+        'text/x-java': 'Mã Java',
+        'text/x-c': 'Mã C',
+        'text/x-c++': 'Mã C++',
+        'text/x-csharp': 'Mã C#',
+        'text/x-php': 'Mã PHP',
+        'application/x-php': 'Mã PHP',
+        
+        // Others
+        'application/octet-stream': 'Tệp nhị phân',
+        'application/x-executable': 'Tệp thực thi',
+        'application/x-sharedlib': 'Thư viện chia sẻ'
+    };
+
+    const friendlyName = mimeTypeMap[mimeType.toLowerCase()];
+    if (friendlyName) {
+        return friendlyName;
+    }
+
+    // Handle generic patterns
+    if (mimeType.startsWith('image/')) {
+        const format = mimeType.split('/')[1].toUpperCase();
+        return `Hình ảnh ${format}`;
+    }
+    if (mimeType.startsWith('video/')) {
+        const format = mimeType.split('/')[1].toUpperCase();
+        return `Video ${format}`;
+    }
+    if (mimeType.startsWith('audio/')) {
+        const format = mimeType.split('/')[1].toUpperCase();
+        return `Âm thanh ${format}`;
+    }
+    if (mimeType.startsWith('text/')) {
+        return 'Tệp văn bản';
+    }
+
+    // Fallback: try to use extension
+    if (extension) {
+        return extension.toUpperCase().replace(/^\./, '') + ' File';
+    }
+
+    // Last resort: show abbreviated mime type
+    return mimeType.split('/').pop().split('.').pop().toUpperCase();
+}
+
 function hydrateFileDetails(serverDetails = {}, fallbackFile = {}) {
     const merged = {
         ...fallbackFile,
@@ -215,8 +698,22 @@ function hydrateFileDetails(serverDetails = {}, fallbackFile = {}) {
     const fileId = normalizeFileId(merged);
     const shareOverride = fileId ? shareOverrides[fileId] : null;
     merged.shareUpdatedAt = shareOverride?.updatedAt || fallbackFile.shareUpdatedAt || fallbackFile.metadata?.shareUpdatedAt;
+    const fallbackToken = serverDetails.shareToken ?? serverDetails.metadata?.shareToken ?? fallbackFile.shareToken ?? fallbackFile.metadata?.shareToken ?? null;
+    const fallbackUrl = serverDetails.shareUrl ?? serverDetails.metadata?.shareUrl ?? fallbackFile.shareUrl ?? fallbackFile.metadata?.shareUrl ?? null;
+    const resolvedShareToken = fileId ? getShareTokenForFile(fileId, fallbackToken) : fallbackToken;
+    const resolvedShareUrl = fileId ? getShareUrlForFile(fileId, fallbackUrl) : fallbackUrl;
+    merged.shareToken = resolvedShareToken;
+    merged.shareUrl = resolvedShareUrl;
 
     if (fileId) {
+        const shareState = merged.shareState || 'private';
+        const shareToken = resolvedShareToken ?? merged.metadata?.shareToken ?? null;
+        const shareUrl = shareState === 'public'
+            ? (resolvedShareUrl || (shareToken ? buildShareUrl(fileId, shareToken) : null))
+            : null;
+
+        merged.shareUrl = shareUrl;
+
         detailSnapshots[fileId] = {
             name: merged.displayName,
             shareState: merged.shareState,
@@ -224,9 +721,16 @@ function hydrateFileDetails(serverDetails = {}, fallbackFile = {}) {
             size: merged.size,
             updatedAt: merged.modifiedDate || merged.uploadDate,
             shareUpdatedAt: merged.shareUpdatedAt,
+            shareToken: shareToken,
+            shareUrl: shareUrl,
             fetchedAt: new Date().toISOString()
         };
         saveDetailSnapshots();
+
+        persistShareOverride(fileId, shareState, {
+            shareToken,
+            shareUrl
+        });
     }
 
     return merged;
@@ -238,79 +742,93 @@ function buildFileDetailsModal(fileDetails) {
 
     const fileId = normalizeFileId(fileDetails);
     const shareState = getShareStateForFile(fileDetails);
-    const shareChipClass = shareState === 'public' ? 'details-chip is-public' : 'details-chip is-private';
-    const formattedSize = formatReadableFileSize(fileDetails.size);
+    const shareChipClass = shareState === 'public'
+        ? 'file-preview-chip share-state-chip is-public'
+        : 'file-preview-chip share-state-chip is-private';
+    const formattedSize = fileDetails.formattedSize || formatReadableFileSize(fileDetails.size);
     const uploadLabel = formatAbsoluteDateTime(fileDetails.uploadDate);
-    const modifiedLabel = formatAbsoluteDateTime(fileDetails.modifiedDate);
+    const modifiedLabel = formatAbsoluteDateTime(fileDetails.modifiedDate || fileDetails.lastModified);
+    const rawMimeType = fileDetails.mimeType || fileDetails.type || 'Không xác định';
+    const extensionLabel = fileDetails.extension ? fileDetails.extension.replace(/^\./, '') : '';
+    const typeLabel = getFriendlyFileType(rawMimeType, extensionLabel);
+    const versionLabel = String(fileDetails.version || 1);
+    const checksumValue = fileDetails.hash || fileDetails.checksum || fileDetails.integrityHash || null;
+    const hashHtml = checksumValue
+        ? `<div class="details-hash-row"><code>${escapeHtml(checksumValue)}</code><button class="hash-copy-btn" onclick="copyToClipboard('${escapeForJsString(checksumValue)}')"><i class="fas fa-copy"></i></button></div>`
+        : null;
+    const previewName = fileDetails.displayName || fileDetails.originalName || fileDetails.name || fileId || 'Không xác định';
+    const downloadName = fileDetails.originalName || fileDetails.displayName || previewName;
+    const previewMime = fileDetails.mimeType || fileDetails.type || 'application/octet-stream';
+    const previewThumbnail = fileDetails.thumbnail
+        ? `<img src="${fileDetails.thumbnail}" alt="Xem trước ${escapeHtml(previewName)}">`
+        : `<div class="file-preview-icon"><i class="fas ${getFileIconClass(fileDetails)}"></i></div>`;
+    const ownerProfile = window.currentUserProfile || {};
+    const ownerNameRaw = (ownerProfile.fullName && ownerProfile.fullName.trim()) || ownerProfile.email || 'Bạn';
+    const ownerInitial = ownerNameRaw.trim().charAt(0).toUpperCase() || 'B';
+    const ownerName = escapeHtml(ownerNameRaw);
     const timelineItems = createTimelineItems(fileDetails, detailSnapshots[fileId]);
-    const hashHtml = fileDetails.hash
-        ? `<div class="details-hash-row"><code>${escapeHtml(fileDetails.hash)}</code><button class="hash-copy-btn" onclick="copyToClipboard('${escapeForJsString(fileDetails.hash)}')"><i class="fas fa-copy"></i></button></div>`
-        : 'Đang tạo...';
+
+    const detailsRows = [
+        { label: 'Loại', value: typeLabel || '—' },
+        { label: 'Kích thước', value: formattedSize || '—' },
+        { label: 'Định dạng', value: extensionLabel ? `.${extensionLabel.toUpperCase()}` : '—' },
+        { label: 'Ngày tải lên', value: uploadLabel || '—' },
+        { label: 'Cập nhật gần nhất', value: modifiedLabel || '—' },
+        { label: 'Phiên bản', value: versionLabel }
+    ];
+
+    if (hashHtml) {
+        detailsRows.push({ label: 'Mã băm', html: hashHtml });
+    }
+
+    const detailsHtml = detailsRows.map((row) => {
+        const safeLabel = escapeHtml(row.label);
+        const safeValue = Object.prototype.hasOwnProperty.call(row, 'html')
+            ? row.html
+            : escapeHtml(row.value || '—');
+        return `<div class="file-details-row"><dt>${safeLabel}</dt><dd>${safeValue}</dd></div>`;
+    }).join('');
 
     container.innerHTML = `
-        <div class="file-details-hero">
-            <div class="file-icon-bubble">
-                <i class="fas ${getFileIconClass(fileDetails)}"></i>
-            </div>
-            <div class="file-details-heading">
-                <h4 title="${escapeHtml(fileDetails.displayName || '')}">${escapeHtml(fileDetails.displayName || '')}</h4>
-                <div class="file-detail-meta">
-                    <span class="details-chip"><i class="fas fa-database"></i>${escapeHtml(fileDetails.type || 'Không xác định')}</span>
-                    <span class="${shareChipClass}"><i class="fas ${shareState === 'public' ? 'fa-lock-open' : 'fa-lock'}"></i>${shareState === 'public' ? 'Đang công khai' : 'Đang riêng tư'}</span>
-                    <span class="details-chip"><i class="fas fa-code-branch"></i>Phiên bản ${escapeHtml(String(fileDetails.version || '1.0'))}</span>
+        <section class="file-details-section">
+            <h5>Chi tiết</h5>
+            <dl class="file-details-list">
+                ${detailsHtml}
+            </dl>
+        </section>
+        <section class="file-details-section">
+            <h5>Người có quyền truy cập</h5>
+            <div class="file-access-card">
+                <div class="file-access-avatar">${escapeHtml(ownerInitial)}</div>
+                <div class="file-access-info">
+                    <span class="file-access-name">${ownerName}</span>
+                    <span class="file-access-role">Chủ sở hữu</span>
                 </div>
+                <span class="file-access-badge">${shareState === 'public' ? 'Bất kỳ ai có liên kết' : 'Chỉ mình tôi'}</span>
             </div>
-        </div>
-    `;
-
-    const detailsGrid = document.createElement('div');
-    detailsGrid.className = 'file-details-grid';
-    detailsGrid.innerHTML = `
-        <div class="details-card">
-            <span class="label">Dung lượng</span>
-            <span class="value">${escapeHtml(formattedSize)}</span>
-        </div>
-        <div class="details-card">
-            <span class="label">Tải lên</span>
-            <span class="value">${escapeHtml(uploadLabel || '—')}</span>
-        </div>
-        <div class="details-card">
-            <span class="label">Cập nhật</span>
-            <span class="value">${escapeHtml(modifiedLabel || '—')}</span>
-        </div>
-        <div class="details-card">
-            <span class="label">Mã Hash</span>
-            <span class="value">${hashHtml}</span>
-        </div>
-    `;
-
-    const overview = document.createElement('div');
-    overview.className = 'file-details-overview';
-    overview.innerHTML = `
-        <div class="file-details-section">
-            <h5>Ghi chú nhanh</h5>
-            <p>Bạn có thể đổi tên, cập nhật quyền chia sẻ hoặc tải xuống tệp trực tiếp từ trang này. Thông tin luôn được đồng bộ mỗi khi mở cửa sổ chi tiết.</p>
-        </div>
+            <p class="file-access-note">Tính năng quản lý chia sẻ nâng cao đang được phát triển.</p>
+        </section>
     `;
 
     if (timelineItems.length) {
-        const timelineWrapper = document.createElement('div');
-        timelineWrapper.className = 'file-activity-timeline';
-        timelineWrapper.innerHTML = timelineItems.map(item => `
-            <div class="timeline-item">
-                <div class="timeline-icon"><i class="fas ${item.icon}"></i></div>
-                <div class="timeline-content">
-                    <div class="timeline-title">${escapeHtml(item.title)}</div>
-                    <div class="timeline-subtitle">${escapeHtml(item.subtitle)}</div>
-                </div>
+        const timelineSection = document.createElement('section');
+        timelineSection.className = 'file-details-section';
+        timelineSection.innerHTML = `
+            <h5>Hoạt động gần đây</h5>
+            <div class="file-activity-timeline">
+                ${timelineItems.map(item => `
+                    <div class="timeline-item">
+                        <div class="timeline-icon"><i class="fas ${item.icon}"></i></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">${escapeHtml(item.title)}</div>
+                            <div class="timeline-subtitle">${escapeHtml(item.subtitle)}</div>
+                        </div>
+                    </div>
+                `).join('')}
             </div>
-        `).join('');
-
-        overview.appendChild(timelineWrapper);
+        `;
+        container.appendChild(timelineSection);
     }
-
-    container.appendChild(detailsGrid);
-    container.appendChild(overview);
 
     return container;
 }
@@ -615,8 +1133,55 @@ async function loadFiles() {
 }
 
 function setAllFiles(files) {
-    allFiles = Array.isArray(files) ? files.map(applyShareOverrideToFile) : [];
+    const serverFiles = Array.isArray(files) ? files : [];
+    syncShareOverridesWithServer(serverFiles);
+    allFiles = serverFiles.map(applyShareOverrideToFile);
     applyFiltersAndRender();
+}
+
+function syncShareOverridesWithServer(files) {
+    if (!Array.isArray(files)) {
+        return;
+    }
+
+    const validIds = new Set();
+    const nextOverrides = { ...shareOverrides };
+
+    files.forEach(file => {
+        const fileId = normalizeFileId(file);
+        if (!fileId) {
+            return;
+        }
+
+        validIds.add(fileId);
+
+        const metadata = file.metadata || {};
+        const serverState = metadata.shareStatus || (file.visibility === 'public' ? 'public' : (file.isPublic ? 'public' : 'private'));
+        const shareToken = metadata.shareToken ?? file.shareToken ?? null;
+        const shareUpdatedAt = metadata.shareUpdatedAt || metadata.updatedAt || metadata.lastModified || file.updatedAt || file.modifiedDate || new Date().toISOString();
+        const normalizedState = ['public', 'private'].includes(serverState) ? serverState : 'private';
+        const computedShareUrl = normalizedState === 'public' ? buildShareUrl(fileId, shareToken) : null;
+
+        nextOverrides[fileId] = {
+            state: normalizedState,
+            updatedAt: shareUpdatedAt,
+            shareToken,
+            shareUrl: computedShareUrl || nextOverrides[fileId]?.shareUrl || null
+        };
+
+        if (nextOverrides[fileId].state !== 'public') {
+            nextOverrides[fileId].shareUrl = null;
+        }
+    });
+
+    Object.keys(nextOverrides).forEach(id => {
+        if (!validIds.has(id)) {
+            delete nextOverrides[id];
+        }
+    });
+
+    shareOverrides = nextOverrides;
+    saveShareOverrides();
 }
 
 function applyFiltersAndRender() {
@@ -867,7 +1432,8 @@ function createFileListHTML(files) {
                 const originalNameRaw = file.originalName || displayNameRaw;
                 const fileIdRaw = file.id || file.internalName || originalNameRaw;
                 const mimeTypeRaw = file.type || '';
-                const typeLabelRaw = mimeTypeRaw || (file.extension ? file.extension.replace('.', '').toUpperCase() : 'Không xác định');
+                const extensionRaw = file.extension || '';
+                const typeLabelRaw = getFriendlyFileType(mimeTypeRaw, extensionRaw);
                 const sizeLabel = formatReadableFileSize(file.size);
                 const dateValue = getDisplayDateValue(file);
                 const dateLabel = formatRelativeDate(dateValue);
@@ -875,6 +1441,8 @@ function createFileListHTML(files) {
 
                 const displayNameHtml = escapeHtml(displayNameRaw);
                 const fileIdAttr = escapeHtml(fileIdRaw);
+                const shareTokenRaw = file.shareToken || file.metadata?.shareToken || null;
+                const shareTokenAttr = shareTokenRaw ? ` data-share-token="${escapeHtml(shareTokenRaw)}"` : '';
                 const typeLabelHtml = escapeHtml(typeLabelRaw);
                 const sizeLabelHtml = escapeHtml(sizeLabel);
                 const dateLabelHtml = escapeHtml(dateLabel);
@@ -890,7 +1458,7 @@ function createFileListHTML(files) {
                     : '';
 
                 return `
-                <div class="file-item" data-file-id="${fileIdAttr}" data-file-name="${displayNameHtml}" data-share-state="${shareState}">
+                <div class="file-item" data-file-id="${fileIdAttr}" data-file-name="${displayNameHtml}" data-share-state="${shareState}"${shareTokenAttr}>
                     <div class="file-icon-wrapper ${file.isImage ? 'image-preview' : ''}" ${previewBackground}>
                         ${!file.isImage ? `<i class="fas ${getFileIconClass(file)}"></i>` : ''}
                     </div>
@@ -899,7 +1467,7 @@ function createFileListHTML(files) {
                         <div class="file-meta">
                             <span class="file-size">${sizeLabelHtml}</span>
                             <span class="file-date" title="${dateTitleHtml}">${dateLabelHtml}</span>
-                            <span class="file-type">${typeLabelHtml}</span>
+                            <span class="file-type" title="${mimeTypeRaw ? escapeHtml(mimeTypeRaw) : 'Không xác định'}">${typeLabelHtml}</span>
                         </div>
                     </div>
                     <div class="file-actions">
@@ -912,11 +1480,11 @@ function createFileListHTML(files) {
                         <button class="action-btn download-btn" title="Tải xuống" onclick="downloadFile('${fileIdJs}', '${originalNameJs}')">
                             <i class="fas fa-download"></i>
                         </button>
-                        <button class="action-btn lan-share-btn" title="Gửi qua Share">
-                            <i class="fas fa-paper-plane"></i>
+                        <button class="action-btn share-manage-btn${shareState === 'public' ? ' is-public' : ''}" title="${shareState === 'public' ? 'Đang công khai - quản lý chia sẻ' : 'Chia sẻ tệp'}" data-file-id="${fileIdAttr}" data-share-state="${shareState}">
+                            <i class="fas ${shareState === 'public' ? 'fa-share-square' : 'fa-share-alt'}"></i>
                         </button>
-                        <button class="action-btn share-toggle-btn" title="${shareState === 'public' ? 'Đang công khai' : 'Đang riêng tư'}" data-share-state="${shareState}">
-                            <i class="fas ${shareState === 'public' ? 'fa-lock-open' : 'fa-lock'}"></i>
+                        <button class="action-btn beamshare-btn" title="BeamShare Live" data-file-id="${fileIdAttr}" data-file-name="${displayNameHtml}">
+                            <i class="fas fa-paper-plane"></i>
                         </button>
                         <button class="action-btn rename-btn" title="Đổi tên" onclick="renameFile('${fileIdJs}', '${displayNameJs}')">
                             <i class="fas fa-edit"></i>
@@ -1133,7 +1701,7 @@ function addFileInteractions() {
     });
     
     actionBtns.forEach(btn => {
-        if (btn.classList.contains('share-toggle-btn') || btn.classList.contains('lan-share-btn')) {
+        if (btn.classList.contains('share-manage-btn') || btn.classList.contains('beamshare-btn')) {
             return;
         }
 
@@ -1165,74 +1733,34 @@ function addFileInteractions() {
         });
     });
 
-    const shareToggleButtons = document.querySelectorAll('.share-toggle-btn');
-    shareToggleButtons.forEach(button => {
-        const state = button.getAttribute('data-share-state') || 'private';
-        updateShareToggleVisuals(button, state);
+    const shareButtons = document.querySelectorAll('.share-manage-btn');
+    shareButtons.forEach(button => {
+        const initialState = button.getAttribute('data-share-state') || 'private';
+        updateShareButtonState(button, initialState);
 
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
 
-            const newState = toggleShareStatus(button);
-            const fileItem = button.closest('.file-item');
-            if (fileItem) {
-                fileItem.setAttribute('data-share-state', newState);
-                const fileId = fileItem.getAttribute('data-file-id');
-                persistShareOverride(fileId, newState);
-                updateFileInsights(allFiles);
-
-                if (window.toastSystem) {
-                    const fileName = fileItem.getAttribute('data-file-name');
-                    const stateLabel = newState === 'public' ? 'công khai' : 'riêng tư';
-                    window.toastSystem.success(`Đã chuyển "${fileName}" sang chế độ ${stateLabel}`, {
-                        duration: 2500
-                    });
-                }
-            }
-        });
-    });
-
-    const lanShareButtons = document.querySelectorAll('.lan-share-btn');
-    lanShareButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const fileItem = this.closest('.file-item');
-            if (!fileItem) {
-                openShareTabForFile(null);
+            const fileId = button.getAttribute('data-file-id');
+            if (!fileId) {
                 return;
             }
 
-            const fileId = fileItem.getAttribute('data-file-id');
-            const fileName = fileItem.getAttribute('data-file-name') || 'tệp đã chọn';
-
-            openShareTabForFile(fileId, fileName);
+            openFileShareModal(fileId);
         });
     });
-}
 
-function toggleShareStatus(button) {
-    const currentState = button.getAttribute('data-share-state') === 'public' ? 'public' : 'private';
-    const newState = currentState === 'public' ? 'private' : 'public';
-    button.setAttribute('data-share-state', newState);
-    updateShareToggleVisuals(button, newState);
-    return newState;
-}
+    const beamshareButtons = document.querySelectorAll('.beamshare-btn');
+    beamshareButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
 
-function updateShareToggleVisuals(button, state) {
-    const icon = button.querySelector('i');
-    if (icon) {
-        icon.className = `fas ${state === 'public' ? 'fa-lock-open' : 'fa-lock'}`;
-    }
-
-    button.title = state === 'public' ? 'Đang công khai' : 'Đang riêng tư';
-    if (state === 'public') {
-        button.classList.add('is-public');
-    } else {
-        button.classList.remove('is-public');
-    }
+            const fileName = button.getAttribute('data-file-name') || 'tệp đã chọn';
+            openBeamShareWorkspace(fileName);
+        });
+    });
 }
 
 // CRUD Operations
@@ -1459,17 +1987,16 @@ window.viewFileDetails = async function(fileId) {
 
         const modalContent = buildFileDetailsModal(hydratedDetails);
         const downloadName = hydratedDetails.displayName || hydratedDetails.originalName || hydratedDetails.name || 'download';
-        const shareUrl = `${window.location.origin}/api/download/${encodeURIComponent(normalizedId)}`;
 
         window.modalSystem.createModal({
             title: 'Chi tiết tệp',
             content: modalContent,
             buttons: [
                 {
-                    text: 'Sao chép liên kết',
+                    text: 'Đóng',
                     className: 'btn-secondary',
                     onclick: () => {
-                        copyToClipboard(shareUrl);
+                        window.modalSystem.closeModal();
                     }
                 },
                 {
@@ -1492,6 +2019,348 @@ window.viewFileDetails = async function(fileId) {
         }
     }
 };
+
+function copyShareLinkForFile(fileId) {
+    if (!fileId) {
+        return;
+    }
+
+    const shareState = getShareStateForFile({ id: fileId }) || 'private';
+    const shareUrl = getShareUrlForFile(fileId, null);
+
+    if (shareState !== 'public' || !shareUrl) {
+        window.toastSystem?.warning('Tệp đang ở chế độ riêng tư. Hãy bật chế độ công khai để sử dụng liên kết chia sẻ.', {
+            duration: 3200
+        });
+        return;
+    }
+
+    window.copyToClipboard(shareUrl);
+}
+
+function buildShareDialogContent(fileDetails, fileId) {
+    const container = document.createElement('div');
+    container.className = 'share-dialog';
+    container.setAttribute('data-file-id', fileId);
+
+    const fileIconClass = getFileIconClass(fileDetails);
+    const displayName = escapeHtml(fileDetails.displayName || fileDetails.originalName || fileId);
+    const rawSize = typeof fileDetails.size === 'number' ? fileDetails.size : Number(fileDetails.size) || 0;
+    const readableSize = rawSize > 0 ? formatReadableFileSize(rawSize) : 'Không xác định';
+    const lastUpdatedSource = fileDetails.modifiedDate || fileDetails.uploadDate || null;
+    const lastUpdated = lastUpdatedSource ? formatRelativeDate(lastUpdatedSource) : 'Chưa có thông tin';
+    const sanitizedIdSegment = String(fileId).replace(/[^a-zA-Z0-9_-]/g, '');
+    const linkInputId = sanitizedIdSegment ? `share-link-${sanitizedIdSegment}` : `share-link-${Math.random().toString(36).slice(2, 10)}`;
+
+    container.innerHTML = `
+        <div class="share-dialog__section share-dialog__header">
+            <div class="share-dialog__file">
+                <span class="share-dialog__file-icon"><i class="fas ${fileIconClass}"></i></span>
+                <div>
+                    <h4 class="share-dialog__file-name" title="${displayName}">${displayName}</h4>
+                    <p class="share-dialog__file-meta">Dung lượng ${escapeHtml(readableSize)} · Cập nhật ${escapeHtml(lastUpdated)}</p>
+                </div>
+            </div>
+        </div>
+        <div class="share-dialog__section">
+            <div class="share-dialog__people-header">
+                <span class="share-dialog__section-title">Những người có quyền truy cập</span>
+                <span class="share-dialog__hint-muted">Tính năng thêm người đang được phát triển</span>
+            </div>
+            <div class="share-dialog__person is-owner">
+                <div class="share-dialog__avatar">B</div>
+                <div class="share-dialog__person-info">
+                    <span class="share-dialog__person-name">Bạn</span>
+                    <span class="share-dialog__person-role">Chủ sở hữu</span>
+                </div>
+                <span class="share-dialog__badge">Chủ sở hữu</span>
+            </div>
+        </div>
+        <div class="share-dialog__section">
+            <div class="share-dialog__access">
+                <div>
+                    <span class="share-dialog__section-title">Quyền truy cập chung</span>
+                    <p class="share-dialog__access-hint">Bất kỳ ai có đường liên kết đều có thể xem tệp này.</p>
+                </div>
+                <select class="share-access-select" aria-label="Quyền truy cập chung">
+                    <option value="private">Bị giới hạn</option>
+                    <option value="public">Bất kỳ ai có đường liên kết</option>
+                </select>
+            </div>
+            <div class="share-dialog__link">
+                <label for="${linkInputId}" class="sr-only">Đường liên kết chia sẻ</label>
+                <input id="${linkInputId}" type="text" class="share-link-input" readonly placeholder="Liên kết chia sẻ sẽ xuất hiện ở đây">
+                <div class="share-dialog__link-actions">
+                    <button type="button" class="btn-secondary share-copy-btn"><i class="fas fa-link"></i> Sao chép liên kết</button>
+                    <button type="button" class="btn-secondary share-open-btn"><i class="fas fa-external-link-alt"></i> Mở trang chia sẻ</button>
+                    <button type="button" class="btn-secondary share-regenerate-btn"><i class="fas fa-redo"></i> Tạo liên kết mới</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    return {
+        container,
+        accessSelect: container.querySelector('.share-access-select'),
+        accessHint: container.querySelector('.share-dialog__access-hint'),
+        linkInput: container.querySelector('.share-link-input'),
+        copyBtn: container.querySelector('.share-copy-btn'),
+        openBtn: container.querySelector('.share-open-btn'),
+        regenerateBtn: container.querySelector('.share-regenerate-btn')
+    };
+}
+
+function refreshShareDialogUI(dialogRefs, state, shareUrl) {
+    const isPublic = state === 'public';
+    const hasLink = Boolean(shareUrl);
+
+    if (dialogRefs.accessSelect) {
+        dialogRefs.accessSelect.value = isPublic ? 'public' : 'private';
+    }
+
+    if (dialogRefs.accessHint) {
+        dialogRefs.accessHint.textContent = isPublic
+            ? 'Bất kỳ ai có đường liên kết đều có thể xem tệp này.'
+            : 'Chỉ bạn mới có thể truy cập. Tạo liên kết công khai để chia sẻ.';
+    }
+
+    if (dialogRefs.linkInput) {
+        dialogRefs.linkInput.value = isPublic && hasLink ? shareUrl : '';
+        dialogRefs.linkInput.disabled = !(isPublic && hasLink);
+        dialogRefs.linkInput.placeholder = isPublic ? 'Đang tạo liên kết...' : 'Liên kết chỉ xuất hiện khi tệp công khai';
+    }
+
+    const actionDisabled = !(isPublic && hasLink);
+    if (dialogRefs.copyBtn) {
+        dialogRefs.copyBtn.disabled = actionDisabled;
+    }
+    if (dialogRefs.openBtn) {
+        dialogRefs.openBtn.disabled = actionDisabled;
+    }
+    if (dialogRefs.regenerateBtn) {
+        dialogRefs.regenerateBtn.disabled = !isPublic;
+    }
+
+    if (dialogRefs.roleButtons) {
+        dialogRefs.roleButtons.forEach((button) => {
+            const role = button.getAttribute('data-role');
+            const isViewer = role === 'viewer';
+            button.classList.toggle('is-active', isViewer);
+        });
+    }
+}
+
+function setShareDialogBusy(dialogRefs, isBusy) {
+    const elements = [
+        dialogRefs.accessSelect,
+        dialogRefs.copyBtn,
+        dialogRefs.openBtn,
+        dialogRefs.regenerateBtn,
+        dialogRefs.linkInput
+    ].filter(Boolean);
+
+    elements.forEach((element) => {
+        if (isBusy) {
+            element.dataset.prevDisabled = element.disabled ? '1' : '0';
+            element.disabled = true;
+        } else {
+            const wasDisabled = element.dataset.prevDisabled === '1';
+            element.disabled = Boolean(wasDisabled);
+            delete element.dataset.prevDisabled;
+        }
+    });
+
+    if (!isBusy) {
+        refreshShareDialogUI(dialogRefs, dialogRefs.accessSelect?.value || 'private', dialogRefs.linkInput?.value || '');
+    }
+}
+
+async function openFileShareModal(fileId) {
+    const normalizedId = normalizeFileId(fileId);
+    if (!normalizedId) {
+        return;
+    }
+
+    if (window.modalSystem?.activeModal && typeof window.modalSystem.closeModal === 'function') {
+        window.modalSystem.closeModal();
+    }
+
+    const cachedFile = allFiles.find(file => normalizeFileId(file) === normalizedId) || filteredFiles.find(file => normalizeFileId(file) === normalizedId) || {};
+
+    try {
+        const response = await fetch(`/api/files/${encodeURIComponent(normalizedId)}/details?ts=${Date.now()}`, {
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
+        });
+
+        const serverDetails = await response.json();
+        if (!response.ok) {
+            throw new Error(serverDetails.error || 'Không thể tải thông tin chia sẻ.');
+        }
+
+        const hydratedDetails = hydrateFileDetails(serverDetails, cachedFile);
+        mergeFileDetailsIntoState(normalizedId, hydratedDetails);
+
+        const initialState = hydratedDetails.shareState || 'private';
+        const initialUrl = getShareUrlForFile(normalizedId, hydratedDetails.shareUrl || null);
+
+        const dialogRefs = buildShareDialogContent(hydratedDetails, normalizedId);
+
+        window.modalSystem.createModal({
+            title: `Chia sẻ tệp`,
+            content: dialogRefs.container,
+            buttons: [
+                {
+                    text: 'Xong',
+                    className: 'btn-primary',
+                    onclick: () => {
+                        window.modalSystem.closeModal();
+                    }
+                }
+            ]
+        });
+
+        refreshShareDialogUI(dialogRefs, initialState, initialUrl);
+
+        if (dialogRefs.linkInput) {
+            dialogRefs.linkInput.addEventListener('focus', () => dialogRefs.linkInput.select());
+            dialogRefs.linkInput.addEventListener('click', () => dialogRefs.linkInput.select());
+        }
+
+        let currentState = initialState;
+        let currentUrl = initialUrl;
+
+        if (dialogRefs.accessSelect) {
+            dialogRefs.accessSelect.addEventListener('change', async (event) => {
+                const requestedState = event.target.value === 'public' ? 'public' : 'private';
+                if (requestedState === currentState) {
+                    return;
+                }
+
+                try {
+                    setShareDialogBusy(dialogRefs, true);
+                    const result = await changeFileVisibility(normalizedId, requestedState, { regenerateToken: false, showToast: true });
+                    currentState = result.visibility;
+                    currentUrl = result.shareUrl;
+                    refreshShareDialogUI(dialogRefs, currentState, currentUrl);
+                } catch (error) {
+                    console.error('Share update error:', error);
+                    window.toastSystem?.error(error.message || 'Không thể cập nhật quyền chia sẻ.', {
+                        duration: 3500
+                    });
+                    dialogRefs.accessSelect.value = currentState === 'public' ? 'public' : 'private';
+                    refreshShareDialogUI(dialogRefs, currentState, currentUrl);
+                } finally {
+                    setShareDialogBusy(dialogRefs, false);
+                }
+            });
+        }
+
+        if (dialogRefs.copyBtn) {
+            dialogRefs.copyBtn.addEventListener('click', () => {
+                copyShareLinkForFile(normalizedId);
+            });
+        }
+
+        if (dialogRefs.openBtn) {
+            dialogRefs.openBtn.addEventListener('click', () => {
+                openShareTabForFile(normalizedId, hydratedDetails.displayName, {
+                    shareToken: getShareTokenForFile(normalizedId, hydratedDetails.shareToken || null),
+                    visibility: currentState
+                });
+            });
+        }
+
+        if (dialogRefs.regenerateBtn) {
+            dialogRefs.regenerateBtn.addEventListener('click', async () => {
+                try {
+                    setShareDialogBusy(dialogRefs, true);
+                    const result = await regenerateShareLink(normalizedId);
+                    if (result) {
+                        currentState = result.visibility;
+                        currentUrl = result.shareUrl;
+                        refreshShareDialogUI(dialogRefs, currentState, currentUrl);
+                    }
+                } catch (error) {
+                    // lỗi đã được hiển thị trong regenerateShareLink
+                } finally {
+                    setShareDialogBusy(dialogRefs, false);
+                }
+            });
+        }
+
+        if (dialogRefs.roleButtons) {
+            dialogRefs.roleButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    if (button.hasAttribute('disabled')) {
+                        window.toastSystem?.info('Quyền nâng cao sẽ sớm có mặt.', {
+                            duration: 3000
+                        });
+                        return;
+                    }
+
+                    dialogRefs.roleButtons.forEach(btn => btn.classList.remove('is-active'));
+                    button.classList.add('is-active');
+                });
+            });
+        }
+
+    } catch (error) {
+        console.error('Open share modal error:', error);
+        window.toastSystem?.error(error.message || 'Không thể mở giao diện chia sẻ.', {
+            duration: 4000
+        });
+    }
+}
+
+async function regenerateShareLink(fileId) {
+    if (!fileId) {
+        return;
+    }
+
+    const currentState = getShareStateForFile({ id: fileId }) || 'private';
+    if (currentState !== 'public') {
+        window.toastSystem?.warning('Bật chế độ công khai trước khi tạo liên kết chia sẻ mới.', {
+            duration: 3200
+        });
+        return;
+    }
+
+    const regenerateBtn = findShareElement('.file-share-regenerate', fileId);
+    const originalContent = regenerateBtn ? regenerateBtn.innerHTML : null;
+
+    if (regenerateBtn) {
+        regenerateBtn.disabled = true;
+        regenerateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo...';
+    }
+
+    try {
+        const result = await changeFileVisibility(fileId, 'public', {
+            regenerateToken: true,
+            showToast: false
+        });
+
+        if (window.toastSystem) {
+            window.toastSystem.success('Đã tạo liên kết chia sẻ mới!', {
+                duration: 2800
+            });
+        }
+
+        return result;
+    } catch (error) {
+        console.error('Regenerate share link error:', error);
+        window.toastSystem?.error(`Không thể tạo liên kết mới: ${error.message}`, {
+            duration: 4000
+        });
+        throw error;
+    } finally {
+        if (regenerateBtn) {
+            regenerateBtn.disabled = false;
+            regenerateBtn.innerHTML = originalContent || '<i class="fas fa-redo"></i> Tạo liên kết mới';
+        }
+    }
+}
 
 // Copy to clipboard utility
 window.copyToClipboard = async function(text) {

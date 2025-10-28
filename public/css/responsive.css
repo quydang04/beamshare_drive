@@ -54,6 +54,50 @@
     .file-details-grid {
         grid-template-columns: 1fr;
     }
+
+    .file-details-preview {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .file-preview-thumbnail {
+        width: 80px;
+        height: 80px;
+    }
+
+    .file-preview-actions {
+        width: 100%;
+    }
+
+    .file-preview-actions .btn-primary,
+    .file-preview-actions .btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .file-details-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 8px 0;
+    }
+
+    .file-details-row dt {
+        font-weight: 700;
+        color: #374151;
+    }
+
+    .file-details-row dd {
+        width: 100%;
+    }
+
+    .file-access-card {
+        gap: 10px;
+    }
+
+    .file-access-badge {
+        margin-left: 0;
+        align-self: flex-start;
+    }
 }
 
 /* Mobile screens */

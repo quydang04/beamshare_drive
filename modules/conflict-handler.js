@@ -5,25 +5,26 @@ const mime = require('mime-types');
 class ConflictHandler {
     constructor(fileMetadata) {
         this.fileMetadata = fileMetadata;
+        this.uploadsRoot = path.join(__dirname, '..', 'uploads');
     }
 
-    // Enhanced conflict detection with comprehensive file analysis
-    checkFileConflict(displayName, newFileSize = null, newFileType = null) {
-        const exists = this.fileMetadata.displayNameExists(displayName);
+    async checkFileConflict(userId, displayName, newFileSize = null, newFileType = null) {
+        const internalName = await this.fileMetadata.getInternalFilename(userId, displayName);
 
-        if (!exists) {
+        if (!internalName) {
             return { hasConflict: false };
         }
 
-        const existingInternalName = this.fileMetadata.getInternalFilename(displayName);
-        const existingMetadata = this.fileMetadata.getFileMetadata(existingInternalName);
-        const existingFilePath = path.join(__dirname, '..', 'uploads', existingInternalName);
+        const existingMetadata = await this.fileMetadata.getFileMetadataForUser(userId, internalName);
+        const existingFilePath = existingMetadata
+            ? path.join(this.uploadsRoot, existingMetadata.storagePath)
+            : null;
 
         let existingStats = null;
         let existingMimeType = null;
 
         try {
-            if (fs.existsSync(existingFilePath)) {
+            if (existingFilePath && fs.existsSync(existingFilePath)) {
                 existingStats = fs.statSync(existingFilePath);
                 existingMimeType = mime.lookup(existingFilePath) || 'application/octet-stream';
             }
@@ -36,15 +37,15 @@ class ConflictHandler {
             type: 'name_conflict',
             existingFile: {
                 displayName: displayName,
-                internalFilename: existingInternalName,
+                internalFilename: internalName,
                 uploadDate: existingMetadata ? existingMetadata.uploadDate : (existingStats ? existingStats.birthtime.toISOString() : null),
                 lastModified: existingMetadata ? existingMetadata.lastModified : (existingStats ? existingStats.mtime.toISOString() : null),
-                size: existingStats ? existingStats.size : null,
-                formattedSize: existingStats ? this.formatFileSize(existingStats.size) : 'Unknown',
-                mimeType: existingMimeType,
+                size: existingStats ? existingStats.size : (existingMetadata ? existingMetadata.size : null),
+                formattedSize: existingStats ? this.formatFileSize(existingStats.size) : (existingMetadata && existingMetadata.size ? this.formatFileSize(existingMetadata.size) : 'Unknown'),
+                mimeType: existingMetadata ? existingMetadata.mimeType : existingMimeType,
                 version: existingMetadata ? existingMetadata.version : 1,
-                canBackup: existingStats !== null,
-                isImage: existingMimeType ? existingMimeType.startsWith('image/') : false,
+                canBackup: Boolean(existingFilePath && existingStats),
+                isImage: (existingMetadata && existingMetadata.mimeType) ? existingMetadata.mimeType.startsWith('image/') : (existingMimeType ? existingMimeType.startsWith('image/') : false),
                 extension: path.extname(displayName).toLowerCase()
             },
             newFile: newFileSize !== null ? {
@@ -55,7 +56,7 @@ class ConflictHandler {
                 sizeDifference: existingStats ? newFileSize - existingStats.size : null,
                 isLarger: existingStats ? newFileSize > existingStats.size : null
             } : null,
-            recommendations: this.generateConflictRecommendations(displayName, existingStats, newFileSize, existingMimeType, newFileType)
+            recommendations: this.generateConflictRecommendations(displayName, existingStats, newFileSize, existingMimeType || (existingMetadata ? existingMetadata.mimeType : null), newFileType)
         };
 
         return conflictInfo;
@@ -104,41 +105,38 @@ class ConflictHandler {
     }
 
     // Enhanced unique filename generation with comprehensive edge case handling
-    generateUniqueFilename(originalName) {
+    async generateUniqueFilename(userId, originalName) {
         const lastDotIndex = originalName.lastIndexOf('.');
         const nameWithoutExt = lastDotIndex > 0 ? originalName.substring(0, lastDotIndex) : originalName;
         const extension = lastDotIndex > 0 ? originalName.substring(lastDotIndex) : '';
 
-        // Handle filenames that already contain numbered parentheses
         const existingNumberMatch = nameWithoutExt.match(/^(.+?)\s*\((\d+)\)$/);
-        let baseName = existingNumberMatch ? existingNumberMatch[1].trim() : nameWithoutExt;
-        let startCounter = existingNumberMatch ? parseInt(existingNumberMatch[2]) + 1 : 1;
+        const baseName = existingNumberMatch ? existingNumberMatch[1].trim() : nameWithoutExt;
+        const startCounter = existingNumberMatch ? parseInt(existingNumberMatch[2], 10) + 1 : 1;
 
         let counter = startCounter;
         let newName = originalName;
-        const maxAttempts = 10000; // Safety limit
+        const maxAttempts = 10000;
 
-        while (this.fileMetadata.displayNameExists(newName) && counter < maxAttempts) {
+        while (await this.fileMetadata.displayNameExists(userId, newName) && counter < maxAttempts) {
             newName = `${baseName} (${counter})${extension}`;
             counter++;
         }
 
-        // Fallback to timestamp if we hit the safety limit
         if (counter >= maxAttempts) {
             const timestamp = Date.now();
             newName = `${baseName}_${timestamp}${extension}`;
 
-            // Final check - if even timestamp version exists, add random suffix
-            if (this.fileMetadata.displayNameExists(newName)) {
+            if (await this.fileMetadata.displayNameExists(userId, newName)) {
                 const randomSuffix = Math.random().toString(36).substring(2, 8);
                 newName = `${baseName}_${timestamp}_${randomSuffix}${extension}`;
             }
         }
 
-        // Log the auto-rename action
         this.logConflictAction('auto_rename', {
-            originalName: originalName,
-            newName: newName,
+            userId,
+            originalName,
+            newName,
             counter: counter - startCounter,
             timestamp: new Date().toISOString()
         });
@@ -147,33 +145,36 @@ class ConflictHandler {
     }
 
     // Generate filename suggestions
-    generateFilenameSuggestions(originalName) {
+    async generateFilenameSuggestions(userId, originalName) {
         const suggestions = [];
         const lastDotIndex = originalName.lastIndexOf('.');
         const nameWithoutExt = lastDotIndex > 0 ? originalName.substring(0, lastDotIndex) : originalName;
         const extension = lastDotIndex > 0 ? originalName.substring(lastDotIndex) : '';
 
-        // Generate numbered suggestions
         for (let i = 1; i <= 5; i++) {
             const suggestion = `${nameWithoutExt} (${i})${extension}`;
-            if (!this.fileMetadata.displayNameExists(suggestion)) {
+            if (!(await this.fileMetadata.displayNameExists(userId, suggestion))) {
                 suggestions.push(suggestion);
             }
         }
 
-        // Add timestamp-based suggestion
         const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-        suggestions.push(`${nameWithoutExt}_${timestamp}${extension}`);
+        const timestampSuggestion = `${nameWithoutExt}_${timestamp}${extension}`;
+        if (!(await this.fileMetadata.displayNameExists(userId, timestampSuggestion))) {
+            suggestions.push(timestampSuggestion);
+        }
 
-        // Add date-based suggestion
         const dateStr = new Date().toISOString().slice(0, 10);
-        suggestions.push(`${nameWithoutExt}_${dateStr}${extension}`);
+        const dateSuggestion = `${nameWithoutExt}_${dateStr}${extension}`;
+        if (!(await this.fileMetadata.displayNameExists(userId, dateSuggestion))) {
+            suggestions.push(dateSuggestion);
+        }
 
-        return suggestions.slice(0, 5); // Return max 5 suggestions
+        return suggestions.slice(0, 5);
     }
 
     // Enhanced backup system with detailed metadata
-    createBackupFile(filePath, internalFilename, displayName = null) {
+    async createBackupFile(userId, internalFilename, displayName = null) {
         try {
             const backupDir = path.join(__dirname, '..', 'uploads', '.backups');
             if (!fs.existsSync(backupDir)) {
@@ -181,8 +182,14 @@ class ConflictHandler {
             }
 
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const stats = fs.statSync(filePath);
-            const metadata = this.fileMetadata.getFileMetadata(internalFilename);
+            const metadata = await this.fileMetadata.getFileMetadataByInternal(internalFilename);
+            const storagePath = metadata ? metadata.storagePath : path.join(userId, internalFilename);
+            const filePath = path.join(__dirname, '..', 'uploads', storagePath);
+
+            const stats = fs.existsSync(filePath) ? fs.statSync(filePath) : null;
+            if (!stats) {
+                throw new Error('Original file not found for backup');
+            }
 
             // Create backup filename with original display name if available
             const originalDisplayName = displayName || (metadata ? metadata.displayName : internalFilename);
@@ -199,7 +206,7 @@ class ConflictHandler {
                 originalInternalName: internalFilename,
                 originalDisplayName: originalDisplayName,
                 backupDate: new Date().toISOString(),
-                originalUploadDate: metadata ? metadata.uploadDate : stats.birthtime.toISOString(),
+                originalUploadDate: metadata && metadata.uploadDate ? metadata.uploadDate : stats.birthtime.toISOString(),
                 originalSize: stats.size,
                 backupReason: 'file_replacement',
                 canRestore: true

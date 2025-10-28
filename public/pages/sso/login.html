@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeamShare - Đăng nhập</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-8oCOHYKT8pi7M/Wq3iCt3vEGI7XWuf5NTau62JXpkkn00L6UNkTpZ1PS8CNo2i7Tt2n7O6U6D3lWq2RfDX0X7Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/public/css/base.css">
+    <link rel="stylesheet" href="/public/pages/sso/css/auth.css">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card" data-page="login">
+            <div class="auth-logo">
+                <i class="fas fa-cloud"></i>
+            </div>
+            <div class="auth-header">
+                <h1>Chào mừng trở lại</h1>
+                <p>Đăng nhập để quản lý và chia sẻ tệp tin của bạn.</p>
+            </div>
+            <form class="auth-form" id="login-form" data-form-type="login">
+                <div class="auth-alert" role="alert"></div>
+                <div class="form-field">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" name="email" placeholder="name@email.com" autocomplete="username" required>
+                </div>
+                <div class="form-field password-field">
+                    <label for="login-password">Mật khẩu</label>
+                    <input type="password" id="login-password" name="password" placeholder="••••••••" autocomplete="current-password" required minlength="6">
+                    <button type="button" class="password-toggle" aria-label="Hiển thị mật khẩu">Hiện</button>
+                </div>
+                <div class="form-support">
+                    <label>
+                        <input type="checkbox" name="remember" checked>
+                        Ghi nhớ tôi
+                    </label>
+                    <a href="/auth/forgot-password">Quên mật khẩu?</a>
+                </div>
+                <div class="auth-actions">
+                    <button type="submit" class="btn-primary">Đăng nhập</button>
+                </div>
+            </form>
+            <div class="auth-footer">
+                Chưa có tài khoản? <a href="/auth/register">Đăng ký ngay</a>
+            </div>
+        </div>
+    </div>
+    <script src="/public/pages/sso/js/auth.js" defer></script>
+</body>
+</html>

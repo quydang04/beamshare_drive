@@ -1,0 +1,47 @@
+<section class="page change-page" id="change-profile-page">
+    <div class="page-header change-page__header">
+        <div class="change-page__heading">
+            <h1>Thông tin tài khoản</h1>
+            <p>Cập nhật tên hiển thị để đồng bộ avatar và lời chào trên mọi trang.</p>
+        </div>
+        <button class="change-back-link" type="button" data-action="go-dashboard">
+            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+            <span>Quay lại Dashboard</span>
+        </button>
+    </div>
+
+    <div class="change-layout">
+        <article class="change-card" aria-labelledby="change-profile-title">
+            <header class="change-card__header">
+                <h2 id="change-profile-title">Thông tin cá nhân</h2>
+                <p>Đảm bảo tên hiển thị phản ánh chính xác người dùng của bạn.</p>
+            </header>
+
+            <dl class="change-summary">
+                <div class="change-summary__item">
+                    <dt>Email đăng nhập</dt>
+                    <dd id="change-profile-email">—</dd>
+                </div>
+                <div class="change-summary__item">
+                    <dt>Tên đang hiển thị</dt>
+                    <dd id="change-profile-current-name">—</dd>
+                </div>
+            </dl>
+
+            <form id="change-profile-form" class="change-form" novalidate>
+                <div class="form-group">
+                    <label for="change-profile-name">Tên hiển thị mới</label>
+                    <input type="text" id="change-profile-name" name="fullName" maxlength="80" placeholder="Nhập tên hiển thị" autocomplete="name" required />
+                    <p class="form-hint">Tên này được dùng cho chữ cái avatar và lời chào.</p>
+                </div>
+
+                <div class="form-error" data-role="form-error" role="alert" aria-live="assertive"></div>
+
+                <div class="change-actions">
+                    <button class="btn btn-secondary" type="button" data-action="go-dashboard">Hủy</button>
+                    <button class="btn btn-primary" type="submit" id="change-profile-submit">Lưu thay đổi</button>
+                </div>
+            </form>
+        </article>
+    </div>
+</section>

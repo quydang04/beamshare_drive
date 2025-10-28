@@ -1,6 +1,8 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+const FileUtils = require('./file-utils');
 
 class UploadHandler {
     constructor() {
@@ -11,18 +13,31 @@ class UploadHandler {
         // Multer configuration for file uploads
         const storage = multer.diskStorage({
             destination: function (req, file, cb) {
-                const uploadPath = path.join(__dirname, '..', 'uploads');
-                if (!fs.existsSync(uploadPath)) {
-                    fs.mkdirSync(uploadPath, { recursive: true });
+                const userId = req.user && req.user.userId;
+                if (!userId) {
+                    return cb(new Error('Unauthorized upload request'));
                 }
-                cb(null, uploadPath);
+
+                const uploadRoot = path.join(__dirname, '..', 'uploads');
+                if (!fs.existsSync(uploadRoot)) {
+                    fs.mkdirSync(uploadRoot, { recursive: true });
+                }
+
+                const userUploadPath = path.join(uploadRoot, userId);
+                if (!fs.existsSync(userUploadPath)) {
+                    fs.mkdirSync(userUploadPath, { recursive: true });
+                }
+
+                cb(null, userUploadPath);
             },
             filename: function (req, file, cb) {
                 // Generate unique filename with timestamp
-                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
                 const ext = path.extname(file.originalname);
-                const name = path.basename(file.originalname, ext);
-                cb(null, name + '-' + uniqueSuffix + ext);
+                const nameWithoutExt = path.basename(file.originalname, ext);
+                const sanitizedBase = FileUtils.sanitizeFilename(nameWithoutExt) || 'file';
+                const randomSuffix = crypto.randomBytes(6).toString('hex');
+                const uniqueSuffix = `${Date.now()}-${randomSuffix}`;
+                cb(null, `${sanitizedBase}-${uniqueSuffix}${ext}`);
             }
         });
 
