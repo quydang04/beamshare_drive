@@ -18,7 +18,7 @@ const authMiddleware = require('./modules/middleware/auth.js');
 const app = express();
 const PORT = process.env.PORT || 8080;
 const beamshareStaticDir = path.join(__dirname, 'public', 'pages', 'beamshare');
-const fileShareStaticDir = path.join(__dirname, 'public', 'pages', 'file');
+const fileSharePagePath = path.join(__dirname, 'public', 'pages', 'file-share', 'index.html');
 
 // Initialize managers
 const fileMetadata = new FileMetadataManager();
@@ -36,19 +36,81 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve static assets for landing and SSO flows
 app.use('/beamshare', express.static(beamshareStaticDir));
-app.use('/file', express.static(fileShareStaticDir));
 app.use('/assets/landing', express.static(path.join(__dirname, 'public', 'pages', 'landing')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname), { index: false }));
 
+const buildShareRedirectPath = (driveFile, token) => {
+    if (!driveFile) {
+        return null;
+    }
+
+    let normalizedFile = driveFile;
+    try {
+        normalizedFile = decodeURIComponent(driveFile);
+    } catch (_error) {
+        normalizedFile = driveFile;
+    }
+
+    let normalizedToken = token || '';
+    if (token) {
+        try {
+            normalizedToken = decodeURIComponent(token);
+        } catch (_error) {
+            normalizedToken = token;
+        }
+    }
+
+    const encodedFile = encodeURIComponent(normalizedFile);
+    let target = `/files/d/${encodedFile}`;
+    if (normalizedToken) {
+        target += `?token=${encodeURIComponent(normalizedToken)}`;
+    }
+    return target;
+};
+
+app.get(['/file', '/file/'], (req, res) => {
+    const target = buildShareRedirectPath(req.query?.driveFile, req.query?.token);
+    if (target) {
+        return res.redirect(302, target);
+    }
+    return res.redirect(302, '/landing');
+});
+
+app.get('/file/*', (req, res) => {
+    const directTarget = buildShareRedirectPath(req.query?.driveFile, req.query?.token);
+    if (directTarget) {
+        return res.redirect(302, directTarget);
+    }
+    const target = req.originalUrl.replace(/^\/file/, '/files');
+    res.redirect(302, target);
+});
+
 // Legacy redirects for previous share path
-app.get(['/share', '/share/'], (_req, res) => {
-    res.redirect(302, '/file/');
+app.get(['/share', '/share/'], (req, res) => {
+    const target = buildShareRedirectPath(req.query?.driveFile, req.query?.token);
+    if (target) {
+        return res.redirect(302, target);
+    }
+    return res.redirect(302, '/files');
 });
 
 app.get('/share/*', (req, res) => {
-    const target = req.originalUrl.replace(/^\/share/, '/file');
+    const directTarget = buildShareRedirectPath(req.query?.driveFile, req.query?.token);
+    if (directTarget) {
+        return res.redirect(302, directTarget);
+    }
+    const target = req.originalUrl.replace(/^\/share/, '/files');
     res.redirect(302, target);
+});
+
+app.get('/files/d/:fileId', (_req, res) => {
+    res.sendFile(fileSharePagePath, (error) => {
+        if (error) {
+            console.error('Không thể tải trang chia sẻ tệp:', error.message);
+            res.status(500).send('Không thể tải trang chia sẻ');
+        }
+    });
 });
 
 // Auth & API routes
@@ -105,11 +167,11 @@ app.get('*', (req, res) => {
     }
 
     if (req.path.startsWith('/share')) {
-        const legacyTarget = req.originalUrl.replace(/^\/share/, '/file');
+        const legacyTarget = req.originalUrl.replace(/^\/share/, '/files');
         return res.redirect(302, legacyTarget);
     }
 
-    if (req.path.startsWith('/beamshare') || req.path.startsWith('/file') || req.path.startsWith('/landing') || req.path.startsWith('/auth')) {
+    if (req.path.startsWith('/beamshare') || req.path.startsWith('/file') || req.path.startsWith('/files') || req.path.startsWith('/landing') || req.path.startsWith('/auth')) {
         return res.redirect(302, req.path);
     }
 

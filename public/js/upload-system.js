@@ -306,6 +306,20 @@ class UnifiedUploadSystem {
         const existingFileDetails = await this.getExistingFileDetails(file.name);
         const suggestions = conflictInfo.suggestions || this.generateSuggestedName(file.name);
 
+        const fileForExistingIcon = conflictInfo.existingFile || existingFileDetails || file;
+        const existingIconDescriptor = this.getFileIconDescriptor(fileForExistingIcon);
+        const newIconDescriptor = this.getFileIconDescriptor(file);
+        const existingIconMarkup = this.buildFileIconMarkup(existingIconDescriptor, {
+            tag: 'div',
+            size: 'xl',
+            extraClasses: 'file-icon-large'
+        });
+        const newIconMarkup = this.buildFileIconMarkup(newIconDescriptor, {
+            tag: 'div',
+            size: 'xl',
+            extraClasses: 'file-icon-large'
+        });
+
         const content = document.createElement('div');
         content.innerHTML = `
             <div class="comprehensive-conflict-modal">
@@ -326,9 +340,7 @@ class UnifiedUploadSystem {
                             <div class="file-preview">
                                 ${existingFileDetails && existingFileDetails.thumbnail ?
                                     `<img src="${existingFileDetails.thumbnail}" alt="Existing file preview" class="file-thumbnail-large">` :
-                                    `<div class="file-icon-large">
-                                        <i class="${this.getFileIcon(file)}"></i>
-                                    </div>`
+                                    `${existingIconMarkup}`
                                 }
                             </div>
                             <div class="file-details">
@@ -370,9 +382,7 @@ class UnifiedUploadSystem {
                                             <span>Loading preview...</span>
                                         </div>
                                     </div>` :
-                                    `<div class="file-icon-large">
-                                        <i class="${this.getFileIcon(file)}"></i>
-                                    </div>`
+                                    `${newIconMarkup}`
                                 }
                             </div>
                             <div class="file-details">
@@ -795,11 +805,14 @@ class UnifiedUploadSystem {
 
     // Create queue item HTML
     createQueueItemHTML(item) {
-        const fileIcon = this.getFileIcon(item.file);
+        const iconDescriptor = this.getFileIconDescriptor(item.file);
+        const iconMarkup = this.buildFileIconMarkup(iconDescriptor, {
+            extraClasses: 'queue-item__icon'
+        });
         const statusIcon = this.getStatusIcon(item.status);
         const thumbnail = item.thumbnail ?
             `<img src="${item.thumbnail}" class="file-thumbnail" alt="thumbnail">` :
-            `<i class="${fileIcon} file-icon"></i>`;
+            iconMarkup;
 
         return `
             <div class="queue-item" data-id="${item.id}">
@@ -851,16 +864,9 @@ class UnifiedUploadSystem {
 
     // Get file icon based on type
     getFileIcon(file) {
-        const ext = file.name.split('.').pop().toLowerCase();
-
-        if (this.supportedFormats.images.includes(ext)) return 'fas fa-image';
-        if (this.supportedFormats.documents.includes(ext)) return 'fas fa-file-alt';
-        if (this.supportedFormats.archives.includes(ext)) return 'fas fa-file-archive';
-        if (this.supportedFormats.audio.includes(ext)) return 'fas fa-file-audio';
-        if (this.supportedFormats.video.includes(ext)) return 'fas fa-file-video';
-        if (this.supportedFormats.code.includes(ext)) return 'fas fa-file-code';
-
-        return 'fas fa-file';
+        const descriptor = this.getFileIconDescriptor(file);
+        const iconClass = descriptor?.icon ? descriptor.icon : 'fa-file-lines';
+        return `fas ${iconClass}`;
     }
 
     // Get status icon
@@ -924,6 +930,134 @@ class UnifiedUploadSystem {
             default:
                 return '';
         }
+    }
+
+    getFileIconDescriptor(fileLike) {
+        const fallbackDescriptor = {
+            icon: 'fa-file-lines',
+            variant: 'generic',
+            tone: 'file-icon-tone--generic',
+            label: 'Tệp BeamShare'
+        };
+
+        if (window.FileIcons && typeof window.FileIcons.resolve === 'function') {
+            try {
+                const candidate = this.normaliseFileForIcon(fileLike);
+                const descriptor = window.FileIcons.resolve(candidate);
+                if (descriptor && descriptor.icon) {
+                    return descriptor;
+                }
+            } catch (error) {
+                console.warn('FileIcons resolver failed', error);
+            }
+        }
+
+        return fallbackDescriptor;
+    }
+
+    buildFileIconMarkup(descriptor, options = {}) {
+        const settings = {
+            tag: 'span',
+            size: 'md',
+            extraClasses: '',
+            ...options
+        };
+
+        const { tag, size, extraClasses } = settings;
+        const classes = ['file-icon-badge'];
+
+        if (size === 'sm') {
+            classes.push('file-icon-badge--sm');
+        } else if (size === 'lg') {
+            classes.push('file-icon-badge--lg');
+        } else if (size === 'xl') {
+            classes.push('file-icon-badge--xl');
+        }
+
+        if (extraClasses) {
+            classes.push(extraClasses);
+        }
+
+        const variantAttr = descriptor?.variant ? ` data-icon-variant="${descriptor.variant}"` : '';
+        const labelValue = descriptor?.label ? this.escapeHtml(descriptor.label) : '';
+        const labelAttr = labelValue ? ` title="${labelValue}" aria-label="${labelValue}"` : '';
+        const iconClass = descriptor?.icon ? descriptor.icon : 'fa-file-lines';
+        const toneClass = descriptor?.tone ? descriptor.tone : 'file-icon-tone--generic';
+        const classAttr = classes.join(' ');
+
+        return `<${tag} class="${classAttr}"${variantAttr}${labelAttr}><i class="fas ${iconClass} ${toneClass}"></i></${tag}>`;
+    }
+
+    normaliseFileForIcon(fileLike) {
+        if (!fileLike) {
+            return {};
+        }
+
+        const name = fileLike.originalName || fileLike.displayName || fileLike.filename || fileLike.fileName || fileLike.name || '';
+        const mimeType = fileLike.mimeType || fileLike.mime || fileLike.type || '';
+        let extension = fileLike.extension || fileLike.ext || '';
+
+        if (!extension && typeof name === 'string') {
+            const lastDotIndex = name.lastIndexOf('.');
+            if (lastDotIndex > -1 && lastDotIndex < name.length - 1) {
+                extension = name.slice(lastDotIndex + 1);
+            }
+        }
+
+        if (extension) {
+            extension = String(extension).toLowerCase();
+        }
+
+        const lowerMime = typeof mimeType === 'string' ? mimeType.toLowerCase() : '';
+
+        const isImage = this.coerceMimeFlag(fileLike.isImage, lowerMime, 'image/');
+        const isVideo = this.coerceMimeFlag(fileLike.isVideo, lowerMime, 'video/');
+        const isAudio = this.coerceMimeFlag(fileLike.isAudio, lowerMime, 'audio/');
+        const isSheet = typeof fileLike.isSheet === 'boolean' ? fileLike.isSheet : undefined;
+        const isCode = typeof fileLike.isCode === 'boolean' ? fileLike.isCode : undefined;
+        const isDocument = typeof fileLike.isDocument === 'boolean' ? fileLike.isDocument : undefined;
+
+        return {
+            name,
+            originalName: fileLike.originalName || fileLike.displayName || fileLike.name,
+            displayName: fileLike.displayName || fileLike.originalName || fileLike.name,
+            extension,
+            ext: extension,
+            mime: lowerMime,
+            mimeType: lowerMime,
+            type: lowerMime,
+            isImage,
+            isVideo,
+            isAudio,
+            isSheet,
+            isCode,
+            isDocument
+        };
+    }
+
+    coerceMimeFlag(flagValue, mimeValue, prefix) {
+        if (typeof flagValue === 'boolean') {
+            return flagValue;
+        }
+
+        if (typeof mimeValue === 'string' && mimeValue.startsWith(prefix)) {
+            return true;
+        }
+
+        return undefined;
+    }
+
+    escapeHtml(value) {
+        if (value === null || value === undefined) {
+            return '';
+        }
+
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     // Format file size
@@ -1151,11 +1285,17 @@ class UnifiedUploadSystem {
 
     // Create HTML for individual conflict item in batch
     createConflictItemHTML(item, index) {
+        const iconDescriptor = this.getFileIconDescriptor(item.file);
+        const iconMarkup = this.buildFileIconMarkup(iconDescriptor, {
+            extraClasses: 'conflict-item__icon',
+            size: 'sm'
+        });
+
         return `
             <div class="conflict-item" data-index="${index}">
                 <div class="conflict-item-header">
                     <div class="file-info">
-                        <i class="${this.getFileIcon(item.file)} file-icon"></i>
+                        ${iconMarkup}
                         <span class="file-name">${item.file.name}</span>
                         <span class="file-size">(${this.formatFileSize(item.file.size)})</span>
                     </div>

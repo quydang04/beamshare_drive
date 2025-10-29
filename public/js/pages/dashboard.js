@@ -124,19 +124,25 @@
         return Number.isFinite(numeric) && numeric > 0 ? numeric : 0;
     };
 
-    const getFileIconClass = (file) => {
-        if (!file) return 'fa-file';
-        if (file.isImage) return 'fa-file-image';
-        if (file.isVideo) return 'fa-file-video';
-        if (file.isAudio) return 'fa-file-audio';
-        if (file.isDocument) return 'fa-file-lines';
-        const ext = (file.extension || '').toLowerCase();
-        if (['.doc', '.docx'].includes(ext)) return 'fa-file-word';
-        if (['.xls', '.xlsx'].includes(ext)) return 'fa-file-excel';
-        if (['.ppt', '.pptx'].includes(ext)) return 'fa-file-powerpoint';
-        if (['.pdf'].includes(ext)) return 'fa-file-pdf';
-        if (['.zip', '.rar', '.7z'].includes(ext)) return 'fa-file-zipper';
-        return 'fa-file';
+    const resolveFileIcon = (file) => {
+        if (window.FileIcons && typeof window.FileIcons.resolve === 'function') {
+            return window.FileIcons.resolve({
+                extension: file?.extension || file?.ext || null,
+                name: file?.displayName || file?.originalName || file?.name || null,
+                mime: file?.type || file?.mimeType || null,
+                isImage: Boolean(file?.isImage),
+                isVideo: Boolean(file?.isVideo),
+                isAudio: Boolean(file?.isAudio),
+                isDocument: Boolean(file?.isDocument)
+            });
+        }
+
+        return {
+            icon: 'fa-file-lines',
+            variant: 'generic',
+            tone: 'file-icon-tone--generic',
+            label: 'Tệp BeamShare'
+        };
     };
 
     const state = {
@@ -464,12 +470,13 @@
             const uploadedTimestamp = extractTimestamp(file);
             const uploadedAt = uploadedTimestamp ? formatRelativeTime(uploadedTimestamp) : '-';
             const uploadedExact = uploadedTimestamp ? formatDateTime(uploadedTimestamp) : 'Không xác định';
-            const icon = getFileIconClass(file);
+            const iconDescriptor = resolveFileIcon(file);
+            const iconVariantAttr = iconDescriptor.variant ? ` data-icon-variant="${iconDescriptor.variant}"` : '';
             const name = file.displayName || file.originalName || file.name || 'Không rõ tên';
             return `
                 <li class="recent-file-item">
                     <div class="recent-file-main">
-                        <div class="recent-file-icon"><i class="fas ${icon}"></i></div>
+                        <div class="recent-file-icon"${iconVariantAttr}><i class="fas ${iconDescriptor.icon} ${iconDescriptor.tone}"></i></div>
                         <div class="recent-file-info">
                             <span class="recent-file-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
                             <div class="recent-file-meta">

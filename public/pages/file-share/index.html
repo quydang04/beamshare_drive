@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeamShare Drive | Chia sẻ tệp</title>
+    <link rel="stylesheet" href="/public/css/pages/file-share.css">
+</head>
+<body>
+    <div class="share-sky"></div>
+    <main class="share-shell" role="main">
+        <header class="share-brand">
+            <div class="share-logo" aria-hidden="true">BS</div>
+            <div class="share-brand-copy">
+                <span class="share-brand-title">BeamShare Drive</span>
+                <span class="share-brand-sub">Truy cập tệp được chia sẻ an toàn</span>
+            </div>
+        </header>
+
+        <section class="share-card">
+            <div id="share-status" class="share-banner share-banner--neutral">
+                <span class="share-status-dot" aria-hidden="true"></span>
+                <span id="share-status-text">Đang kiểm tra liên kết chia sẻ…</span>
+            </div>
+
+            <div id="file-details" class="share-content">
+                <div class="share-info">
+                    <div class="share-title block">
+                        <span id="file-type" class="share-chip">Đang tải…</span>
+                        <h1 id="file-name">Tên tệp</h1>
+                        <p id="file-description" class="share-description">&nbsp;</p>
+                    </div>
+
+                    <dl class="share-meta">
+                        <div>
+                            <dt>Kích thước</dt>
+                            <dd id="file-size">Không xác định</dd>
+                        </div>
+                        <div>
+                            <dt>Chủ sở hữu</dt>
+                            <dd id="file-owner">Không xác định</dd>
+                        </div>
+                        <div>
+                            <dt>Cập nhật</dt>
+                            <dd id="file-updated">Không xác định</dd>
+                        </div>
+                        <div>
+                            <dt>Định dạng</dt>
+                            <dd id="file-format">Không xác định</dd>
+                        </div>
+                    </dl>
+
+                    <div class="share-actions">
+                        <a id="download-button" class="share-button" href="#" rel="noopener">Tải xuống tệp</a>
+                        <p class="share-helper">Không xem được trực tiếp? Tải xuống và mở bằng ứng dụng phù hợp.</p>
+                    </div>
+                </div>
+
+                <aside id="preview" class="share-preview" aria-label="Xem trước tệp">
+                    <div class="share-preview-placeholder">Đang chuẩn bị xem trước…</div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.7.1/mammoth.browser.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.7/jsmediatags.min.js" defer></script>
+    <script src="/public/js/preview-core.js" defer></script>
+    <script src="/public/js/share-page.js" defer></script>
+</body>
+</html>

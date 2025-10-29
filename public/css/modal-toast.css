@@ -787,6 +787,10 @@
     gap: 8px;
 }
 
+.conflict-item__icon {
+    flex-shrink: 0;
+}
+
 .file-icon {
     color: #007bff;
     width: 16px;
@@ -942,15 +946,19 @@
 .file-icon-large {
     width: 120px;
     height: 120px;
-    background: #f1f5f9;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
+    background: var(--file-icon-bg, #f1f5f9);
+    color: var(--file-icon-color, #1e293b);
+    border: 2px solid var(--file-icon-border, #e2e8f0);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto;
-    font-size: 40px;
-    color: #64748b;
+    font-size: 2.4rem;
+}
+
+.file-icon-large i {
+    color: inherit;
 }
 
 .loading-thumbnail {

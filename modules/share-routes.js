@@ -28,20 +28,21 @@ class ShareRoutes {
                 return res.status(404).json({ error: 'File not found' });
             }
 
-            const isOwner = req.user && req.user.userId === metadata.userId;
+            const user = req.user;
+            const isOwner = Boolean(user && user.userId === metadata.userId);
             const token = req.query.token || req.headers['x-share-token'];
+            const hasToken = typeof token === 'string' && token.length > 0;
 
-            if (metadata.visibility === 'private' && !isOwner) {
-                return res.status(401).json({ error: 'Authentication required' });
-            }
-
-            if (!isOwner && metadata.visibility === 'public') {
-                if (metadata.shareToken && token && token !== metadata.shareToken) {
-                    return res.status(403).json({ error: 'Invalid share token' });
+            if (metadata.visibility === 'private') {
+                if (!user) {
+                    return res.status(401).json({ error: 'Bạn cần đăng nhập để truy cập file này' });
                 }
-                if (metadata.shareToken && !token) {
-                    // Token required for non-owner access when token exists
-                    return res.status(403).json({ error: 'Share token required' });
+                if (!isOwner) {
+                    return res.status(403).json({ error: 'Bạn không có quyền truy cập file này' });
+                }
+            } else if (!isOwner && metadata.shareToken) {
+                if (!hasToken || token !== metadata.shareToken) {
+                    return res.status(403).json({ error: 'Liên kết chia sẻ không hợp lệ' });
                 }
             }
 
@@ -148,11 +149,25 @@ class ShareRoutes {
     }
 
     buildShareUrl(req, metadata) {
-        if (!metadata || metadata.visibility !== 'public' || !metadata.shareToken) {
+        if (!metadata || metadata.visibility !== 'public') {
             return null;
         }
 
-        return `${req.protocol}://${req.get('host')}/file?driveFile=${encodeURIComponent(metadata.internalName)}&token=${encodeURIComponent(metadata.shareToken)}`;
+        const sharePath = `/files/d/${encodeURIComponent(metadata.internalName)}`;
+        const hostHeader = req.get('host');
+
+        if (!hostHeader) {
+            if (metadata.shareToken) {
+                return `${sharePath}?token=${encodeURIComponent(metadata.shareToken)}`;
+            }
+            return sharePath;
+        }
+
+        const baseUrl = `${req.protocol}://${hostHeader}${sharePath}`;
+        if (metadata.shareToken) {
+            return `${baseUrl}?token=${encodeURIComponent(metadata.shareToken)}`;
+        }
+        return baseUrl;
     }
 
     getRouter() {

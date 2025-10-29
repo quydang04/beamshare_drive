@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="public/css/base.css">
     <link rel="stylesheet" href="public/css/modal-toast.css">
     <link rel="stylesheet" href="public/css/pdf-preview.css">
+    <link rel="stylesheet" href="public/css/file-icons.css">
     <link rel="stylesheet" href="public/css/responsive.css">
     <link rel="stylesheet" href="public/css/pages/myfiles.css">
     <link rel="stylesheet" href="public/css/pages/myfiles-list.css">
@@ -96,6 +97,10 @@
                     <i class="fas fa-credit-card"></i>
                     <span>Subscription</span>
                 </a>
+                <a href="#" class="nav-item" data-page="beamshare-live">
+                    <i class="fas fa-share-nodes"></i>
+                    <span>BeamShare Live</span>
+                </a>
             </nav>
         </aside>
         <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
@@ -124,6 +129,10 @@
             <i class="fas fa-credit-card"></i>
             <span>Subscription</span>
         </a>
+        <a href="#" class="nav-item" data-page="beamshare-live">
+            <i class="fas fa-share-nodes"></i>
+            <span>BeamShare Live</span>
+        </a>
     </nav>
 
     <!-- Scripts -->
@@ -134,10 +143,15 @@
 
     <script src="public/pages/sso/logout.js"></script>
     <script src="public/js/base.js"></script>
+    <script src="public/js/file-icons.js"></script>
     <script src="public/js/modal-system.js"></script>
     <script src="public/js/toast-system.js"></script>
     <script src="public/js/upload-system.js"></script>
-    <script src="public/js/pdf-preview.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.7.1/mammoth.browser.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.7/jsmediatags.min.js" defer></script>
+    <script src="public/js/preview-core.js"></script>
     <script src="public/js/pages/myfiles.js"></script>
     <script src="public/js/pages/upload.js"></script>
     <script src="public/js/pages/dashboard.js"></script>
@@ -223,6 +237,12 @@
                     init: 'initChangeMatkhau',
                     cleanup: 'cleanupChangeMatkhau',
                     path: '/change/matkhau'
+                },
+                'beamshare-live': {
+                    template: 'public/pages/beamshare/index.html',
+                    init: 'initBeamshareLive',
+                    cleanup: 'cleanupBeamshareLive',
+                    path: '/beamshare'
                 }
             };
 
@@ -374,14 +394,22 @@
                 const config = pageName ? PAGE_CONFIG[pageName] : undefined;
                 if (config?.path) {
                     item.setAttribute('href', config.path);
+                    if (pageName === 'beamshare-live') {
+                        item.setAttribute('target', '_blank');
+                        item.setAttribute('rel', 'noopener');
+                    }
                 }
 
                 item.addEventListener('click', (event) => {
-                    event.preventDefault();
                     if (!pageName) {
                         return;
                     }
-
+                    // For BeamShare Live open new tab to /beamshare
+                    if (pageName === 'beamshare-live') {
+                        // allow default navigation (anchor already has target _blank)
+                        return;
+                    }
+                    event.preventDefault();
                     loadPage(pageName);
 
                     if (window.innerWidth <= 1024) {

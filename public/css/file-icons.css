@@ -1,0 +1,159 @@
+/* Shared palette for BeamShare file-type icons */
+[data-icon-variant] {
+    --file-icon-bg: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+    --file-icon-color: #3730a3;
+    --file-icon-border: transparent;
+    background: var(--file-icon-bg);
+    color: var(--file-icon-color);
+    border: 1px solid var(--file-icon-border);
+}
+
+[data-icon-variant] i,
+[data-icon-variant] .file-icon-glyph {
+    color: inherit;
+}
+
+.file-icon-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--file-icon-bg, #f3f4f6);
+    color: var(--file-icon-color, #334155);
+    border: 1px solid var(--file-icon-border, rgba(148, 163, 184, 0.35));
+    font-size: 1.35rem;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.file-icon-badge i {
+    color: inherit;
+}
+
+.file-icon-badge--sm {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+}
+
+.file-icon-badge--lg {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    font-size: 1.75rem;
+}
+
+.file-icon-badge--xl {
+    width: 120px;
+    height: 120px;
+    border-radius: 20px;
+    font-size: 2.5rem;
+}
+
+/* Variant tones */
+[data-icon-variant="generic"] {
+    --file-icon-bg: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+    --file-icon-color: #3730a3;
+}
+
+[data-icon-variant="image"] {
+    --file-icon-bg: linear-gradient(135deg, #34d399 0%, #22d3ee 100%);
+    --file-icon-color: #0f172a;
+}
+
+[data-icon-variant="video"] {
+    --file-icon-bg: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+    --file-icon-color: #fdf4ff;
+}
+
+[data-icon-variant="audio"] {
+    --file-icon-bg: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+    --file-icon-color: #fff7ed;
+}
+
+[data-icon-variant="pdf"] {
+    --file-icon-bg: linear-gradient(135deg, #fb7185 0%, #ef4444 100%);
+    --file-icon-color: #fff5f5;
+}
+
+[data-icon-variant="word"] {
+    --file-icon-bg: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+    --file-icon-color: #f8fafc;
+}
+
+[data-icon-variant="sheet"] {
+    --file-icon-bg: linear-gradient(135deg, #34d399 0%, #059669 100%);
+    --file-icon-color: #ecfdf5;
+}
+
+[data-icon-variant="slides"] {
+    --file-icon-bg: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
+    --file-icon-color: #fff7ed;
+}
+
+[data-icon-variant="text"] {
+    --file-icon-bg: linear-gradient(135deg, #cbd5f5 0%, #94a3b8 100%);
+    --file-icon-color: #1e293b;
+}
+
+[data-icon-variant="code"] {
+    --file-icon-bg: linear-gradient(135deg, #6366f1 0%, #3730a3 100%);
+    --file-icon-color: #eef2ff;
+}
+
+[data-icon-variant="archive"] {
+    --file-icon-bg: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+    --file-icon-color: #fff7ed;
+}
+
+[data-icon-variant="database"] {
+    --file-icon-bg: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+    --file-icon-color: #f0f9ff;
+}
+
+[data-icon-variant="design"] {
+    --file-icon-bg: linear-gradient(135deg, #fb7185 0%, #ec4899 100%);
+    --file-icon-color: #fff1f2;
+}
+
+[data-icon-variant="font"] {
+    --file-icon-bg: linear-gradient(135deg, #fde68a 0%, #fbbf24 100%);
+    --file-icon-color: #78350f;
+}
+
+[data-icon-variant="three-d"] {
+    --file-icon-bg: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+    --file-icon-color: #111827;
+}
+
+[data-icon-variant="executable"] {
+    --file-icon-bg: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+    --file-icon-color: #713f12;
+}
+
+[data-icon-variant="ebook"] {
+    --file-icon-bg: linear-gradient(135deg, #fdba74 0%, #fb7185 100%);
+    --file-icon-color: #fff7ed;
+}
+
+/* Tone classes (fallback when data attribute is unavailable) */
+.file-icon-tone--generic { color: #3730a3; }
+.file-icon-tone--image { color: #0f172a; }
+.file-icon-tone--video { color: #a855f7; }
+.file-icon-tone--audio { color: #f97316; }
+.file-icon-tone--pdf { color: #ef4444; }
+.file-icon-tone--word { color: #2563eb; }
+.file-icon-tone--sheet { color: #059669; }
+.file-icon-tone--slides { color: #f97316; }
+.file-icon-tone--text { color: #475569; }
+.file-icon-tone--code { color: #4f46e5; }
+.file-icon-tone--archive { color: #d97706; }
+.file-icon-tone--database { color: #0ea5e9; }
+.file-icon-tone--design { color: #ec4899; }
+.file-icon-tone--font { color: #f59e0b; }
+.file-icon-tone--three-d { color: #6366f1; }
+.file-icon-tone--executable { color: #eab308; }
+.file-icon-tone--ebook { color: #fb7185; }

@@ -4,6 +4,10 @@ const DEFAULT_VIEW_MODE = 'list';
 const VIEW_MODE_STORAGE_KEY = 'myfiles:view-mode';
 const SHARE_STATE_STORAGE_KEY = 'myfiles:share-overrides';
 const DETAIL_SNAPSHOT_STORAGE_KEY = 'myfiles:detail-snapshots';
+const PREVIEW_MODAL_ID = 'file-preview-modal';
+const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']);
+const VIDEO_EXTENSIONS = new Set(['.mp4', '.avi', '.mov', '.webm', '.mkv']);
+const AUDIO_EXTENSIONS = new Set(['.mp3', '.wav', '.flac', '.ogg', '.m4a']);
 let allFiles = [];
 let filteredFiles = [];
 let activeSortOption = DEFAULT_SORT_OPTION;
@@ -201,8 +205,8 @@ function persistShareOverride(fileId, state, options = {}) {
         shareUrl: Object.prototype.hasOwnProperty.call(options, 'shareUrl') ? options.shareUrl : previous.shareUrl
     };
 
-    if (override.state === 'public' && !override.shareUrl && override.shareToken) {
-        override.shareUrl = buildShareUrl(fileId, override.shareToken);
+    if (override.state === 'public' && !override.shareUrl) {
+        override.shareUrl = buildShareUrl(fileId, override.shareToken || null);
     }
 
     if (override.state !== 'public') {
@@ -261,18 +265,24 @@ function getShareOverride(fileId) {
     return shareOverrides[fileId] || null;
 }
 
-function buildShareUrl(fileId, shareToken) {
-    if (!fileId || !shareToken) {
+function buildShareUrl(fileId, shareToken = null) {
+    if (!fileId) {
         return null;
     }
 
+    const sharePath = `/files/d/${encodeURIComponent(fileId)}`;
+
     try {
-    const shareUrl = new URL('/file', window.location.origin);
-        shareUrl.searchParams.set('driveFile', fileId);
-        shareUrl.searchParams.set('token', shareToken);
+        const shareUrl = new URL(sharePath, window.location.origin);
+        if (shareToken) {
+            shareUrl.searchParams.set('token', shareToken);
+        }
         return shareUrl.toString();
     } catch (error) {
-    return `/file?driveFile=${encodeURIComponent(fileId)}&token=${encodeURIComponent(shareToken)}`;
+        if (shareToken) {
+            return `${sharePath}?token=${encodeURIComponent(shareToken)}`;
+        }
+        return sharePath;
     }
 }
 
@@ -494,7 +504,7 @@ async function changeFileVisibility(fileId, targetState, options = {}) {
         const nextState = result.visibility || targetState;
         const shareToken = result.shareToken ?? getShareTokenForFile(fileId, null);
         const shareUrl = nextState === 'public'
-            ? (result.shareUrl || (shareToken ? buildShareUrl(fileId, shareToken) : null))
+            ? (result.shareUrl || buildShareUrl(fileId, shareToken || null))
             : null;
 
         persistShareOverride(fileId, nextState, {
@@ -762,9 +772,12 @@ function buildFileDetailsModal(fileDetails) {
     const previewName = fileDetails.displayName || fileDetails.originalName || fileDetails.name || fileId || 'Không xác định';
     const downloadName = fileDetails.originalName || fileDetails.displayName || previewName;
     const previewMime = fileDetails.mimeType || fileDetails.type || 'application/octet-stream';
+    const iconDescriptor = getFileIconDescriptor(fileDetails);
+    const previewIconVariantAttr = iconDescriptor.variant ? ` data-icon-variant="${iconDescriptor.variant}"` : '';
+    const previewIconHtml = `<div class="file-preview-icon"${previewIconVariantAttr}><i class="fas ${iconDescriptor.icon} ${iconDescriptor.tone}"></i></div>`;
     const previewThumbnail = fileDetails.thumbnail
         ? `<img src="${fileDetails.thumbnail}" alt="Xem trước ${escapeHtml(previewName)}">`
-        : `<div class="file-preview-icon"><i class="fas ${getFileIconClass(fileDetails)}"></i></div>`;
+        : previewIconHtml;
     const ownerProfile = window.currentUserProfile || {};
     const ownerNameRaw = (ownerProfile.fullName && ownerProfile.fullName.trim()) || ownerProfile.email || 'Bạn';
     const ownerInitial = ownerNameRaw.trim().charAt(0).toUpperCase() || 'B';
@@ -1460,10 +1473,21 @@ function createFileListHTML(files) {
                     ? `style="background-image: url('/api/preview/${encodeURIComponent(fileIdRaw)}'); background-size: cover; background-position: center;"`
                     : '';
 
+                const iconDescriptor = getFileIconDescriptor(file);
+                const iconVariantAttr = (!file.isImage && iconDescriptor.variant)
+                    ? ` data-icon-variant="${iconDescriptor.variant}"`
+                    : '';
+                const iconTitleAttr = (!file.isImage && iconDescriptor.label)
+                    ? ` title="${escapeHtml(iconDescriptor.label)}"`
+                    : '';
+                const iconMarkup = !file.isImage
+                    ? `<i class="fas ${iconDescriptor.icon} ${iconDescriptor.tone}"></i>`
+                    : '';
+
                 return `
                 <div class="file-item" data-file-id="${fileIdAttr}" data-file-name="${displayNameHtml}" data-share-state="${shareState}"${shareTokenAttr}>
-                    <div class="file-icon-wrapper ${file.isImage ? 'image-preview' : ''}" ${previewBackground}>
-                        ${!file.isImage ? `<i class="fas ${getFileIconClass(file)}"></i>` : ''}
+                    <div class="file-icon-wrapper ${file.isImage ? 'image-preview' : ''}" ${previewBackground}${iconVariantAttr}${iconTitleAttr}>
+                        ${iconMarkup}
                     </div>
                     <div class="file-details">
                         <div class="file-name" title="${displayNameHtml}">${displayNameHtml}</div>
@@ -1507,21 +1531,27 @@ function getInitialShareState(file) {
 }
 
 // Get file icon class based on file object
-function getFileIconClass(file) {
-    if (file.isImage) return 'fa-file-image';
-    if (file.isVideo) return 'fa-file-video';
-    if (file.isAudio) return 'fa-file-audio';
-    if (file.isDocument) return 'fa-file-pdf';
-    
-    const ext = file.extension;
-    if (['.doc', '.docx'].includes(ext)) return 'fa-file-word';
-    if (['.xls', '.xlsx'].includes(ext)) return 'fa-file-excel';
-    if (['.ppt', '.pptx'].includes(ext)) return 'fa-file-powerpoint';
-    if (['.zip', '.rar', '.7z'].includes(ext)) return 'fa-file-archive';
-    if (['.txt', '.log'].includes(ext)) return 'fa-file-alt';
-    if (['.js', '.html', '.css', '.json'].includes(ext)) return 'fa-file-code';
-    
-    return 'fa-file';
+function getFileIconDescriptor(file) {
+    if (window.FileIcons && typeof window.FileIcons.resolve === 'function') {
+        return window.FileIcons.resolve({
+            extension: file?.extension || file?.ext || null,
+            name: file?.originalName || file?.displayName || file?.name || null,
+            mime: file?.mimeType || file?.type || file?.metadata?.mimeType || null,
+            isImage: Boolean(file?.isImage),
+            isVideo: Boolean(file?.isVideo),
+            isAudio: Boolean(file?.isAudio),
+            isDocument: Boolean(file?.isDocument),
+            isSheet: Boolean(file?.isSheet),
+            isCode: Boolean(file?.isCode)
+        });
+    }
+
+    return {
+        icon: 'fa-file-lines',
+        variant: 'generic',
+        tone: 'file-icon-tone--generic',
+        label: 'Tệp BeamShare'
+    };
 }
 
 // Format file size
@@ -2047,7 +2077,8 @@ function buildShareDialogContent(fileDetails, fileId) {
     container.className = 'share-dialog';
     container.setAttribute('data-file-id', fileId);
 
-    const fileIconClass = getFileIconClass(fileDetails);
+    const iconDescriptor = getFileIconDescriptor(fileDetails);
+    const iconVariantAttr = iconDescriptor.variant ? ` data-icon-variant="${iconDescriptor.variant}"` : '';
     const displayName = escapeHtml(fileDetails.displayName || fileDetails.originalName || fileId);
     const rawSize = typeof fileDetails.size === 'number' ? fileDetails.size : Number(fileDetails.size) || 0;
     const readableSize = rawSize > 0 ? formatReadableFileSize(rawSize) : 'Không xác định';
@@ -2059,7 +2090,7 @@ function buildShareDialogContent(fileDetails, fileId) {
     container.innerHTML = `
         <div class="share-dialog__section share-dialog__header">
             <div class="share-dialog__file">
-                <span class="share-dialog__file-icon"><i class="fas ${fileIconClass}"></i></span>
+                <span class="share-dialog__file-icon"${iconVariantAttr}><i class="fas ${iconDescriptor.icon} ${iconDescriptor.tone}"></i></span>
                 <div>
                     <h4 class="share-dialog__file-name" title="${displayName}">${displayName}</h4>
                     <p class="share-dialog__file-meta">Dung lượng ${escapeHtml(readableSize)} · Cập nhật ${escapeHtml(lastUpdated)}</p>
@@ -2389,252 +2420,248 @@ function getEnhancedFileType(fileName, mimeType) {
     return { extension: ext };
 }
 
-// Preview file - Enhanced version with PDF.js support
-window.previewFile = function(fileId, fileName, fileType) {
-    console.log('Preview file called:', fileId, fileName, fileType);
-
-    const ext = fileName.toLowerCase().split('.').pop();
-
-    // Use PDF.js preview system for supported documents
-    if (['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) {
-        if (window.pdfPreviewSystem) {
-            window.pdfPreviewSystem.openPreview(fileId, fileName, fileType);
-        } else {
-            console.error('PDF Preview System not initialized');
-            // Fallback to basic preview
-            createBasicPreviewModal(fileId, fileName, fileType);
-        }
-    } else {
-        // Use basic preview for other file types (images, videos, text, etc.)
-        createBasicPreviewModal(fileId, fileName, fileType);
+function normalizeExtension(extension) {
+    if (!extension) {
+        return '';
     }
-};
+    const trimmed = extension.trim();
+    if (!trimmed) {
+        return '';
+    }
+    return trimmed.startsWith('.') ? trimmed.toLowerCase() : `.${trimmed.toLowerCase()}`;
+}
 
-// Create basic preview modal for non-office files
-function createBasicPreviewModal(fileId, fileName, fileType) {
-    const ext = fileName.toLowerCase().split('.').pop();
-    const previewUrl = `/api/preview/${fileId}`;
-    
-    // Remove existing modal
-    const existingModal = document.getElementById('basic-preview-modal');
+function extractExtension(file, fallbackName) {
+    if (file && file.extension) {
+        return normalizeExtension(file.extension);
+    }
+    const candidate = file?.originalName || fallbackName || '';
+    const dotIndex = candidate.lastIndexOf('.');
+    if (dotIndex >= 0 && dotIndex < candidate.length - 1) {
+        return normalizeExtension(candidate.slice(dotIndex));
+    }
+    return '';
+}
+
+function inferMimeType(file, fallbackType, extension) {
+    const directType = file?.type || file?.mimeType || file?.metadata?.mimeType;
+    if (directType) {
+        return directType;
+    }
+    if (fallbackType) {
+        return fallbackType;
+    }
+    switch (extension) {
+        case '.pdf':
+            return 'application/pdf';
+        case '.docx':
+            return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        case '.doc':
+            return 'application/msword';
+        case '.xlsx':
+            return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        case '.xls':
+            return 'application/vnd.ms-excel';
+        case '.pptx':
+            return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+        case '.ppt':
+            return 'application/vnd.ms-powerpoint';
+        case '.json':
+            return 'application/json';
+        case '.txt':
+            return 'text/plain';
+        case '.csv':
+            return 'text/csv';
+        default:
+            return '';
+    }
+}
+
+function derivePreviewFlags(extension, mimeType, file) {
+    const lowerMime = (mimeType || '').toLowerCase();
+    const isImage = Boolean(file?.isImage || IMAGE_EXTENSIONS.has(extension) || lowerMime.startsWith('image/'));
+    const isVideo = Boolean(file?.isVideo || VIDEO_EXTENSIONS.has(extension) || lowerMime.startsWith('video/'));
+    const isAudio = Boolean(file?.isAudio || AUDIO_EXTENSIONS.has(extension) || lowerMime.startsWith('audio/'));
+
+    return { isImage, isVideo, isAudio };
+}
+
+function getOwnerDisplayName() {
+    const profile = window.currentUserProfile || {};
+    const candidates = [
+        profile.fullName,
+        profile.displayName,
+        profile.name,
+        profile.username,
+        profile.email
+    ];
+
+    for (const candidate of candidates) {
+        if (candidate && typeof candidate === 'string' && candidate.trim()) {
+            return candidate.trim();
+        }
+    }
+
+    return 'Bạn';
+}
+
+function buildPreviewContext(fileId, file, fallbackName, fallbackType) {
+    const extension = extractExtension(file, fallbackName);
+    const mimeType = inferMimeType(file, fallbackType, extension);
+    const flags = derivePreviewFlags(extension, mimeType, file);
+    const ownerName = getOwnerDisplayName();
+
+    const displayName = file?.displayName || file?.originalName || fallbackName || fileId || 'Không xác định';
+    const originalName = file?.originalName || displayName;
+    const sizeValue = typeof file?.size === 'number' ? file.size : Number(file?.size);
+    const formattedSize = Number.isFinite(sizeValue) ? formatReadableFileSize(sizeValue) : (file?.formattedSize || null);
+
+    const metadata = {
+        id: fileId,
+        displayName,
+        originalName,
+        extension,
+        mimeType,
+        formattedSize,
+        isImage: flags.isImage,
+        isVideo: flags.isVideo,
+        isAudio: flags.isAudio,
+        owner: ownerName
+    };
+
+    return {
+        metadata,
+        ownerName,
+        downloadName: originalName
+    };
+}
+
+function defaultClosePreviewModal() {
+    const modal = document.getElementById(PREVIEW_MODAL_ID);
+    if (modal && modal.parentElement) {
+        modal.parentElement.removeChild(modal);
+    }
+}
+
+function showPreviewModal({ fileId, metadata, ownerName, previewUrl, downloadName }) {
+    if (!metadata) {
+        return;
+    }
+
+    const existingModal = document.getElementById(PREVIEW_MODAL_ID);
     if (existingModal) {
         existingModal.remove();
     }
-    
-    const modal = document.createElement('div');
-    modal.id = 'basic-preview-modal';
-    modal.className = 'modal-overlay';
-    
-    let previewContent = '';
-    
-    // Handle different file types
-    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(ext)) {
-        previewContent = `<img src="${previewUrl}" alt="${fileName}" class="preview-image">`;
-    } else if (['mp4', 'avi', 'mov', 'webm', 'mkv'].includes(ext)) {
-        previewContent = `
-            <video controls class="preview-video">
-                <source src="${previewUrl}" type="${fileType}">
-                Trình duyệt không hỗ trợ video.
-            </video>
-        `;
-    } else if (['mp3', 'wav', 'flac', 'ogg', 'm4a'].includes(ext)) {
-        previewContent = `
-            <div class="audio-preview">
-                <div class="audio-icon">
-                    <i class="fas fa-music"></i>
-                </div>
-                <h4>${fileName}</h4>
-                <audio controls class="preview-audio">
-                    <source src="${previewUrl}" type="${fileType}">
-                    Trình duyệt không hỗ trợ audio.
-                </audio>
-            </div>
-        `;
-    } else if (['txt', 'js', 'css', 'html', 'json', 'xml', 'csv', 'log', 'md'].includes(ext)) {
-        previewContent = `
-            <div class="text-preview">
-                <div class="text-header">
-                    <i class="fas fa-file-code"></i>
-                    <h4>${fileName}</h4>
-                </div>
-                <div class="text-content" id="text-content-${fileId}">
-                    <div class="loading-text">Đang tải nội dung...</div>
-                </div>
-            </div>
-        `;
-        // Load text content after modal is created
-        setTimeout(() => loadTextContent(fileId, previewUrl), 100);
-    } else {
-        previewContent = `
-            <div class="file-info-preview">
-                <div class="file-icon-large">
-                    <i class="fas fa-file"></i>
-                </div>
-                <div class="file-details-preview">
-                    <h4>${fileName}</h4>
-                    <p>Loại: ${fileType || ext.toUpperCase()}</p>
-                    <p>Tải xuống để xem nội dung file này</p>
-                </div>
-            </div>
-        `;
-    }
-    
-    modal.innerHTML = `
-        <div class="modal-content">
+
+    const overlay = document.createElement('div');
+    overlay.id = PREVIEW_MODAL_ID;
+    overlay.className = 'modal-overlay beam-preview-overlay';
+
+    const safeTitle = escapeHtml(metadata.displayName || metadata.originalName || 'Xem trước tệp');
+    const safeDownloadName = downloadName || metadata.originalName || metadata.displayName || fileId;
+
+    overlay.innerHTML = `
+        <div class="modal-content beam-preview-modal">
             <div class="modal-header">
-                <h3>${fileName}</h3>
-                <button class="modal-close" onclick="closeBasicPreviewModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                ${previewContent}
-            </div>
-            <div class="modal-footer">
-                <button class="btn-download" onclick="downloadFile('${fileId}', '${fileName}')">
-                    <i class="fas fa-download"></i>
-                    Tải xuống
-                </button>
-                <button class="btn-close" onclick="closeBasicPreviewModal()">
-                    Đóng
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-    // Add click outside to close
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            closeBasicPreviewModal();
-        }
-    });
-}
-
-// Close basic preview modal
-window.closeBasicPreviewModal = function() {
-    const modal = document.getElementById('basic-preview-modal');
-    if (modal) {
-        modal.remove();
-    }
-};
-
-// Get preview content based on file type - Enhanced version
-function getPreviewContent(fileId, fileName, fileType, fileInfo) {
-    const previewUrl = `/api/preview/${fileId}`;
-    
-    if (fileInfo.isImage) {
-        return `<img src="${previewUrl}" alt="${fileName}" class="preview-image">`;
-    } 
-    else if (fileInfo.isVideo) {
-        return `
-            <video controls class="preview-video">
-                <source src="${previewUrl}" type="${fileType}">
-                Trình duyệt không hỗ trợ video.
-            </video>
-        `;
-    } 
-    else if (fileInfo.isAudio) {
-        return `
-            <div class="audio-preview">
-                <div class="audio-icon">
-                    <i class="fas fa-music"></i>
-                </div>
-                <h4>${fileName}</h4>
-                <audio controls class="preview-audio">
-                    <source src="${previewUrl}" type="${fileType}">
-                    Trình duyệt không hỗ trợ audio.
-                </audio>
-            </div>
-        `;
-    }
-    // PDF Preview
-    else if (fileInfo.isPdf) {
-        return `
-            <div class="pdf-preview">
-                <div class="pdf-header">
-                    <i class="fas fa-file-pdf"></i>
-                    <h4>${fileName}</h4>
-                </div>
-                <iframe src="${previewUrl}" class="preview-pdf" frameborder="0">
-                    <p>Trình duyệt không hỗ trợ hiển thị PDF. 
-                    <a href="${previewUrl}" target="_blank">Mở trong tab mới</a></p>
-                </iframe>
-            </div>
-        `;
-    }
-    // Text files
-    else if (fileInfo.isText) {
-        // Load text content after modal is created
-        setTimeout(() => loadTextContent(fileId, previewUrl), 100);
-        
-        return `
-            <div class="text-preview">
-                <div class="text-header">
-                    <i class="fas fa-file-code"></i>
-                    <h4>${fileName}</h4>
-                </div>
-                <div class="text-content" id="text-content-${fileId}">
-                    <div class="loading-text">Đang tải nội dung...</div>
-                </div>
-            </div>
-        `;
-    }
-    // Office documents
-    else if (fileInfo.isOffice) {
-        const officeIcon = getOfficeIcon(fileInfo.extension);
-        return `
-            <div class="office-preview">
-                <div class="office-header">
-                    <i class="fas ${officeIcon}"></i>
-                    <h4>${fileName}</h4>
-                </div>
-                <div class="office-info">
-                    <p>Tài liệu Microsoft Office</p>
-                    <p>Sử dụng PDF.js Preview để xem trước tài liệu này.</p>
-                </div>
-                <div class="office-actions">
-                    <button class="btn-office-online" onclick="window.pdfPreviewSystem.openPreview('${fileId}', '${fileName}', '${fileType}')">
-                        <i class="fas fa-eye"></i>
-                        Xem trước với PDF.js
+                <h3>${safeTitle}</h3>
+                <div class="modal-header-actions">
+                    <button type="button" class="modal-action-icon" data-action="download" title="Tải xuống tệp">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button type="button" class="modal-close" aria-label="Đóng xem trước">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
             </div>
-        `;
-    }
-    // Archive files
-    else if (fileInfo.isArchive) {
-        return `
-            <div class="archive-preview">
-                <div class="archive-header">
-                    <i class="fas fa-file-archive"></i>
-                    <h4>${fileName}</h4>
-                </div>
-                <div class="archive-info">
-                    <p>File nén</p>
-                    <p>Tải xuống để giải nén và xem nội dung.</p>
+            <div class="modal-body beam-preview-body">
+                <div class="beam-preview-wrapper">
+                    <div class="beam-preview-container" id="beam-preview-container">
+                        <p class="beam-preview-placeholder">Đang chuẩn bị xem trước…</p>
+                    </div>
                 </div>
             </div>
-        `;
-    }
-    // Other files
-    else {
-        const icon = getFileTypeIcon(fileInfo.extension);
-        return `
-            <div class="file-info-preview">
-                <div class="file-icon-large">
-                    <i class="fas ${icon}"></i>
-                </div>
-                <div class="file-details-preview">
-                    <h4>${fileName}</h4>
-                    <p>Loại: ${fileType || fileInfo.extension.toUpperCase()}</p>
-                    <p>Tải xuống để xem nội dung file này</p>
-                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-download" data-action="download">
+                    <i class="fas fa-download"></i>
+                    Tải xuống
+                </button>
+                <button type="button" class="btn-close" data-action="close">Đóng</button>
             </div>
-        `;
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const container = overlay.querySelector('#beam-preview-container');
+
+    if (!window.BeamPreview || typeof window.BeamPreview.render !== 'function') {
+        container.innerHTML = '<p class="share-preview-message">Không thể khởi tạo trình xem trước. Vui lòng tải xuống để xem chi tiết.</p>';
+    } else {
+        window.BeamPreview.render(container, metadata, {
+            previewUrl,
+            ownerName,
+            pdfWithCredentials: true,
+            showDisclaimer: true
+        });
     }
+
+    const restoreClose = defaultClosePreviewModal;
+
+    const closeModal = () => {
+        document.removeEventListener('keydown', handleKeydown);
+        if (overlay && overlay.parentElement) {
+            overlay.parentElement.removeChild(overlay);
+        }
+        window.closePreviewModal = restoreClose;
+    };
+
+    const triggerDownload = () => {
+        downloadFile(fileId, safeDownloadName);
+    };
+
+    const handleKeydown = (event) => {
+        if (event.key === 'Escape') {
+            closeModal();
+        }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+
+    overlay.addEventListener('click', (event) => {
+        if (event.target === overlay) {
+            closeModal();
+        }
+    });
+
+    const closeButtons = overlay.querySelectorAll('[data-action="close"], .modal-close');
+    closeButtons.forEach((button) => {
+        button.addEventListener('click', closeModal);
+    });
+
+    const downloadButtons = overlay.querySelectorAll('[data-action="download"]');
+    downloadButtons.forEach((button) => {
+        button.addEventListener('click', triggerDownload);
+    });
+
+    window.closePreviewModal = closeModal;
 }
+
+// Preview file with BeamPreview module
+window.previewFile = function(fileId, fileName, fileType) {
+    const file = findFileById(fileId);
+    const fallbackName = fileName || file?.displayName || file?.originalName || fileId;
+    const fallbackType = fileType || file?.type || file?.metadata?.mimeType || '';
+    const previewUrl = `/api/preview/${encodeURIComponent(fileId)}`;
+
+    const context = buildPreviewContext(fileId, file, fallbackName, fallbackType);
+    showPreviewModal({
+        fileId,
+        metadata: context.metadata,
+        ownerName: context.ownerName,
+        previewUrl,
+        downloadName: context.downloadName
+    });
+};
 
 // Helper function to get Office icon
 function getOfficeIcon(fileExt) {
@@ -2655,115 +2682,37 @@ function getOfficeIcon(fileExt) {
 
 // Helper function to get file type icon
 function getFileTypeIcon(fileExt) {
-    const iconMap = {
-        // Documents
-        'pdf': 'fa-file-pdf',
-        'doc': 'fa-file-word',
-        'docx': 'fa-file-word',
-        'xls': 'fa-file-excel',
-        'xlsx': 'fa-file-excel',
-        'ppt': 'fa-file-powerpoint',
-        'pptx': 'fa-file-powerpoint',
-        
-        // Code files
-        'js': 'fa-file-code',
-        'html': 'fa-file-code',
-        'css': 'fa-file-code',
-        'php': 'fa-file-code',
-        'py': 'fa-file-code',
-        'java': 'fa-file-code',
-        'cpp': 'fa-file-code',
-        'c': 'fa-file-code',
-        'json': 'fa-file-code',
-        'xml': 'fa-file-code',
-        
-        // Text files
-        'txt': 'fa-file-alt',
-        'md': 'fa-file-alt',
-        'log': 'fa-file-alt',
-        'csv': 'fa-file-csv',
-        
-        // Media files
-        'jpg': 'fa-file-image',
-        'jpeg': 'fa-file-image',
-        'png': 'fa-file-image',
-        'gif': 'fa-file-image',
-        'svg': 'fa-file-image',
-        'mp3': 'fa-file-audio',
-        'wav': 'fa-file-audio',
-        'mp4': 'fa-file-video',
-        'avi': 'fa-file-video',
-        'mov': 'fa-file-video',
-        
-        // Archive files
-        'zip': 'fa-file-archive',
-        'rar': 'fa-file-archive',
-        '7z': 'fa-file-archive',
-        'tar': 'fa-file-archive',
-        'gz': 'fa-file-archive'
-    };
-    
-    return iconMap[fileExt] || 'fa-file';
+    const normalisedExt = typeof fileExt === 'string' ? fileExt.replace(/^\./, '').toLowerCase() : '';
+    const descriptor = window.FileIcons && typeof window.FileIcons.resolveFromExtension === 'function'
+        ? window.FileIcons.resolveFromExtension(normalisedExt)
+        : null;
+
+    const icon = descriptor?.icon || 'fa-file-lines';
+    const tone = descriptor?.tone || 'file-icon-tone--generic';
+    return `${icon} ${tone}`;
 }
 
-// Load text content for preview
-function loadTextContent(fileId, previewUrl) {
-    console.log('Loading text content for:', fileId);
-    
-    fetch(previewUrl)
-        .then(response => {
-            console.log('Text fetch response:', response.status);
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.text();
-        })
-        .then(text => {
-            console.log('Text loaded, length:', text.length);
-            const container = document.getElementById('text-content-' + fileId);
-            if (container && text.length < 100000) { // Limit to 100KB for performance
-                container.innerHTML = 
-                    '<pre><code>' + text.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code></pre>';
-            } else if (container) {
-                container.innerHTML = 
-                    '<div class="error-text">File quá lớn để hiển thị. Vui lòng tải xuống để xem.</div>';
-            }
-        })
-        .catch(error => {
-            console.error('Error loading text content:', error);
-            const container = document.getElementById('text-content-' + fileId);
-            if (container) {
-                container.innerHTML = 
-                    '<div class="error-text">Không thể tải nội dung file</div>';
-            }
-        });
-}
-
-// Open file with PDF.js preview system
+// Open file preview (compatibility helper)
 window.openFilePreview = function(fileId, fileName, fileType) {
-    if (window.pdfPreviewSystem) {
-        window.pdfPreviewSystem.openPreview(fileId, fileName, fileType);
-    } else {
-        console.error('PDF Preview System not available');
-        if (window.toastSystem) {
-            window.toastSystem.error('Hệ thống xem trước chưa sẵn sàng', {
-                duration: 3000
-            });
-        }
-    }
+    window.previewFile(fileId, fileName, fileType);
 };
 
-// Close preview modal
-window.closePreviewModal = function() {
-    const modal = document.getElementById('file-preview-modal');
-    if (modal) {
-        modal.remove();
-    }
-};
+// Close preview modal fallback
+window.closePreviewModal = defaultClosePreviewModal;
 
 // Cleanup when navigating away from the page
 window.cleanupMyFiles = function() {
     if (myFilesAutoRefreshIntervalId) {
         clearInterval(myFilesAutoRefreshIntervalId);
         myFilesAutoRefreshIntervalId = null;
+    }
+
+    if (typeof window.closePreviewModal === 'function') {
+        try {
+            window.closePreviewModal();
+        } catch (_error) {
+            // Ignore cleanup errors
+        }
     }
 };
 

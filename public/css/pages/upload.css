@@ -709,6 +709,16 @@
     min-width: 0;
 }
 
+.queue-item .item-thumbnail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.queue-item__icon {
+    box-shadow: none;
+}
+
 .file-name {
     font-weight: 600;
     color: #2d3748;

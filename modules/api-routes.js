@@ -504,9 +504,7 @@ class ApiRoutes {
                 metadata = await this.fileMetadata.refreshShareToken(req.user.userId, internalName);
             }
 
-            const shareUrl = metadata.visibility === 'public' && metadata.shareToken
-                ? `${req.protocol}://${req.get('host')}/file?driveFile=${encodeURIComponent(internalName)}&token=${encodeURIComponent(metadata.shareToken)}`
-                : null;
+            const shareUrl = this.buildPublicShareUrl(req, metadata);
 
             res.json({
                 success: true,
@@ -595,6 +593,28 @@ class ApiRoutes {
         if (FileUtils.fileExists(filePath)) {
             FileUtils.deleteFile(filePath);
         }
+    }
+
+    buildPublicShareUrl(req, metadata) {
+        if (!metadata || metadata.visibility !== 'public') {
+            return null;
+        }
+
+        const sharePath = `/files/d/${encodeURIComponent(metadata.internalName)}`;
+        const hostHeader = req.get('host');
+
+        if (!hostHeader) {
+            if (metadata.shareToken) {
+                return `${sharePath}?token=${encodeURIComponent(metadata.shareToken)}`;
+            }
+            return sharePath;
+        }
+
+        const baseUrl = `${req.protocol}://${hostHeader}${sharePath}`;
+        if (metadata.shareToken) {
+            return `${baseUrl}?token=${encodeURIComponent(metadata.shareToken)}`;
+        }
+        return baseUrl;
     }
 
     getRouter() {
