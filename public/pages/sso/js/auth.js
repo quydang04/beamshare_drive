@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const forms = document.querySelectorAll('.auth-form');
     const passwordToggles = document.querySelectorAll('.password-toggle');
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetTokenFromUrl = urlParams.get('token') || '';
 
     passwordToggles.forEach((button) => {
         button.addEventListener('click', () => togglePasswordVisibility(button));
@@ -8,6 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     forms.forEach((form) => {
         const alertBox = form.querySelector('.auth-alert');
+        const formType = form.dataset.formType;
+
+        if (formType === 'reset') {
+            setupResetForm(form, alertBox, resetTokenFromUrl);
+        }
 
         form.addEventListener('input', () => {
             hideAlert(alertBox);
@@ -28,9 +35,14 @@ async function handleSubmit(form, alertBox) {
     }
 
     const formType = form.dataset.formType;
+
     if (formType === 'forgot') {
-        showAlert(alertBox, 'success', 'Nếu email tồn tại, chúng tôi sẽ gửi hướng dẫn đặt lại mật khẩu.');
-        form.reset();
+        await submitForgotPassword(form, alertBox);
+        return;
+    }
+
+    if (formType === 'reset') {
+        await submitResetPassword(form, alertBox);
         return;
     }
 
@@ -72,6 +84,90 @@ async function handleSubmit(form, alertBox) {
         redirectAfterAuth();
     } catch (error) {
         console.error('Auth request error:', error);
+        showAlert(alertBox, 'error', 'Không thể kết nối tới máy chủ. Vui lòng thử lại.');
+    } finally {
+        setSubmitting(form, false);
+    }
+}
+async function submitForgotPassword(form, alertBox) {
+    const formData = new FormData(form);
+    const email = sanitizeInput(formData.get('email'));
+
+    if (!email) {
+        showAlert(alertBox, 'error', 'Email là bắt buộc.');
+        return;
+    }
+
+    showAlert(alertBox, 'info', 'Đang gửi hướng dẫn, vui lòng chờ...');
+    setSubmitting(form, true);
+
+    try {
+        const response = await fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+
+        const data = await parseJsonSafely(response);
+        if (!response.ok) {
+            const message = data?.error || 'Không thể gửi email đặt lại mật khẩu.';
+            showAlert(alertBox, 'error', message);
+            return;
+        }
+
+        showAlert(alertBox, 'success', data?.message || 'Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.');
+        form.reset();
+    } catch (error) {
+        console.error('Forgot password request error:', error);
+        showAlert(alertBox, 'error', 'Không thể kết nối tới máy chủ. Vui lòng thử lại.');
+    } finally {
+        setSubmitting(form, false);
+    }
+}
+
+async function submitResetPassword(form, alertBox) {
+    const formData = new FormData(form);
+    const token = sanitizeInput(formData.get('token'));
+    const password = sanitizeInput(formData.get('password'));
+    const confirm = sanitizeInput(formData.get('confirm'));
+
+    if (!token) {
+        showAlert(alertBox, 'error', 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.');
+        return;
+    }
+
+    if (!password || password.length < 6) {
+        showAlert(alertBox, 'error', 'Mật khẩu mới phải có ít nhất 6 ký tự.');
+        return;
+    }
+
+    if (password !== confirm) {
+        showAlert(alertBox, 'error', 'Mật khẩu xác nhận chưa trùng khớp.');
+        return;
+    }
+
+    showAlert(alertBox, 'info', 'Đang cập nhật mật khẩu...');
+    setSubmitting(form, true);
+
+    try {
+        const response = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ token, password })
+        });
+
+        const data = await parseJsonSafely(response);
+        if (!response.ok) {
+            const message = data?.error || 'Không thể đặt lại mật khẩu.';
+            showAlert(alertBox, 'error', message);
+            return;
+        }
+
+        showAlert(alertBox, 'success', data?.message || 'Đặt lại mật khẩu thành công. Đang chuyển hướng...');
+        redirectAfterAuth();
+    } catch (error) {
+        console.error('Reset password request error:', error);
         showAlert(alertBox, 'error', 'Không thể kết nối tới máy chủ. Vui lòng thử lại.');
     } finally {
         setSubmitting(form, false);
@@ -119,6 +215,21 @@ function parseJsonSafely(response) {
         .catch(() => null);
 }
 
+function setupResetForm(form, alertBox, token) {
+    form.dataset.resetToken = token;
+    const tokenField = form.querySelector('input[name="token"]');
+    if (tokenField) {
+        tokenField.value = token;
+    }
+
+    if (!token) {
+        const submitButton = form.querySelector('[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = true;
+        }
+        showAlert(alertBox, 'error', 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.');
+    }
+}
 function redirectAfterAuth() {
     setTimeout(() => {
         window.location.href = '/';

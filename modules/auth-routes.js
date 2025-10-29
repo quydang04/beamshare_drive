@@ -1,21 +1,141 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const User = require('./models/user');
+const EmailService = require('./email-service');
 const { issueAuthCookie, clearAuthCookie, requireAuth } = require('./middleware/auth');
 
 class AuthRoutes {
     constructor() {
         this.router = express.Router();
+        this.emailService = new EmailService();
         this.setupRoutes();
     }
 
     setupRoutes() {
-    this.router.post('/register', this.register.bind(this));
-    this.router.post('/login', this.login.bind(this));
-    this.router.post('/logout', this.logout.bind(this));
-    this.router.get('/me', requireAuth, this.getProfile.bind(this));
-    this.router.patch('/profile', requireAuth, this.updateProfile.bind(this));
-    this.router.patch('/password', requireAuth, this.changePassword.bind(this));
+        this.router.post('/register', this.register.bind(this));
+        this.router.post('/login', this.login.bind(this));
+        this.router.post('/logout', this.logout.bind(this));
+        this.router.post('/forgot-password', this.requestPasswordReset.bind(this));
+        this.router.post('/reset-password', this.resetPassword.bind(this));
+        this.router.get('/me', requireAuth, this.getProfile.bind(this));
+        this.router.patch('/profile', requireAuth, this.updateProfile.bind(this));
+        this.router.patch('/password', requireAuth, this.changePassword.bind(this));
+    }
+
+    getAppBaseUrl() {
+        const configured = process.env.APP_URL
+            || process.env.APP_BASE_URL
+            || process.env.FRONTEND_URL
+            || process.env.PUBLIC_APP_URL
+            || '';
+
+        if (configured) {
+            return configured.replace(/\/+$/, '');
+        }
+
+        const port = process.env.PORT || 8080;
+        return `http://localhost:${port}`;
+    }
+
+    async requestPasswordReset(req, res) {
+        try {
+            const { email } = req.body || {};
+
+            if (!email) {
+                return res.status(400).json({ error: 'Email là bắt buộc.' });
+            }
+
+            const standardizedEmail = String(email).trim().toLowerCase();
+            const user = await User.findOne({ email: standardizedEmail });
+
+            const responseMessage = 'Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.';
+
+            if (!user) {
+                return res.json({ message: responseMessage });
+            }
+
+            const resetToken = crypto.randomBytes(32).toString('hex');
+            const hashedToken = crypto
+                .createHash('sha256')
+                .update(resetToken)
+                .digest('hex');
+
+            user.passwordResetToken = hashedToken;
+            user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
+            await user.save();
+
+            const resetUrl = `${this.getAppBaseUrl()}/auth/reset-password?token=${encodeURIComponent(resetToken)}`;
+
+            try {
+                await this.emailService.sendPasswordResetEmail({
+                    to: user.email,
+                    resetUrl,
+                    fullName: user.fullName
+                });
+            } catch (emailError) {
+                console.error('Failed to send password reset email:', emailError);
+
+                user.passwordResetToken = undefined;
+                user.passwordResetExpires = undefined;
+                await user.save();
+
+                return res.status(500).json({ error: 'Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau.' });
+            }
+
+            return res.json({ message: responseMessage });
+        } catch (error) {
+            console.error('Forgot password error:', error);
+            return res.status(500).json({ error: 'Không thể xử lý yêu cầu đặt lại mật khẩu.' });
+        }
+    }
+
+    async resetPassword(req, res) {
+        try {
+            const { token, password } = req.body || {};
+
+            if (!token || !password) {
+                return res.status(400).json({ error: 'Token và mật khẩu mới là bắt buộc.' });
+            }
+
+            if (typeof password !== 'string' || password.trim().length < 6) {
+                return res.status(400).json({ error: 'Mật khẩu mới phải có ít nhất 6 ký tự.' });
+            }
+
+            const hashedToken = crypto
+                .createHash('sha256')
+                .update(String(token).trim())
+                .digest('hex');
+
+            const user = await User.findOne({
+                passwordResetToken: hashedToken,
+                passwordResetExpires: { $gt: new Date() }
+            });
+
+            if (!user) {
+                return res.status(400).json({ error: 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.' });
+            }
+
+            const trimmedPassword = String(password).trim();
+
+            const isSamePassword = await bcrypt.compare(trimmedPassword, user.passwordHash);
+            if (isSamePassword) {
+                return res.status(400).json({ error: 'Mật khẩu mới phải khác mật khẩu hiện tại.' });
+            }
+
+            const passwordHash = await bcrypt.hash(trimmedPassword, 12);
+            user.passwordHash = passwordHash;
+            user.passwordResetToken = undefined;
+            user.passwordResetExpires = undefined;
+            await user.save();
+
+            issueAuthCookie(res, user);
+
+            return res.json({ message: 'Đặt lại mật khẩu thành công.' });
+        } catch (error) {
+            console.error('Reset password error:', error);
+            return res.status(500).json({ error: 'Không thể đặt lại mật khẩu.' });
+        }
     }
 
     async register(req, res) {

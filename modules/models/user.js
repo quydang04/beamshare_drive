@@ -21,6 +21,14 @@ const userSchema = new mongoose.Schema({
 	fullName: {
 		type: String,
 		trim: true
+	},
+	passwordResetToken: {
+		type: String,
+		index: true,
+		sparse: true
+	},
+	passwordResetExpires: {
+		type: Date
 	}
 }, {
 	timestamps: true

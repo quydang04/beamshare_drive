@@ -155,6 +155,7 @@ app.get('/auth', (_req, res) => {
 app.get('/auth/login', (_req, res) => sendSsoPage(res, 'login'));
 app.get('/auth/register', (_req, res) => sendSsoPage(res, 'register'));
 app.get('/auth/forgot-password', (_req, res) => sendSsoPage(res, 'forgot-password'));
+app.get('/auth/reset-password', (_req, res) => sendSsoPage(res, 'reset-password'));
 
 // Protected SPA entry
 app.get('/', ensureAuthenticatedPage, sendIndex);
