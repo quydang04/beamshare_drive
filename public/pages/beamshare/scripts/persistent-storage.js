@@ -1,4 +1,4 @@
-class PersistentStorage {
+﻿class PersistentStorage {
     constructor() {
         if (!('indexedDB' in window)) {
             PersistentStorage.logBrowserNotCapable();

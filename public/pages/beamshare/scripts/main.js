@@ -192,15 +192,16 @@ class PairDrop {
             const encodedId = encodeURIComponent(fileId);
             const urlParams = new URLSearchParams(window.location.search);
             const shareToken = urlParams.get('token');
+            const usingShareToken = Boolean(shareToken);
 
-            const metadataUrl = shareToken
+            const metadataUrl = usingShareToken
                 ? `/api/share/${encodedId}/metadata?token=${encodeURIComponent(shareToken)}`
-                : `/api/share/${encodedId}/metadata`;
-            const downloadUrl = shareToken
+                : `/api/beamshare/files/${encodedId}/metadata`;
+            const downloadUrl = usingShareToken
                 ? `/api/share/${encodedId}/download?token=${encodeURIComponent(shareToken)}`
-                : `/api/share/${encodedId}/download`;
+                : `/api/beamshare/files/${encodedId}/download`;
 
-            const headers = shareToken ? { 'X-Share-Token': shareToken } : {};
+            const headers = usingShareToken ? { 'X-Share-Token': shareToken } : {};
 
             const detailsResponse = await fetch(metadataUrl, {
                 method: 'GET',

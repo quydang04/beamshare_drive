@@ -11,6 +11,7 @@ const ConflictHandler = require('./modules/conflict-handler.js');
 const ApiRoutes = require('./modules/api-routes.js');
 const AuthRoutes = require('./modules/auth-routes.js');
 const ShareRoutes = require('./modules/share-routes.js');
+const BeamshareRoutes = require('./modules/beamshare-routes.js');
 const ShareWsServer = require('./modules/share-ws-server.js');
 const authMiddleware = require('./modules/middleware/auth.js');
 
@@ -26,6 +27,7 @@ const conflictHandler = new ConflictHandler(fileMetadata);
 const apiRoutes = new ApiRoutes(fileMetadata, uploadHandler, conflictHandler, authMiddleware);
 const authRoutes = new AuthRoutes();
 const shareRoutes = new ShareRoutes(fileMetadata, authMiddleware);
+const beamshareRoutes = new BeamshareRoutes(fileMetadata, authMiddleware);
 
 // Core middleware
 app.use(cookieParser());
@@ -52,6 +54,7 @@ app.get('/share/*', (req, res) => {
 // Auth & API routes
 app.use('/api/auth', authRoutes.getRouter());
 app.use('/api/share', shareRoutes.getRouter());
+app.use('/api/beamshare', beamshareRoutes.getRouter());
 app.use('/api', apiRoutes.getRouter());
 
 const sendIndex = (_req, res) => {

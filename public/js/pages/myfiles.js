@@ -75,8 +75,16 @@ function openShareTabForFile(fileId, displayName, options = {}) {
     }
 }
 
-function openBeamShareWorkspace(displayName) {
-    const beamshareWindow = window.open('/beamshare/', '_blank', 'noopener');
+function openBeamShareWorkspace(fileId, displayName) {
+    if (!fileId) {
+        window.toastSystem?.error('Không thể xác định tệp để gửi qua BeamShare.', {
+            duration: 4000
+        });
+        return;
+    }
+
+    const beamshareUrl = `/beamshare/?driveFile=${encodeURIComponent(fileId)}`;
+    const beamshareWindow = window.open(beamshareUrl, '_blank', 'noopener');
 
     if (!beamshareWindow) {
         window.toastSystem?.error('Trình duyệt đã chặn cửa sổ BeamShare. Vui lòng cho phép cửa sổ bật lên.', {
@@ -85,15 +93,10 @@ function openBeamShareWorkspace(displayName) {
         return;
     }
 
-    if (displayName) {
-        window.toastSystem?.info(`Đang mở BeamShare Live để gửi: ${displayName}`, {
-            duration: 3500
-        });
-    } else {
-        window.toastSystem?.info('Đang mở BeamShare Live.', {
-            duration: 3000
-        });
-    }
+    const targetName = displayName || 'tệp đã chọn';
+    window.toastSystem?.info(`Đang mở BeamShare Live để gửi ${targetName}. Hãy chọn thiết bị nhận trong danh sách.`, {
+        duration: 5000
+    });
 }
 
 function loadShareOverrides() {
@@ -1757,8 +1760,9 @@ function addFileInteractions() {
             event.preventDefault();
             event.stopPropagation();
 
+            const fileId = button.getAttribute('data-file-id');
             const fileName = button.getAttribute('data-file-name') || 'tệp đã chọn';
-            openBeamShareWorkspace(fileName);
+            openBeamShareWorkspace(fileId, fileName);
         });
     });
 }
