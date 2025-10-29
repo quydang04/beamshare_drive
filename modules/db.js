@@ -17,11 +17,11 @@ async function connectDatabase() {
     connectionPromise = mongoose.connect(uri, {
         serverSelectionTimeoutMS: 5000
     }).then((conn) => {
-        console.log('💾 Connected to MongoDB');
+        console.log('Connected to MongoDB');
         return conn;
     }).catch((error) => {
         connectionPromise = null;
-        console.error('❌ MongoDB connection failed:', error.message);
+        console.error('MongoDB connection failed:', error.message);
         throw error;
     });
 
