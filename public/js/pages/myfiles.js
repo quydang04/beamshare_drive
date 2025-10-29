@@ -1848,9 +1848,9 @@ window.deleteFile = async function(fileId, fileName) {
     }
 
     const confirmed = await window.modalSystem.confirm({
-        title: 'Xác nhận xóa tệp',
-        message: `Bạn có chắc muốn xóa "${fileName}"? Hành động này không thể hoàn tác.`,
-        confirmText: 'Xóa',
+        title: 'Chuyển vào thùng rác',
+        message: `"${fileName}" sẽ được chuyển vào Thùng rác và lưu giữ trong 30 ngày trước khi xóa vĩnh viễn. Bạn có chắc chắn tiếp tục?`,
+        confirmText: 'Chuyển vào thùng rác',
         cancelText: 'Hủy',
         confirmClass: 'btn-danger'
     });
@@ -1874,7 +1874,7 @@ window.deleteFile = async function(fileId, fileName) {
         const result = await response.json();
 
         if (result.success) {
-            window.toastSystem.success(`Đã xóa ${fileName}`);
+            window.toastSystem.success(`Đã chuyển ${fileName} vào Thùng rác (giữ 30 ngày).`);
             // Reload file list
             loadFiles();
         } else {

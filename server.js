@@ -19,6 +19,7 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const beamshareStaticDir = path.join(__dirname, 'public', 'pages', 'beamshare');
 const fileSharePagePath = path.join(__dirname, 'public', 'pages', 'file-share', 'index.html');
+const recycleBinPagePath = path.join(__dirname, 'public', 'pages', 'recycle_bin', 'index.html');
 
 // Initialize managers
 const fileMetadata = new FileMetadataManager();
@@ -135,6 +136,15 @@ const sendSsoPage = (res, page) => {
     );
 };
 
+const sendRecycleBinPage = (_req, res) => {
+    res.sendFile(recycleBinPagePath, (error) => {
+        if (error) {
+            console.error('Không thể tải trang thùng rác:', error.message);
+            res.redirect(302, '/');
+        }
+    });
+};
+
 const ensureAuthenticatedPage = (req, res, next) => {
     const user = authMiddleware.attachUser(req);
     if (!user) {
@@ -156,6 +166,7 @@ app.get('/auth/login', (_req, res) => sendSsoPage(res, 'login'));
 app.get('/auth/register', (_req, res) => sendSsoPage(res, 'register'));
 app.get('/auth/forgot-password', (_req, res) => sendSsoPage(res, 'forgot-password'));
 app.get('/auth/reset-password', (_req, res) => sendSsoPage(res, 'reset-password'));
+app.get('/recycle', ensureAuthenticatedPage, sendRecycleBinPage);
 
 // Protected SPA entry
 app.get('/', ensureAuthenticatedPage, sendIndex);
@@ -172,7 +183,7 @@ app.get('*', (req, res) => {
         return res.redirect(302, legacyTarget);
     }
 
-    if (req.path.startsWith('/beamshare') || req.path.startsWith('/file') || req.path.startsWith('/files') || req.path.startsWith('/landing') || req.path.startsWith('/auth')) {
+    if (req.path.startsWith('/beamshare') || req.path.startsWith('/file') || req.path.startsWith('/files') || req.path.startsWith('/landing') || req.path.startsWith('/auth') || req.path.startsWith('/recycle')) {
         return res.redirect(302, req.path);
     }
 
@@ -194,6 +205,14 @@ async function startServer() {
         });
 
         new ShareWsServer(serverInstance);
+
+        const recycleCleanupIntervalMs = 12 * 60 * 60 * 1000;
+        const runRecycleCleanup = () => {
+            apiRoutes.purgeExpiredDeletedFiles();
+        };
+
+        runRecycleCleanup();
+        setInterval(runRecycleCleanup, recycleCleanupIntervalMs);
 
         process.on('SIGINT', () => {
             console.log('\nĐang tắt server...');
