@@ -60,12 +60,28 @@ const fileMetadataSchema = new mongoose.Schema({
         default: uuidv4,
         unique: true
     },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+        index: true
+    },
+    deletedAt: {
+        type: Date,
+        default: null
+    },
+    recycleExpiresAt: {
+        type: Date,
+        default: null,
+        index: true
+    },
     extra: mongoose.Schema.Types.Mixed
 }, {
     timestamps: true
 });
 
 fileMetadataSchema.index({ userId: 1, displayName: 1 }, { unique: true });
+fileMetadataSchema.index({ userId: 1, isDeleted: 1, deletedAt: -1 });
+fileMetadataSchema.index({ isDeleted: 1, recycleExpiresAt: 1 });
 
 const FileMetadataDocument = mongoose.model('FileMetadata', fileMetadataSchema);
 
@@ -110,26 +126,34 @@ class FileMetadataManager {
     }
 
     async displayNameExists(userId, displayName) {
-        const existing = await this.Model.exists({ userId, displayName });
+        const existing = await this.Model.exists({ userId, displayName, isDeleted: false });
         return Boolean(existing);
     }
 
     async getInternalFilename(userId, displayName) {
-        const document = await this.Model.findOne({ userId, displayName }).lean();
+        const document = await this.Model.findOne({ userId, displayName, isDeleted: false }).lean();
         return document ? document.internalName : null;
     }
 
-    async getFileMetadataByInternal(internalName) {
-        return this.Model.findOne({ internalName }).lean();
+    async getFileMetadataByInternal(internalName, options = {}) {
+        const query = { internalName };
+        if (!options.includeDeleted) {
+            query.isDeleted = false;
+        }
+        return this.Model.findOne(query).lean();
     }
 
-    async getFileMetadataForUser(userId, internalName) {
-        return this.Model.findOne({ userId, internalName }).lean();
+    async getFileMetadataForUser(userId, internalName, options = {}) {
+        const query = { userId, internalName };
+        if (!options.includeDeleted) {
+            query.isDeleted = false;
+        }
+        return this.Model.findOne(query).lean();
     }
 
     async updateDisplayName(userId, internalName, newDisplayName) {
         const updated = await this.Model.findOneAndUpdate(
-            { userId, internalName },
+            { userId, internalName, isDeleted: false },
             {
                 displayName: newDisplayName,
                 lastModified: new Date(),
@@ -147,7 +171,57 @@ class FileMetadataManager {
     }
 
     async listFilesForUser(userId) {
-        return this.Model.find({ userId }).sort({ uploadDate: -1 }).lean();
+        return this.Model.find({ userId, isDeleted: false }).sort({ uploadDate: -1 }).lean();
+    }
+
+    async listRecycleBin(userId) {
+        return this.Model.find({ userId, isDeleted: true }).sort({ deletedAt: -1 }).lean();
+    }
+
+    async moveToRecycleBin(userId, internalName, expiresAt) {
+        const now = new Date();
+        const update = {
+            isDeleted: true,
+            deletedAt: now,
+            recycleExpiresAt: expiresAt instanceof Date ? expiresAt : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+            lastModified: now,
+            visibility: 'private'
+        };
+
+        const updated = await this.Model.findOneAndUpdate(
+            { userId, internalName, isDeleted: false },
+            update,
+            { new: true }
+        ).lean();
+
+        return updated;
+    }
+
+    async restoreFromRecycleBin(userId, internalName) {
+        const now = new Date();
+        const updated = await this.Model.findOneAndUpdate(
+            { userId, internalName, isDeleted: true },
+            {
+                isDeleted: false,
+                deletedAt: null,
+                recycleExpiresAt: null,
+                lastModified: now
+            },
+            { new: true }
+        ).lean();
+
+        return updated;
+    }
+
+    async findDeletedFile(userId, internalName) {
+        return this.Model.findOne({ userId, internalName, isDeleted: true }).lean();
+    }
+
+    async findExpiredDeletedFiles(referenceDate = new Date()) {
+        return this.Model.find({
+            isDeleted: true,
+            recycleExpiresAt: { $lte: referenceDate }
+        }).lean();
     }
 
     async updateFileDetails(userId, internalName, updates) {
@@ -161,7 +235,7 @@ class FileMetadataManager {
         }
 
         const updated = await this.Model.findOneAndUpdate(
-            { userId, internalName },
+            { userId, internalName, isDeleted: false },
             payload,
             { new: true }
         ).lean();
@@ -175,7 +249,7 @@ class FileMetadataManager {
         }
 
         const updated = await this.Model.findOneAndUpdate(
-            { userId, internalName },
+            { userId, internalName, isDeleted: false },
             {
                 visibility,
                 lastModified: new Date()
@@ -188,7 +262,7 @@ class FileMetadataManager {
 
     async refreshShareToken(userId, internalName) {
         const updated = await this.Model.findOneAndUpdate(
-            { userId, internalName },
+            { userId, internalName, isDeleted: false },
             {
                 shareToken: uuidv4(),
                 lastModified: new Date()
@@ -200,7 +274,7 @@ class FileMetadataManager {
     }
 
     async findByShareToken(shareToken) {
-        return this.Model.findOne({ shareToken }).lean();
+        return this.Model.findOne({ shareToken, isDeleted: false }).lean();
     }
 
     async updateFileStats(userId, internalName, { size, mimeType, checksum }) {
@@ -219,7 +293,7 @@ class FileMetadataManager {
         }
 
         const updated = await this.Model.findOneAndUpdate(
-            { userId, internalName },
+            { userId, internalName, isDeleted: false },
             payload,
             { new: true }
         ).lean();

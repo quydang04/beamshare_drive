@@ -12,6 +12,8 @@ class ApiRoutes {
         this.conflictHandler = conflictHandler;
         this.authMiddleware = authMiddleware;
         this.uploadsRoot = path.join(__dirname, '..', 'uploads');
+        this.recycleRetentionDays = 30;
+        this.recycleRetentionMs = this.recycleRetentionDays * 24 * 60 * 60 * 1000;
         this.setupRoutes();
     }
 
@@ -24,6 +26,10 @@ class ApiRoutes {
         this.router.post('/files/get-details', this.getFileDetailsByName.bind(this));
         this.router.get('/files/:filename/details', this.getFileDetailsById.bind(this));
         this.router.post('/files/resolve-conflicts', this.resolveConflicts.bind(this));
+
+        this.router.get('/recycle-bin', this.getRecycleBinFiles.bind(this));
+        this.router.post('/recycle-bin/:filename/restore', this.restoreRecycleFile.bind(this));
+        this.router.delete('/recycle-bin/:filename', this.deleteRecycleFile.bind(this));
 
         this.router.post('/upload', this.uploadHandler.array('files', 10), this.uploadMultiple.bind(this));
         this.router.post('/upload-single', this.uploadHandler.single('file'), this.uploadSingle.bind(this));
@@ -375,6 +381,10 @@ class ApiRoutes {
                 return res.status(404).json({ error: 'File not found' });
             }
 
+            if (metadata.isDeleted) {
+                return res.status(410).json({ error: 'File is currently in the recycle bin' });
+            }
+
             const filePath = this.getFilePath(metadata);
             if (!FileUtils.fileExists(filePath)) {
                 return res.status(404).json({ error: 'File not found' });
@@ -402,6 +412,10 @@ class ApiRoutes {
                 return res.status(404).json({ error: 'File not found' });
             }
 
+            if (metadata.isDeleted) {
+                return res.status(410).json({ error: 'File is currently in the recycle bin' });
+            }
+
             const filePath = this.getFilePath(metadata);
             if (!FileUtils.fileExists(filePath)) {
                 return res.status(404).json({ error: 'File not found' });
@@ -423,20 +437,41 @@ class ApiRoutes {
     async deleteFile(req, res) {
         try {
             const internalName = decodeURIComponent(req.params.filename);
-            const metadata = await this.fileMetadata.getFileMetadataForUser(req.user.userId, internalName);
+            const metadata = await this.fileMetadata.getFileMetadataForUser(
+                req.user.userId,
+                internalName,
+                { includeDeleted: true }
+            );
+
             if (!metadata) {
                 return res.status(404).json({ error: 'File not found' });
             }
 
-            await this.removePhysicalFile(metadata);
-            await this.fileMetadata.removeFile(req.user.userId, internalName);
+            if (metadata.isDeleted) {
+                return res.status(409).json({ error: 'File is already in the recycle bin' });
+            }
+
+            const filePath = this.getFilePath(metadata);
+            if (!FileUtils.fileExists(filePath)) {
+                await this.fileMetadata.removeFile(req.user.userId, internalName);
+                return res.status(404).json({ error: 'File data not found' });
+            }
+
+            const expiresAt = new Date(Date.now() + this.recycleRetentionMs);
+            const updated = await this.fileMetadata.moveToRecycleBin(req.user.userId, internalName, expiresAt);
+
+            if (!updated) {
+                return res.status(500).json({ error: 'Unable to move file to recycle bin' });
+            }
 
             res.json({
                 success: true,
-                message: 'File deleted successfully',
-                deletedFile: {
+                message: 'File moved to recycle bin',
+                recycle: {
                     internalFilename: internalName,
-                    displayName: metadata.displayName
+                    displayName: metadata.displayName,
+                    deletedAt: updated.deletedAt,
+                    recycleExpiresAt: updated.recycleExpiresAt
                 }
             });
         } catch (error) {
@@ -499,6 +534,10 @@ class ApiRoutes {
                 return res.status(404).json({ error: 'File not found' });
             }
 
+            if (metadata.isDeleted) {
+                return res.status(410).json({ error: 'File is currently in the recycle bin' });
+            }
+
             metadata = await this.fileMetadata.updateShareState(req.user.userId, internalName, visibility);
             if (regenerateToken === true || regenerateToken === 'true') {
                 metadata = await this.fileMetadata.refreshShareToken(req.user.userId, internalName);
@@ -518,7 +557,93 @@ class ApiRoutes {
         }
     }
 
+    async getRecycleBinFiles(req, res) {
+        try {
+            const userId = req.user.userId;
+            const documents = await this.fileMetadata.listRecycleBin(userId);
+            const files = documents.map((doc) => ({
+                internalName: doc.internalName,
+                displayName: doc.displayName,
+                originalName: doc.originalName,
+                size: doc.size,
+                formattedSize: FileUtils.formatFileSize(doc.size || 0),
+                deletedAt: doc.deletedAt,
+                recycleExpiresAt: doc.recycleExpiresAt
+            }));
+
+            res.json({ files });
+        } catch (error) {
+            console.error('Recycle bin list error:', error);
+            res.status(500).json({ error: 'Failed to load recycle bin' });
+        }
+    }
+
+    async restoreRecycleFile(req, res) {
+        try {
+            const internalName = decodeURIComponent(req.params.filename);
+            const deletedMetadata = await this.fileMetadata.findDeletedFile(req.user.userId, internalName);
+
+            if (!deletedMetadata) {
+                return res.status(404).json({ error: 'File not found in recycle bin' });
+            }
+
+            const filePath = this.getFilePath(deletedMetadata);
+            if (!FileUtils.fileExists(filePath)) {
+                await this.fileMetadata.removeFile(req.user.userId, internalName);
+                return res.status(404).json({ error: 'File data no longer exists' });
+            }
+
+            const restored = await this.fileMetadata.restoreFromRecycleBin(req.user.userId, internalName);
+
+            if (!restored) {
+                return res.status(500).json({ error: 'Failed to restore file' });
+            }
+
+            res.json({
+                success: true,
+                message: 'File restored successfully',
+                file: {
+                    internalFilename: restored.internalName,
+                    displayName: restored.displayName
+                }
+            });
+        } catch (error) {
+            console.error('Recycle restore error:', error);
+            res.status(500).json({ error: 'Failed to restore file' });
+        }
+    }
+
+    async deleteRecycleFile(req, res) {
+        try {
+            const internalName = decodeURIComponent(req.params.filename);
+            const deletedMetadata = await this.fileMetadata.findDeletedFile(req.user.userId, internalName);
+
+            if (!deletedMetadata) {
+                return res.status(404).json({ error: 'File not found in recycle bin' });
+            }
+
+            await this.removePhysicalFile(deletedMetadata);
+            await this.fileMetadata.removeFile(req.user.userId, internalName);
+
+            res.json({
+                success: true,
+                message: 'File deleted permanently',
+                file: {
+                    internalFilename: internalName,
+                    displayName: deletedMetadata.displayName
+                }
+            });
+        } catch (error) {
+            console.error('Recycle delete error:', error);
+            res.status(500).json({ error: 'Failed to delete file permanently' });
+        }
+    }
+
     async toFileSummary(metadata) {
+        if (metadata.isDeleted) {
+            return null;
+        }
+
         const filePath = this.getFilePath(metadata);
         const exists = FileUtils.fileExists(filePath);
 
@@ -554,6 +679,10 @@ class ApiRoutes {
     }
 
     async toFileDetails(metadata) {
+        if (metadata.isDeleted) {
+            throw new Error('File is currently in the recycle bin');
+        }
+
         const filePath = this.getFilePath(metadata);
         if (!FileUtils.fileExists(filePath)) {
             throw new Error('Physical file missing');
@@ -591,7 +720,25 @@ class ApiRoutes {
     async removePhysicalFile(metadata) {
         const filePath = this.getFilePath(metadata);
         if (FileUtils.fileExists(filePath)) {
-            FileUtils.deleteFile(filePath);
+            return FileUtils.deleteFile(filePath);
+        }
+        return false;
+    }
+
+    async purgeExpiredDeletedFiles(referenceDate = new Date()) {
+        try {
+            const expired = await this.fileMetadata.findExpiredDeletedFiles(referenceDate);
+
+            for (const metadata of expired) {
+                await this.removePhysicalFile(metadata);
+                await this.fileMetadata.removeFile(metadata.userId, metadata.internalName);
+            }
+
+            if (expired.length > 0) {
+                console.log(`Purged ${expired.length} expired recycle bin file(s).`);
+            }
+        } catch (error) {
+            console.error('Failed to purge expired recycle bin files:', error);
         }
     }
 
