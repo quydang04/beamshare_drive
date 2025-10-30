@@ -113,6 +113,13 @@ body {
     color: var(--auth-text);
 }
 
+.form-field .form-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--auth-text);
+    margin: 0 0 4px;
+}
+
 .form-field input {
     width: 100%;
     padding: 12px 14px;

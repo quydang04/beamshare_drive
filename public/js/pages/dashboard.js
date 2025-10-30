@@ -1,6 +1,20 @@
 // Dashboard Page JavaScript
 (function() {
-    const DASHBOARD_QUOTA_BYTES = 10 * 1024 * 1024 * 1024; // 10 GB
+    const BYTES_IN_GIB = 1024 * 1024 * 1024;
+    const PLAN_STORAGE_LIMITS = {
+        basic: {
+            id: 'basic',
+            title: 'Basic',
+            storageBytes: 5 * BYTES_IN_GIB,
+            storageLabel: '5 GB'
+        },
+        premium: {
+            id: 'premium',
+            title: 'Premium',
+            storageBytes: 15 * BYTES_IN_GIB,
+            storageLabel: '15 GB'
+        }
+    };
     const TYPE_COLORS = ['#6366f1', '#f97316', '#10b981', '#ec4899', '#0ea5e9'];
     const KNOWN_MIME_LABELS = {
         'application/pdf': 'Tệp PDF',
@@ -145,11 +159,25 @@
         };
     };
 
+    function normalizePlanId(planId) {
+        return (planId || 'basic').toString().trim().toLowerCase();
+    }
+
+    function resolvePlanInfo(planId) {
+        const normalized = normalizePlanId(planId);
+        return PLAN_STORAGE_LIMITS[normalized] || PLAN_STORAGE_LIMITS.basic;
+    }
+
     const state = {
         files: [],
-        quotaBytes: DASHBOARD_QUOTA_BYTES,
+        planId: 'basic',
+        quotaBytes: PLAN_STORAGE_LIMITS.basic.storageBytes,
         lastUpdated: null
     };
+
+    function getCurrentPlanInfo() {
+        return resolvePlanInfo(state.planId);
+    }
 
     const elements = {};
     let hasProfileListener = false;
@@ -229,6 +257,15 @@
 
         if (elements.dashboardName) {
             elements.dashboardName.textContent = `Xin chào, ${displayName}`;
+        }
+
+        const planInfo = resolvePlanInfo(profile?.plan);
+        if (state.planId !== planInfo.id || state.quotaBytes !== planInfo.storageBytes) {
+            state.planId = planInfo.id;
+            state.quotaBytes = planInfo.storageBytes;
+            renderQuotaLabel();
+            renderStats(state.files);
+            renderStorage(state.files);
         }
     }
 
@@ -346,7 +383,9 @@
 
     function renderQuotaLabel() {
         if (!elements.storageQuota) return;
-        elements.storageQuota.textContent = `Dung lượng tối đa ${formatBytes(state.quotaBytes)}`;
+        const planInfo = getCurrentPlanInfo();
+        const limitLabel = planInfo.storageLabel || formatBytes(planInfo.storageBytes || state.quotaBytes);
+        elements.storageQuota.textContent = `Dung lượng gói ${planInfo.title}: ${limitLabel}`;
     }
 
     async function fetchDashboardData(options = {}) {
@@ -400,17 +439,24 @@
         const topTypeLabel = topType ? `${topType.label} (${topType.percent}%)` : '-';
 
         if (elements.statTotalFiles) elements.statTotalFiles.textContent = totalFiles.toString();
-        if (elements.statStorageUsed) elements.statStorageUsed.textContent = formatBytes(totalBytes);
+        if (elements.statStorageUsed) {
+            const planInfo = getCurrentPlanInfo();
+            const limitLabel = planInfo.storageLabel || formatBytes(planInfo.storageBytes || state.quotaBytes);
+            elements.statStorageUsed.textContent = `${formatBytes(totalBytes)} / ${limitLabel}`;
+        }
         if (elements.statRecentCount) elements.statRecentCount.textContent = recentCount.toString();
         if (elements.statTopType) elements.statTopType.textContent = topTypeLabel;
     }
 
     function renderStorage(files) {
         const totalBytes = files.reduce((sum, file) => sum + toNumericSize(file.size), 0);
-        const percent = state.quotaBytes ? Math.min(100, (totalBytes / state.quotaBytes) * 100) : 0;
+        const planInfo = getCurrentPlanInfo();
+        const quotaBytes = planInfo.storageBytes || state.quotaBytes || 0;
+        const percent = quotaBytes ? Math.min(100, (totalBytes / quotaBytes) * 100) : 0;
 
         if (elements.storageUsed) {
-            elements.storageUsed.textContent = `Đang dùng ${formatBytes(totalBytes)}`;
+            const limitLabel = planInfo.storageLabel || formatBytes(quotaBytes);
+            elements.storageUsed.textContent = `Đang dùng ${formatBytes(totalBytes)} / ${limitLabel}`;
         }
 
         if (elements.storagePercent) {

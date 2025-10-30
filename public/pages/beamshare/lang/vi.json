@@ -41,6 +41,20 @@
         "routed": "được định tuyến qua máy chủ",
         "webrtc": "nếu WebRTC không khả dụng."
     },
+    "plan-usage": {
+        "heading": "Sử dụng BeamShare",
+        "plan": "Gói",
+        "storage": "Giới hạn lưu trữ",
+        "beamshare": "Giới hạn BeamShare",
+        "remaining": "Lượt còn lại",
+        "remaining-value": "Còn {{remaining}} / {{max}} lượt",
+        "remaining-unlimited": "Không giới hạn",
+        "reset": "Đặt lại",
+        "reset-value": "{{time}}",
+        "error": "Không thể tải thông tin gói",
+        "limit-unavailable": "Không khả dụng",
+        "storage-unavailable": "Không khả dụng"
+    },
     "dialogs": {
         "input-key-on-this-device": "Nhập khóa này trên thiết bị khác",
         "scan-qr-code": "hoặc quét mã QR.",

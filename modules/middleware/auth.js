@@ -87,7 +87,8 @@ function attachUser(req) {
             id: decoded.id,
             userId: decoded.userId,
             email: decoded.email,
-            fullName: decoded.fullName || null
+            fullName: decoded.fullName || null,
+            plan: decoded.plan || 'basic'
         };
         return req.user;
     }
@@ -113,7 +114,8 @@ function issueAuthCookie(res, userDocument) {
         id: userDocument._id.toString(),
         userId: userDocument.userId,
         email: userDocument.email,
-        fullName: userDocument.fullName || null
+        fullName: userDocument.fullName || null,
+        plan: userDocument.plan || 'basic'
     });
     setAuthCookie(res, token);
     return token;

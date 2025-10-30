@@ -5,18 +5,34 @@ const mime = require('mime-types');
 const FileUtils = require('./file-utils');
 
 class ShareRoutes {
-    constructor(fileMetadata, authMiddleware) {
+    constructor(fileMetadata, authMiddleware, usageService) {
         this.router = express.Router();
         this.fileMetadata = fileMetadata;
         this.authMiddleware = authMiddleware;
+        this.usageService = usageService;
         this.uploadsRoot = path.join(__dirname, '..', 'uploads');
         this.setupRoutes();
     }
 
     setupRoutes() {
-        this.router.get('/:fileId/metadata', this.authMiddleware.optionalAuth, this.ensureAccess.bind(this), this.sendMetadata.bind(this));
+    this.router.get('/:fileId/metadata', this.authMiddleware.optionalAuth, this.ensureAccess.bind(this), this.sendMetadata.bind(this));
         this.router.get('/:fileId/preview', this.authMiddleware.optionalAuth, this.ensureAccess.bind(this), this.previewFile.bind(this));
         this.router.get('/:fileId/download', this.authMiddleware.optionalAuth, this.ensureAccess.bind(this), this.downloadFile.bind(this));
+    }
+
+    resolveClientIp(req) {
+        const forwarded = (req.headers['x-forwarded-for'] || req.headers['cf-connecting-ip'] || '')
+            .split(',')
+            .map((token) => token.trim())
+            .find(Boolean);
+        const raw = forwarded || req.ip || req.connection?.remoteAddress || '127.0.0.1';
+        if (raw.startsWith('::ffff:')) {
+            return raw.slice(7);
+        }
+        if (raw === '::1') {
+            return '127.0.0.1';
+        }
+        return raw;
     }
 
     async ensureAccess(req, res, next) {
@@ -48,6 +64,25 @@ class ShareRoutes {
 
             req.shareMetadata = metadata;
             req.shareIsOwner = isOwner;
+
+            if (this.usageService && String(req.query.beamshare).toLowerCase() === '1') {
+                const plan = req.user?.plan || (req.user ? 'basic' : 'guest');
+                const usageResult = await this.usageService.assertAndConsume({
+                    plan,
+                    userId: req.user?.userId,
+                    clientKey: this.resolveClientIp(req)
+                });
+
+                if (!usageResult.allowed) {
+                    return res.status(429).json({
+                        error: usageResult.message || 'Đã vượt quá giới hạn BeamShare. Vui lòng thử lại sau.',
+                        resetAt: usageResult.resetAt
+                    });
+                }
+
+                req.beamshareUsage = usageResult;
+            }
+
             next();
         } catch (error) {
             console.error('Share access error:', error);

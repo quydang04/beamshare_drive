@@ -16,6 +16,57 @@ let activeViewMode = DEFAULT_VIEW_MODE;
 let myFilesAutoRefreshIntervalId = null;
 let shareOverrides = {};
 let detailSnapshots = {};
+const selectedFileIds = new Set();
+const BYTES_IN_GIB = 1024 * 1024 * 1024;
+const PLAN_STORAGE_LIMITS = {
+    basic: {
+        id: 'basic',
+        title: 'Basic',
+        storageBytes: 5 * BYTES_IN_GIB,
+        storageLabel: '5 GB'
+    },
+    premium: {
+        id: 'premium',
+        title: 'Premium',
+        storageBytes: 15 * BYTES_IN_GIB,
+        storageLabel: '15 GB'
+    }
+};
+let myFilesProfileListenerAttached = false;
+
+function normalizePlanId(planId) {
+    return (planId || 'basic').toString().trim().toLowerCase();
+}
+
+function resolvePlanInfo(planId) {
+    const normalized = normalizePlanId(planId);
+    return PLAN_STORAGE_LIMITS[normalized] || PLAN_STORAGE_LIMITS.basic;
+}
+
+function getActivePlanInfo() {
+    const profilePlan = window.currentUserProfile?.plan;
+    return resolvePlanInfo(profilePlan);
+}
+
+function handleMyFilesProfileUpdate() {
+    updateFileInsights(allFiles);
+}
+
+function attachMyFilesProfileListener() {
+    if (myFilesProfileListenerAttached) {
+        return;
+    }
+    document.addEventListener('userprofile:updated', handleMyFilesProfileUpdate);
+    myFilesProfileListenerAttached = true;
+}
+
+function detachMyFilesProfileListener() {
+    if (!myFilesProfileListenerAttached) {
+        return;
+    }
+    document.removeEventListener('userprofile:updated', handleMyFilesProfileUpdate);
+    myFilesProfileListenerAttached = false;
+}
 
 function normalizeFileId(fileOrId) {
     if (!fileOrId) {
@@ -904,6 +955,7 @@ window.initMyFiles = function() {
 
     // Initialize UI
     initializeUI();
+    attachMyFilesProfileListener();
     
     // Load existing files from server
     loadFiles();
@@ -1001,6 +1053,8 @@ function initDragAndDrop() {
 function initializeUI() {
     setupSearchAndSort();
     setupViewToggles();
+    setupBulkSelectionControls();
+    updateBulkSelectionUI();
     console.log('UI initialized');
 }
 
@@ -1152,6 +1206,7 @@ function setAllFiles(files) {
     const serverFiles = Array.isArray(files) ? files : [];
     syncShareOverridesWithServer(serverFiles);
     allFiles = serverFiles.map(applyShareOverrideToFile);
+    pruneSelectedFileIds(allFiles);
     applyFiltersAndRender();
 }
 
@@ -1250,6 +1305,8 @@ function renderFileList(files) {
         filesContent.innerHTML = '';
         updateFileCount([], 0);
         updateFileInsights([]);
+        clearFileSelection({ silent: true });
+        updateBulkSelectionUI();
         return;
     }
 
@@ -1267,6 +1324,7 @@ function renderFileList(files) {
         `;
         updateFileCount(workingFiles, allFiles.length);
         updateFileInsights(allFiles);
+        updateBulkSelectionUI();
         return;
     }
 
@@ -1274,6 +1332,213 @@ function renderFileList(files) {
     updateFileCount(workingFiles, allFiles.length);
     updateFileInsights(allFiles);
     addFileInteractions();
+    syncSelectionDom();
+}
+
+function pruneSelectedFileIds(files = allFiles) {
+    const validIds = new Set();
+    (Array.isArray(files) ? files : []).forEach(file => {
+        const fileId = normalizeFileId(file);
+        if (fileId) {
+            validIds.add(fileId);
+        }
+    });
+
+    let changed = false;
+    selectedFileIds.forEach(fileId => {
+        if (!validIds.has(fileId)) {
+            selectedFileIds.delete(fileId);
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        updateBulkSelectionUI();
+    }
+}
+
+function clearFileSelection(options = {}) {
+    const { silent = false } = options;
+    if (!selectedFileIds.size) {
+        if (!silent) {
+            updateBulkSelectionUI();
+        }
+        return;
+    }
+
+    selectedFileIds.clear();
+
+    if (!silent) {
+        syncSelectionDom();
+    }
+}
+
+function syncSelectionDom() {
+    const checkboxes = document.querySelectorAll('.file-select-checkbox');
+    checkboxes.forEach(checkbox => {
+        const fileId = checkbox.getAttribute('data-file-id');
+        const isSelected = fileId ? selectedFileIds.has(fileId) : false;
+        checkbox.checked = Boolean(isSelected);
+        const item = checkbox.closest('.file-item');
+        if (item) {
+            item.classList.toggle('is-selected', Boolean(isSelected));
+        }
+    });
+
+    updateBulkSelectionUI();
+}
+
+function updateBulkSelectionUI() {
+    const selectionBar = document.getElementById('file-selection-bar');
+    const countEl = document.getElementById('file-selection-count');
+    const deleteBtn = document.getElementById('file-selection-delete');
+    const cancelBtn = document.getElementById('file-selection-cancel');
+
+    const selectedCount = selectedFileIds.size;
+
+    if (selectionBar) {
+        if (selectedCount > 0) {
+            selectionBar.removeAttribute('hidden');
+        } else {
+            selectionBar.setAttribute('hidden', '');
+        }
+    }
+
+    if (countEl) {
+        countEl.textContent = selectedCount.toString();
+    }
+
+    if (deleteBtn) {
+        deleteBtn.disabled = selectedCount === 0;
+    }
+
+    if (cancelBtn) {
+        cancelBtn.disabled = selectedCount === 0;
+    }
+}
+
+function setupBulkSelectionControls() {
+    const cancelBtn = document.getElementById('file-selection-cancel');
+    if (cancelBtn && !cancelBtn.dataset.bulkBound) {
+        cancelBtn.addEventListener('click', () => {
+            clearFileSelection();
+        });
+        cancelBtn.dataset.bulkBound = 'true';
+    }
+
+    const deleteBtn = document.getElementById('file-selection-delete');
+    if (deleteBtn && !deleteBtn.dataset.bulkBound) {
+        deleteBtn.addEventListener('click', () => {
+            handleBulkDeleteSelected();
+        });
+        deleteBtn.dataset.bulkBound = 'true';
+    }
+}
+
+async function handleBulkDeleteSelected() {
+    const selectedIds = Array.from(selectedFileIds);
+    if (!selectedIds.length) {
+        return;
+    }
+
+    if (window.modalSystem?.activeModal) {
+        return;
+    }
+
+    const confirmMessage = selectedIds.length === 1
+        ? 'Chuyển mục đã chọn vào Thùng rác? Mục sẽ được lưu giữ trong 30 ngày trước khi xóa vĩnh viễn.'
+        : `Chuyển ${selectedIds.length} mục đã chọn vào Thùng rác? Các mục sẽ được lưu giữ trong 30 ngày trước khi xóa vĩnh viễn.`;
+
+    let confirmed = false;
+    if (window.modalSystem?.confirm) {
+        confirmed = await window.modalSystem.confirm({
+            title: 'Chuyển vào Thùng rác',
+            message: confirmMessage,
+            confirmText: 'Xóa',
+            cancelText: 'Hủy',
+            confirmClass: 'btn-danger'
+        });
+    } else {
+        confirmed = window.confirm(confirmMessage);
+    }
+
+    if (!confirmed) {
+        return;
+    }
+
+    const deleteBtn = document.getElementById('file-selection-delete');
+    const cancelBtn = document.getElementById('file-selection-cancel');
+    let originalDeleteHtml = null;
+
+    if (deleteBtn) {
+        originalDeleteHtml = deleteBtn.innerHTML;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xóa...';
+        deleteBtn.disabled = true;
+    }
+    if (cancelBtn) {
+        cancelBtn.disabled = true;
+    }
+
+    const failures = [];
+    const successes = [];
+
+    for (const fileId of selectedIds) {
+        try {
+            const response = await fetch(`/api/files/${encodeURIComponent(fileId)}`, {
+                method: 'DELETE'
+            });
+
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok || !payload?.success) {
+                throw new Error(payload?.error || 'Delete failed');
+            }
+
+            successes.push(fileId);
+        } catch (error) {
+            console.error(`Bulk delete failed for ${fileId}:`, error);
+            failures.push({
+                fileId,
+                error
+            });
+        }
+    }
+
+    if (deleteBtn) {
+        deleteBtn.innerHTML = originalDeleteHtml || '<i class="fas fa-trash"></i> Xóa bỏ';
+        deleteBtn.disabled = false;
+    }
+    if (cancelBtn) {
+        cancelBtn.disabled = false;
+    }
+
+    if (successes.length) {
+        window.toastSystem?.success(`Đã chuyển ${successes.length} mục vào Thùng rác (giữ 30 ngày).`, {
+            duration: 4000
+        });
+    }
+
+    if (failures.length) {
+        const failedNames = failures.slice(0, 3).map(entry => {
+            const file = findFileById(entry.fileId);
+            return file?.displayName || file?.originalName || entry.fileId;
+        });
+        const suffix = failures.length > failedNames.length ? '...' : '';
+        const hint = failedNames.length ? ` (${failedNames.join(', ')}${suffix})` : '';
+        window.toastSystem?.error(`Không thể chuyển ${failures.length} mục vào Thùng rác${hint}.`, {
+            duration: 5000
+        });
+    }
+
+    successes.forEach(fileId => {
+        selectedFileIds.delete(fileId);
+    });
+
+    syncSelectionDom();
+    updateBulkSelectionUI();
+
+    if (successes.length) {
+        await loadFiles();
+    }
 }
 
 function sortFiles(files, sortOption) {
@@ -1442,7 +1707,7 @@ function createFileListHTML(files) {
 
     return `
         <div class="${listClassName}">
-            ${files.map(file => {
+            ${files.map((file, index) => {
                 const shareState = getInitialShareState(file);
                 const displayNameRaw = file.displayName || file.originalName || file.name || 'Không có tên';
                 const originalNameRaw = file.originalName || displayNameRaw;
@@ -1469,6 +1734,13 @@ function createFileListHTML(files) {
                 const mimeTypeJs = escapeForJsString(mimeTypeRaw);
                 const displayNameJs = escapeForJsString(displayNameRaw);
 
+                const isSelected = selectedFileIds.has(fileIdRaw);
+                const selectedClass = isSelected ? ' is-selected' : '';
+                const sanitizedIdSegment = String(fileIdRaw || index).replace(/[^a-zA-Z0-9_-]/g, '') || `file${index}`;
+                const checkboxId = `file-select-${sanitizedIdSegment}-${index}`;
+                const checkboxCheckedAttr = isSelected ? ' checked' : '';
+                const selectionLabel = escapeHtml(`Chọn ${displayNameRaw}`);
+
                 const previewBackground = file.isImage
                     ? `style="background-image: url('/api/preview/${encodeURIComponent(fileIdRaw)}'); background-size: cover; background-position: center;"`
                     : '';
@@ -1485,7 +1757,10 @@ function createFileListHTML(files) {
                     : '';
 
                 return `
-                <div class="file-item" data-file-id="${fileIdAttr}" data-file-name="${displayNameHtml}" data-share-state="${shareState}"${shareTokenAttr}>
+                <div class="file-item${selectedClass}" data-file-id="${fileIdAttr}" data-file-name="${displayNameHtml}" data-share-state="${shareState}"${shareTokenAttr}>
+                    <div class="file-select">
+                        <input type="checkbox" class="file-select-checkbox" id="${checkboxId}" data-file-id="${fileIdAttr}" aria-label="${selectionLabel}"${checkboxCheckedAttr}>
+                    </div>
                     <div class="file-icon-wrapper ${file.isImage ? 'image-preview' : ''}" ${previewBackground}${iconVariantAttr}${iconTitleAttr}>
                         ${iconMarkup}
                     </div>
@@ -1680,6 +1955,7 @@ function updateFileInsights(files = allFiles) {
     const publicCount = safeFiles.filter(file => getShareStateForFile(file) === 'public').length;
     const totalSize = safeFiles.reduce((sum, file) => sum + getFileSizeValue(file), 0);
     const lastActivity = getLatestActivityTimestamp(safeFiles);
+    const planInfo = getActivePlanInfo();
 
     const totalCard = insightsContainer.querySelector('[data-insight="total-files"]');
     if (totalCard) {
@@ -1698,10 +1974,12 @@ function updateFileInsights(files = allFiles) {
         const valueEl = storageCard.querySelector('.insight-value');
         const subEl = storageCard.querySelector('.insight-sub');
         if (valueEl) {
-            valueEl.textContent = formatReadableFileSize(totalSize);
+            const usageLabel = formatReadableFileSize(totalSize);
+            valueEl.textContent = `${usageLabel} / ${planInfo.storageLabel}`;
         }
         if (subEl) {
-            subEl.textContent = lastActivity ? `Cập nhật ${formatRelativeDate(lastActivity)}` : 'Chưa có hoạt động';
+            const activityLabel = lastActivity ? `Cập nhật ${formatRelativeDate(lastActivity)}` : 'Chưa có hoạt động';
+            subEl.textContent = `Gói ${planInfo.title} • ${activityLabel}`;
         }
     }
 
@@ -1726,8 +2004,12 @@ function addFileInteractions() {
 
     fileItems.forEach(item => {
         item.addEventListener('click', function(e) {
-            if (!e.target.closest('.action-btn')) {
-                const fileId = this.getAttribute('data-file-id');
+            if (e.target.closest('.action-btn') || e.target.closest('.file-select') || e.target.classList.contains('file-select-checkbox')) {
+                return;
+            }
+
+            const fileId = this.getAttribute('data-file-id');
+            if (fileId) {
                 viewFileDetails(fileId);
             }
         });
@@ -1763,6 +2045,35 @@ function addFileInteractions() {
                     // This prevents the double-modal issue
                     break;
             }
+        });
+    });
+
+    const selectionInputs = document.querySelectorAll('.file-select-checkbox');
+    selectionInputs.forEach(input => {
+        input.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+
+        input.addEventListener('change', () => {
+            const fileId = input.getAttribute('data-file-id');
+            const shouldSelect = input.checked;
+
+            if (!fileId) {
+                return;
+            }
+
+            if (shouldSelect) {
+                selectedFileIds.add(fileId);
+            } else {
+                selectedFileIds.delete(fileId);
+            }
+
+            const item = input.closest('.file-item');
+            if (item) {
+                item.classList.toggle('is-selected', shouldSelect);
+            }
+
+            updateBulkSelectionUI();
         });
     });
 
@@ -1875,6 +2186,10 @@ window.deleteFile = async function(fileId, fileName) {
 
         if (result.success) {
             window.toastSystem.success(`Đã chuyển ${fileName} vào Thùng rác (giữ 30 ngày).`);
+            if (selectedFileIds.has(fileId)) {
+                selectedFileIds.delete(fileId);
+                syncSelectionDom();
+            }
             // Reload file list
             loadFiles();
         } else {
@@ -2707,12 +3022,33 @@ window.cleanupMyFiles = function() {
         myFilesAutoRefreshIntervalId = null;
     }
 
+    detachMyFilesProfileListener();
+
     if (typeof window.closePreviewModal === 'function') {
         try {
             window.closePreviewModal();
         } catch (_error) {
             // Ignore cleanup errors
         }
+    }
+
+    selectedFileIds.clear();
+    const selectionBar = document.getElementById('file-selection-bar');
+    if (selectionBar) {
+        selectionBar.setAttribute('hidden', '');
+    }
+    const cancelBtn = document.getElementById('file-selection-cancel');
+    if (cancelBtn) {
+        cancelBtn.disabled = true;
+    }
+    const deleteBtn = document.getElementById('file-selection-delete');
+    if (deleteBtn) {
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Xóa bỏ';
+    }
+    const countEl = document.getElementById('file-selection-count');
+    if (countEl) {
+        countEl.textContent = '0';
     }
 };
 

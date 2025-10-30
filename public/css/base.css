@@ -56,6 +56,15 @@ body {
     font-size: 20px;
 }
 
+.header-logo-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: block;
+    object-fit: cover;
+    box-shadow: 0 12px 26px -18px rgba(99, 102, 241, 0.85);
+}
+
 .logo {
     font-size: 18px;
     font-weight: 600;

@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
 const FileUtils = require('./file-utils');
+const createRecycleApi = require('./recycle-api');
+const fsp = fs.promises;
 
 class ApiRoutes {
     constructor(fileMetadata, uploadHandler, conflictHandler, authMiddleware) {
@@ -20,16 +22,19 @@ class ApiRoutes {
     setupRoutes() {
         this.router.use(this.authMiddleware.requireAuth);
 
+        const recycleRouter = createRecycleApi({
+            fileMetadata: this.fileMetadata,
+            authMiddleware: this.authMiddleware,
+            uploadsRoot: this.uploadsRoot
+        });
+        this.router.use('/recycle-bin', recycleRouter);
+
         this.router.get('/files', this.getFiles.bind(this));
         this.router.post('/files/check-exists', this.checkFileExists.bind(this));
         this.router.post('/files/check-conflict', this.checkFileConflict.bind(this));
         this.router.post('/files/get-details', this.getFileDetailsByName.bind(this));
         this.router.get('/files/:filename/details', this.getFileDetailsById.bind(this));
         this.router.post('/files/resolve-conflicts', this.resolveConflicts.bind(this));
-
-        this.router.get('/recycle-bin', this.getRecycleBinFiles.bind(this));
-        this.router.post('/recycle-bin/:filename/restore', this.restoreRecycleFile.bind(this));
-        this.router.delete('/recycle-bin/:filename', this.deleteRecycleFile.bind(this));
 
         this.router.post('/upload', this.uploadHandler.array('files', 10), this.uploadMultiple.bind(this));
         this.router.post('/upload-single', this.uploadHandler.single('file'), this.uploadSingle.bind(this));
@@ -325,11 +330,22 @@ class ApiRoutes {
                         continue;
                     }
 
+                    let storageName;
+
+                    try {
+                        storageName = await this.prepareUploadedFileStorage(userId, file, displayName);
+                    } catch (preparationError) {
+                        console.error('Finalize filename error:', preparationError);
+                        errors.push({ filename: file.originalname, error: 'Unable to finalize filename' });
+                        FileUtils.deleteFile(file.path);
+                        continue;
+                    }
+
                     const metadata = await this.fileMetadata.addFile({
                         userId,
                         displayName,
                         originalName: file.originalname,
-                        storageName: file.filename,
+                        storageName,
                         size: file.size,
                         mimeType: file.mimetype
                     });
@@ -421,11 +437,66 @@ class ApiRoutes {
                 return res.status(404).json({ error: 'File not found' });
             }
 
+            const stats = FileUtils.getFileStats(filePath);
+            const fileSize = stats?.size || 0;
+            const mimeType = metadata.mimeType || mime.lookup(metadata.originalName) || 'application/octet-stream';
+
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-            res.setHeader('Content-Type', metadata.mimeType || mime.lookup(metadata.originalName) || 'application/octet-stream');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Range');
+            res.setHeader('Access-Control-Expose-Headers', 'Accept-Ranges, Content-Length, Content-Range');
+            res.setHeader('Accept-Ranges', 'bytes');
             res.setHeader('Cache-Control', 'public, max-age=3600');
+            res.setHeader('Content-Type', mimeType);
+
+            const rangeHeader = req.headers.range;
+            if (rangeHeader && fileSize > 0) {
+                const rangePrefix = 'bytes=';
+                if (rangeHeader.startsWith(rangePrefix)) {
+                    const [rawStart, rawEnd] = rangeHeader.slice(rangePrefix.length).split('-');
+                    let start;
+                    let end;
+
+                    if (rawStart === '') {
+                        const suffixLength = Number.parseInt(rawEnd, 10);
+                        if (Number.isFinite(suffixLength) && suffixLength > 0) {
+                            start = Math.max(fileSize - suffixLength, 0);
+                            end = fileSize - 1;
+                        }
+                    } else {
+                        start = Number.parseInt(rawStart, 10);
+                        if (Number.isNaN(start) || start < 0) {
+                            start = 0;
+                        }
+
+                        if (rawEnd === '') {
+                            end = fileSize - 1;
+                        } else {
+                            end = Number.parseInt(rawEnd, 10);
+                            if (Number.isNaN(end) || end < start) {
+                                end = fileSize - 1;
+                            }
+                        }
+                    }
+
+                    if (typeof start === 'number' && typeof end === 'number') {
+                        start = Math.min(start, fileSize - 1);
+                        end = Math.min(Math.max(end, start), fileSize - 1);
+                        const chunkSize = end - start + 1;
+
+                        res.status(206);
+                        res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
+                        res.setHeader('Content-Length', chunkSize);
+
+                        fs.createReadStream(filePath, { start, end }).pipe(res);
+                        return;
+                    }
+                }
+            }
+
+            if (fileSize > 0) {
+                res.setHeader('Content-Length', fileSize);
+            }
 
             fs.createReadStream(filePath).pipe(res);
         } catch (error) {
@@ -557,85 +628,85 @@ class ApiRoutes {
         }
     }
 
-    async getRecycleBinFiles(req, res) {
-        try {
-            const userId = req.user.userId;
-            const documents = await this.fileMetadata.listRecycleBin(userId);
-            const files = documents.map((doc) => ({
-                internalName: doc.internalName,
-                displayName: doc.displayName,
-                originalName: doc.originalName,
-                size: doc.size,
-                formattedSize: FileUtils.formatFileSize(doc.size || 0),
-                deletedAt: doc.deletedAt,
-                recycleExpiresAt: doc.recycleExpiresAt
-            }));
+    resolveDesiredStorageName(file, displayName) {
+        const candidates = [];
 
-            res.json({ files });
-        } catch (error) {
-            console.error('Recycle bin list error:', error);
-            res.status(500).json({ error: 'Failed to load recycle bin' });
+        if (displayName && typeof displayName === 'string') {
+            candidates.push(displayName);
         }
+
+        if (file?.originalname && typeof file.originalname === 'string') {
+            candidates.push(file.originalname);
+        }
+
+        for (const candidate of candidates) {
+            const sanitized = FileUtils.sanitizeFilename(candidate);
+            if (sanitized && sanitized.trim()) {
+                return sanitized;
+            }
+        }
+
+        const fallbackExt = file?.originalname ? path.extname(file.originalname) : '';
+        return `uploaded-file${fallbackExt}`;
     }
 
-    async restoreRecycleFile(req, res) {
-        try {
-            const internalName = decodeURIComponent(req.params.filename);
-            const deletedMetadata = await this.fileMetadata.findDeletedFile(req.user.userId, internalName);
-
-            if (!deletedMetadata) {
-                return res.status(404).json({ error: 'File not found in recycle bin' });
-            }
-
-            const filePath = this.getFilePath(deletedMetadata);
-            if (!FileUtils.fileExists(filePath)) {
-                await this.fileMetadata.removeFile(req.user.userId, internalName);
-                return res.status(404).json({ error: 'File data no longer exists' });
-            }
-
-            const restored = await this.fileMetadata.restoreFromRecycleBin(req.user.userId, internalName);
-
-            if (!restored) {
-                return res.status(500).json({ error: 'Failed to restore file' });
-            }
-
-            res.json({
-                success: true,
-                message: 'File restored successfully',
-                file: {
-                    internalFilename: restored.internalName,
-                    displayName: restored.displayName
-                }
-            });
-        } catch (error) {
-            console.error('Recycle restore error:', error);
-            res.status(500).json({ error: 'Failed to restore file' });
+    async prepareUploadedFileStorage(userId, file, displayName) {
+        if (!file || !file.path) {
+            throw new Error('Uploaded file payload is invalid');
         }
+
+        const desiredName = this.resolveDesiredStorageName(file, displayName);
+        const finalName = await this.generateAvailableStorageName(userId, desiredName, file.filename);
+
+        if (finalName !== file.filename) {
+            const currentPath = file.path;
+            const targetPath = path.join(this.uploadsRoot, userId, finalName);
+            await fsp.rename(currentPath, targetPath);
+            file.path = targetPath;
+            file.filename = finalName;
+        }
+
+        return finalName;
     }
 
-    async deleteRecycleFile(req, res) {
-        try {
-            const internalName = decodeURIComponent(req.params.filename);
-            const deletedMetadata = await this.fileMetadata.findDeletedFile(req.user.userId, internalName);
+    async generateAvailableStorageName(userId, desiredName, currentFilename) {
+        const uploadsDir = path.join(this.uploadsRoot, userId);
+        const ext = path.extname(desiredName);
+        const base = path.basename(desiredName, ext) || 'file';
+        let candidate = desiredName || `${base}${ext}`;
+        let counter = 1;
+        const maxAttempts = 1000;
 
-            if (!deletedMetadata) {
-                return res.status(404).json({ error: 'File not found in recycle bin' });
+        while (await this.storageFileExists(uploadsDir, candidate, currentFilename)) {
+            if (counter > maxAttempts) {
+                const timestampCandidate = `${base}-${Date.now()}${ext}`;
+                if (!(await this.storageFileExists(uploadsDir, timestampCandidate, currentFilename))) {
+                    candidate = timestampCandidate;
+                    break;
+                }
+
+                const randomFallback = `${base}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
+                candidate = randomFallback;
+                break;
             }
 
-            await this.removePhysicalFile(deletedMetadata);
-            await this.fileMetadata.removeFile(req.user.userId, internalName);
+            candidate = `${base} (${counter})${ext}`;
+            counter += 1;
+        }
 
-            res.json({
-                success: true,
-                message: 'File deleted permanently',
-                file: {
-                    internalFilename: internalName,
-                    displayName: deletedMetadata.displayName
-                }
-            });
-        } catch (error) {
-            console.error('Recycle delete error:', error);
-            res.status(500).json({ error: 'Failed to delete file permanently' });
+        return candidate;
+    }
+
+    async storageFileExists(dirPath, filename, currentFilename) {
+        if (!filename || filename === currentFilename) {
+            return false;
+        }
+
+        try {
+            await fsp.access(path.join(dirPath, filename));
+            return true;
+        } catch (_error) {
+            return false;
         }
     }
 

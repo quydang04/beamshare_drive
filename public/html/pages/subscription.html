@@ -2,63 +2,120 @@
 <div class="page active">
     <div class="subscription-container">
         <div class="subscription-header">
-            <h1>Gói Subscription</h1>
-            <p>Chọn gói phù hợp với nhu cầu sử dụng của bạn</p>
+            <div class="subscription-icon" aria-hidden="true">
+                <img src="/public/img/favicon.png" alt="" class="subscription-icon__image">
+            </div>
+            <h1>BeamShare Subscription</h1>
+            <p>Chọn gói phù hợp để mở rộng dung lượng lưu trữ và trải nghiệm BeamShare Live tốt nhất.</p>
         </div>
 
-        <div class="pricing-cards">
-            <!-- Cơ Bản -->
-            <div class="pricing-card popular">
+        <div class="pricing-cards" data-subscription="plans">
+            <div class="pricing-card" data-plan="basic">
                 <div class="card-header">
-                    <div class="badge">Phổ biến</div>
-                    <h3>Miễn phí</h3>
-                    <p>Phù hợp sử dụng cơ bản</p>
+                    <div class="badge">Miễn phí</div>
+                    <h3>Gói Basic</h3>
+                    <p>Giải pháp tiết kiệm cho nhu cầu cơ bản.</p>
                 </div>
                 <div class="price">
-                    <span class="price-amount">0đ</span>
-                </div>
-                <div class="features">
-                    <div class="feature">
-                        <i class="fas fa-check"></i>
-                        <span>Lưu trữ đám mây 5GB</span>
-                    </div>
-                </div>
-                <button class="btn-subscribe primary">Bắt Đầu Ngay</button>
-            </div>
-
-            <!-- Nâng cao -->
-            <div class="pricing-card">
-                <div class="card-header">
-                    <h3>Nâng cao</h3>
-                    <p>Phù hợp sử dụng nâng cao</p>
-                </div>
-                <div class="price">
-                    <span class="price-amount">50.000đ</span>
+                    <span class="price-amount" data-plan-price>0đ</span>
                     <span class="price-period">/tháng</span>
                 </div>
                 <div class="features">
                     <div class="feature">
                         <i class="fas fa-check"></i>
-                        <span>Lưu trữ đám mây 15GB</span>
+                        <span data-plan-storage></span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-check"></i>
+                        <span data-plan-beamshare></span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-check"></i>
+                        <span>Chia sẻ file nhanh chóng qua liên kết bảo mật</span>
                     </div>
                 </div>
-                <button class="btn-subscribe">Nâng Cấp</button>
+                <button class="btn-subscribe primary" data-action="switch-plan" data-target="basic">Sử dụng ngay</button>
             </div>
 
-        <!-- Current Usage -->
-        <div class="current-usage">
-            <div class="usage-header">
-                <i class="fas fa-crown"></i>
-                <span>Gói hiện tại</span>
-            </div>
-            <div class="usage-info">
-                <span>Miễn phí</span>
-                <div class="usage-bar">
-                    <div class="usage-progress" style="width: 23%"></div>
+            <div class="pricing-card popular" data-plan="premium">
+                <div class="card-header">
+                    <div class="badge">BeamShare Live</div>
+                    <h3>Gói Premium</h3>
+                    <p>Dành cho nhóm và doanh nghiệp cần BeamShare không giới hạn.</p>
                 </div>
-                <span>Dung lượng đã sử dụng</span>
-                <span class="usage-text">2.3GB / 10GB</span>
+                <div class="price">
+                    <span class="price-amount" data-plan-price>50.000đ</span>
+                    <span class="price-period">/tháng</span>
+                </div>
+                <div class="features">
+                    <div class="feature">
+                        <i class="fas fa-check"></i>
+                        <span data-plan-storage></span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-check"></i>
+                        <span data-plan-beamshare></span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-check"></i>
+                        <span>Nhiều thứ khác nữa đang chờ đợi bạn</span>
+                    </div>
+                </div>
+                <button class="btn-subscribe" data-action="upgrade" data-target="premium">Nâng cấp qua VNPay</button>
+                <p class="feature-note">Thanh toán nhanh qua VNPay, hỗ trợ hầu hết ngân hàng nội địa.</p>
             </div>
         </div>
+
+        <div class="current-usage" data-subscription="usage">
+            <div class="usage-header">
+                <img src="/public/img/favicon.png" alt="" class="usage-header__icon">
+                <span>Thông tin gói hiện tại</span>
+            </div>
+            <div class="usage-info">
+                <span data-current-plan>Đang cập nhật...</span>
+                <div class="usage-bar" aria-hidden="true">
+                    <div class="usage-progress" data-usage-progress style="width: 0%"></div>
+                </div>
+                <span>Dung lượng đã sử dụng</span>
+                <span class="usage-text" data-usage-text>0 / 0</span>
+                <span class="usage-text" data-beamshare-summary></span>
+            </div>
+        </div>
+
+        <section class="beamshare-matrix" data-subscription="beamshare-table">
+            <div class="beamshare-header">
+                <h2>Giới hạn BeamShare Live</h2>
+                <p>So sánh nhanh số lượt gửi miễn phí theo trạng thái tài khoản và gói hiện tại.</p>
+            </div>
+            <div class="beamshare-table-wrapper">
+                <table class="beamshare-table">
+                    <thead>
+                        <tr>
+                            <th>Đối tượng</th>
+                            <th>Giới hạn lượt gửi</th>
+                            <th>Cửa sổ thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Khách (Guest)</td>
+                            <td data-beamshare-guest-limit>5 lượt</td>
+                            <td data-beamshare-guest-window>5 giờ</td>
+                        </tr>
+                        <tr>
+                            <td>Thành viên Basic</td>
+                            <td data-beamshare-basic-limit>10 lượt</td>
+                            <td data-beamshare-basic-window>1 giờ</td>
+                        </tr>
+                        <tr>
+                            <td>Thành viên Premium</td>
+                            <td>Không giới hạn</td>
+                            <td>Không giới hạn</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="beamshare-note">* Mỗi lượt gửi được tính khi bạn bắt đầu chia sẻ file qua BeamShare Live. Giới hạn sẽ tự động đặt lại khi hết cửa sổ thời gian tương ứng.</p>
+        </section>
     </div>
 </div>

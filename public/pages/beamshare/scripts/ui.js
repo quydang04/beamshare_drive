@@ -747,7 +747,7 @@ class Dialog {
             window.blur();
         }
         document.title = 'BeamShare | Transfer Files Cross-Platform. No Setup, No Signup.';
-        changeFavicon("images/logo.svg");
+    changeFavicon("/public/img/favicon.png");
         this.correspondingPeerId = undefined;
     }
 
@@ -1052,7 +1052,7 @@ class ReceiveFileDialog extends ReceiveDialog {
         document.title = files.length === 1
             ? `${ Localization.getTranslation("document-titles.file-received") } - BeamShare`
             : `${ Localization.getTranslation("document-titles.file-received-plural", null, {count: files.length}) } - BeamShare`;
-        changeFavicon("images/logo.svg");
+    changeFavicon("/public/img/favicon.png");
 
         Events.fire('set-progress', {peerId: peerId, progress: 1, status: 'process'})
         this.show();
@@ -1157,8 +1157,8 @@ class ReceiveRequestDialog extends ReceiveDialog {
 
         this.$receiveTitle.innerText = transferRequestTitle;
 
-        document.title =  `${transferRequestTitle} - BeamShare`;
-        changeFavicon("images/logo.svg");
+    document.title =  `${transferRequestTitle} - BeamShare`;
+    changeFavicon("/public/img/favicon.png");
 
         this.$acceptRequestBtn.removeAttribute('disabled');
         this.show();
@@ -1451,8 +1451,8 @@ class ReceiveTextDialog extends Dialog {
     _onText(text, peerId) {
         window.blop.play();
         this._receiveTextQueue.push({text: text, peerId: peerId});
-        this._setDocumentTitleMessages();
-        changeFavicon("images/logo.svg");
+    this._setDocumentTitleMessages();
+    changeFavicon("/public/img/favicon.png");
 
         if (this.isShown() || this._hideTimeout) return;
 
@@ -1460,8 +1460,8 @@ class ReceiveTextDialog extends Dialog {
     }
 
     _dequeueRequests() {
-        this._setDocumentTitleMessages();
-        changeFavicon("images/logo.svg");
+    this._setDocumentTitleMessages();
+    changeFavicon("/public/img/favicon.png");
 
         let {text, peerId} = this._receiveTextQueue.shift();
         this._showReceiveTextDialog(text, peerId);
@@ -1885,7 +1885,7 @@ class Notifications {
 
         this.$headerNotificationButton = $('notification');
         this.$downloadBtn = $('download-btn');
-        this.iconUrl = new URL('images/logo.svg', window.location.href).href;
+    this.iconUrl = new URL('/public/img/favicon.png', window.location.href).href;
 
         this.$headerNotificationButton.addEventListener('click', _ => this._requestPermission());
 

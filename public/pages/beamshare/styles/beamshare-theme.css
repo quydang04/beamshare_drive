@@ -123,6 +123,54 @@ body::before {
     opacity: 0.7;
 }
 
+.beamshare-plan-card {
+    margin-top: 12px;
+    padding: 16px;
+    gap: 12px;
+    border-radius: 16px;
+}
+
+.beamshare-plan-card .plan-card-header {
+    justify-content: flex-start;
+    margin-bottom: 2px;
+}
+
+.beamshare-plan-card .plan-card-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: rgb(var(--text-color));
+}
+
+.beamshare-plan-card .plan-card-body {
+    gap: 8px;
+}
+
+.beamshare-plan-card .plan-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    gap: 12px;
+}
+
+.beamshare-plan-card .plan-card-label {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(var(--text-color), 0.62);
+}
+
+.beamshare-plan-card .plan-card-value {
+    font-weight: 600;
+    color: rgb(var(--text-color));
+    text-align: right;
+}
+
+.beamshare-plan-card .plan-card-error {
+    font-size: 13px;
+    color: #f87171;
+}
+
 /* Language Select Dialog Styling */
 body #language-select-dialog x-background {
     background: rgba(15, 23, 42, 0.55);

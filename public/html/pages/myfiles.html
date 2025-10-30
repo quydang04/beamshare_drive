@@ -4,7 +4,7 @@
         <div class="page-header-compact">
             <div class="header-main">
                 <div class="header-icon">
-                    <i class="fas fa-folder-open"></i>
+                    <img src="/public/img/favicon.png" alt="BeamShare" class="header-icon__image">
                 </div>
                 <div class="header-text">
                     <h1>Tệp của tôi</h1>
@@ -48,6 +48,21 @@
             </div>
         </div>
 
+        <div class="file-selection-bar" id="file-selection-bar" hidden>
+            <div class="selection-left">
+                <button type="button" class="selection-dismiss" id="file-selection-cancel" aria-label="Bỏ chọn">
+                    <i class="fas fa-times"></i>
+                </button>
+                <span class="selection-count"><span id="file-selection-count">0</span> mục đã chọn</span>
+            </div>
+            <div class="selection-actions">
+                <button type="button" class="selection-action danger" id="file-selection-delete" disabled>
+                    <i class="fas fa-trash"></i>
+                    Xóa bỏ
+                </button>
+            </div>
+        </div>
+
         <div class="file-insights" id="file-insights">
             <div class="insight-card" data-insight="total-files">
                 <span class="insight-label">Tổng tệp</span>
@@ -72,7 +87,7 @@
         
         <div class="empty-state" id="empty-state">
             <div class="empty-icon">
-                <i class="fas fa-folder-open"></i>
+                <img src="/public/img/favicon.png" alt="" class="empty-icon__image">
             </div>
             <h3>Không có tệp tin nào</h3>
             <p>Bạn chưa tải lên tệp tin nào. Hãy bắt đầu bằng cách tải lên tệp đầu tiên của bạn.</p>

@@ -41,6 +41,20 @@
         "routed": "routed through the server",
         "webrtc": "if WebRTC is not available."
     },
+    "plan-usage": {
+        "heading": "BeamShare usage",
+        "plan": "Plan",
+        "storage": "Storage limit",
+        "beamshare": "BeamShare limit",
+        "remaining": "Transfers remaining",
+        "remaining-value": "{{remaining}} / {{max}} transfers",
+        "remaining-unlimited": "Unlimited",
+        "reset": "Resets",
+        "reset-value": "{{time}}",
+        "error": "Unable to load plan details",
+        "limit-unavailable": "Not available",
+        "storage-unavailable": "Not available"
+    },
     "dialogs": {
         "input-key-on-this-device": "Input this key on another device",
         "scan-qr-code": "or scan the QR-code.",

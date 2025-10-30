@@ -29,7 +29,21 @@ class PairDrop {
         this.headerUI = new HeaderUI();
         this.centerUI = new CenterUI();
         this.footerUI = new FooterUI();
+        this.planUsageElements = {
+            container: document.getElementById('beamshare-plan-info'),
+            planValue: document.getElementById('beamshare-plan-name'),
+            storageValue: document.getElementById('beamshare-plan-storage'),
+            limitValue: document.getElementById('beamshare-plan-limit'),
+            remainingValue: document.getElementById('beamshare-plan-remaining'),
+            resetRow: document.getElementById('beamshare-plan-reset-row'),
+            resetValue: document.getElementById('beamshare-plan-reset'),
+            error: document.getElementById('beamshare-plan-error')
+        };
         this._urlParamsEvaluated = false;
+
+        Events.on('translation-loaded', () => {
+            this.loadPlanUsage();
+        });
 
         this.initialize()
             .then(_ => {
@@ -195,11 +209,11 @@ class PairDrop {
             const usingShareToken = Boolean(shareToken);
 
             const metadataUrl = usingShareToken
-                ? `/api/share/${encodedId}/metadata?token=${encodeURIComponent(shareToken)}`
-                : `/api/beamshare/files/${encodedId}/metadata`;
+                ? `/api/share/${encodedId}/metadata?beamshare=1&token=${encodeURIComponent(shareToken)}`
+                : `/api/beamshare/files/${encodedId}/metadata?beamshare=1`;
             const downloadUrl = usingShareToken
-                ? `/api/share/${encodedId}/download?token=${encodeURIComponent(shareToken)}`
-                : `/api/beamshare/files/${encodedId}/download`;
+                ? `/api/share/${encodedId}/download?beamshare=1&token=${encodeURIComponent(shareToken)}`
+                : `/api/beamshare/files/${encodedId}/download?beamshare=1`;
 
             const headers = usingShareToken ? { 'X-Share-Token': shareToken } : {};
 
@@ -260,6 +274,114 @@ class PairDrop {
                 message: error.message || Localization.getTranslation('notifications.drive-share-error'),
                 persistent: true
             });
+        }
+    }
+
+    async loadPlanUsage() {
+        const elements = this.planUsageElements || {};
+        const container = elements.container;
+        if (!container) {
+            return;
+        }
+
+        const planValue = elements.planValue;
+        const storageValue = elements.storageValue;
+        const limitValue = elements.limitValue;
+        const remainingValue = elements.remainingValue;
+        const resetRow = elements.resetRow;
+        const resetValue = elements.resetValue;
+        const errorBox = elements.error;
+
+        const fallbackStorage = Localization.getTranslation('plan-usage.storage-unavailable');
+        const fallbackLimit = Localization.getTranslation('plan-usage.limit-unavailable');
+        const unlimitedLabel = Localization.getTranslation('plan-usage.remaining-unlimited');
+
+        const setText = (element, text) => {
+            if (element) {
+                element.textContent = text;
+            }
+        };
+
+        try {
+            if (errorBox) {
+                errorBox.hidden = true;
+                errorBox.textContent = '';
+            }
+
+            const response = await fetch('/api/subscriptions/overview', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            const payload = await response.json().catch(() => null);
+            if (!response.ok || !payload) {
+                const message = payload?.error || payload?.message || `Failed to load plan usage (${response.status})`;
+                throw new Error(message);
+            }
+
+            const planId = String(payload.currentPlan || payload.beamshare?.plan || '').toLowerCase();
+            const plans = Array.isArray(payload.plans) ? payload.plans : [];
+            const planInfo = plans.find((plan) => String(plan.id).toLowerCase() === planId) || null;
+            const beamshareSummary = payload.beamshare || null;
+
+            const displayPlan = planInfo?.title || (planId ? planId.charAt(0).toUpperCase() + planId.slice(1) : '—');
+            setText(planValue, displayPlan || '—');
+
+            const storageLabel = planInfo?.storageLabel;
+            setText(storageValue, storageLabel || fallbackStorage);
+
+            let limitLabel = beamshareSummary?.limit?.limitLabel || planInfo?.beamshare?.limitLabel || null;
+            if (beamshareSummary && !beamshareSummary.limit) {
+                limitLabel = unlimitedLabel;
+            }
+            setText(limitValue, limitLabel || fallbackLimit);
+
+            if (beamshareSummary && beamshareSummary.limit && typeof beamshareSummary.limit.maxTransfers === 'number' && beamshareSummary.limit.maxTransfers > 0) {
+                const maxTransfers = beamshareSummary.limit.maxTransfers;
+                const remaining = typeof beamshareSummary.remaining === 'number'
+                    ? Math.max(beamshareSummary.remaining, 0)
+                    : maxTransfers;
+                const formattedRemaining = Number.isFinite(remaining) ? remaining.toLocaleString() : String(remaining || '0');
+                const formattedMax = Number.isFinite(maxTransfers) ? maxTransfers.toLocaleString() : String(maxTransfers || '0');
+                const text = Localization.getTranslation('plan-usage.remaining-value', null, {
+                    remaining: formattedRemaining,
+                    max: formattedMax
+                });
+                setText(remainingValue, text);
+            } else {
+                setText(remainingValue, unlimitedLabel);
+            }
+
+            if (resetRow && resetValue) {
+                if (beamshareSummary && beamshareSummary.resetAt) {
+                    const resetDate = new Date(beamshareSummary.resetAt);
+                    if (!Number.isNaN(resetDate.getTime())) {
+                        const formattedReset = new Intl.DateTimeFormat(undefined, {
+                            dateStyle: 'short',
+                            timeStyle: 'short'
+                        }).format(resetDate);
+                        setText(resetValue, Localization.getTranslation('plan-usage.reset-value', null, {
+                            time: formattedReset
+                        }));
+                        resetRow.hidden = false;
+                    } else {
+                        resetRow.hidden = true;
+                        setText(resetValue, '');
+                    }
+                } else {
+                    resetRow.hidden = true;
+                    setText(resetValue, '');
+                }
+            }
+
+            container.hidden = false;
+        } catch (error) {
+            console.error('Failed to load BeamShare plan usage', error);
+            if (errorBox) {
+                setText(errorBox, Localization.getTranslation('plan-usage.error'));
+                errorBox.hidden = false;
+            }
+            container.hidden = false;
         }
     }
 

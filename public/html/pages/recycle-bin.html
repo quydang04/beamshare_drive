@@ -1,0 +1,92 @@
+<!-- Recycle Bin Page -->
+<div class="page active recycle-page" id="recycle-page" data-page-id="recycle-bin">
+    <div class="page-header-compact">
+        <div class="header-main">
+            <div class="header-icon">
+                <i class="fas fa-trash"></i>
+            </div>
+            <div class="header-text">
+                <h1>Thùng rác</h1>
+                <span>Các tệp đã xóa được lưu tạm thời trong 30 ngày trước khi xóa vĩnh viễn.</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-button" id="refresh-recycle" title="Làm mới thùng rác" type="button">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <section class="recycle-info" aria-label="Thông tin thùng rác">
+        <div class="recycle-info-card">
+            <div class="recycle-info-icon retention">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="recycle-info-content">
+                <strong>Thời gian lưu</strong>
+                <p>Các tệp bị xóa sẽ tự động bị loại bỏ sau 30 ngày.</p>
+            </div>
+        </div>
+        <div class="recycle-info-card" id="summary-total">
+            <div class="recycle-info-icon total">
+                <i class="fas fa-file"></i>
+            </div>
+            <div class="recycle-info-content">
+                <strong>Tổng số mục</strong>
+                <p><span>0 mục</span></p>
+            </div>
+        </div>
+    </section>
+
+    <section class="recycle-card" aria-label="Danh sách tệp trong thùng rác">
+        <div class="recycle-toolbar">
+            <div class="recycle-search">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input type="text" id="recycle-search" placeholder="Tìm kiếm theo tên tệp..." aria-label="Tìm kiếm tệp đã xóa">
+            </div>
+        </div>
+        <div class="recycle-selection-bar" id="recycle-selection-bar" hidden>
+            <div class="selection-left">
+                <button type="button" class="selection-dismiss" id="recycle-selection-cancel" aria-label="Bỏ chọn">
+                    <i class="fas fa-times"></i>
+                </button>
+                <span class="selection-count"><span id="recycle-selection-count">0</span> mục đã chọn</span>
+            </div>
+            <div class="selection-actions">
+                <button type="button" class="selection-action primary" id="recycle-selection-restore" disabled>
+                    <i class="fas fa-undo"></i>
+                    Khôi phục
+                </button>
+                <button type="button" class="selection-action danger" id="recycle-selection-delete" disabled>
+                    <i class="fas fa-trash-alt"></i>
+                    Xóa vĩnh viễn
+                </button>
+            </div>
+        </div>
+        <div id="recycle-loading" class="recycle-loading" role="status" aria-label="Đang tải danh sách thùng rác">
+            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+        </div>
+        <div id="recycle-empty" class="recycle-empty" hidden>
+                <i class="fas fa-check-circle" aria-hidden="true"></i>
+            <p>Thùng rác hiện trống. Các tệp đã xóa sẽ xuất hiện tại đây.</p>
+        </div>
+        <div class="recycle-table-wrapper" id="recycle-table-container" hidden>
+            <table class="recycle-table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="select-col">
+                            <label class="sr-only" for="recycle-select-all">Chọn tất cả</label>
+                            <input type="checkbox" id="recycle-select-all" class="recycle-row-checkbox" aria-label="Chọn tất cả tệp trong thùng rác">
+                        </th>
+                        <th scope="col">Tên tệp</th>
+                        <th scope="col">Kích thước</th>
+                        <th scope="col">Đã xóa lúc</th>
+                        <th scope="col">Thời gian còn lại</th>
+                        <th scope="col" class="actions">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="recycle-table-body"></tbody>
+            </table>
+        </div>
+    </section>
+</div>

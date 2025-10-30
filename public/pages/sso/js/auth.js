@@ -80,8 +80,17 @@ async function handleSubmit(form, alertBox) {
             return;
         }
 
-        showAlert(alertBox, 'success', data?.message || getDefaultSuccessMessage(formType));
-        redirectAfterAuth();
+        const successMessage = data?.message || getDefaultSuccessMessage(formType);
+        showAlert(alertBox, 'success', successMessage);
+
+        const requiresVerification = formType === 'register' && (data?.requiresEmailVerification || data?.verificationEmailSent);
+        if (requiresVerification) {
+            setTimeout(() => {
+                window.location.href = '/auth/login';
+            }, 2200);
+        } else {
+            redirectAfterAuth();
+        }
     } catch (error) {
         console.error('Auth request error:', error);
         showAlert(alertBox, 'error', 'Không thể kết nối tới máy chủ. Vui lòng thử lại.');
@@ -194,11 +203,17 @@ function buildPayload(form, alertBox) {
         }
 
         const fullName = sanitizeInput(formData.get('fullName'));
-
         return {
             email,
             password,
             fullName: fullName || undefined
+        };
+    }
+
+    if (formType === 'login') {
+        return {
+            email,
+            password
         };
     }
 

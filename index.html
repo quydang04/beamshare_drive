@@ -6,6 +6,7 @@
     <title>BeamShare - Cloud Storage</title>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/public/img/favicon.png">
     <link rel="stylesheet" href="public/css/base.css">
     <link rel="stylesheet" href="public/css/modal-toast.css">
     <link rel="stylesheet" href="public/css/pdf-preview.css">
@@ -17,6 +18,7 @@
     <link rel="stylesheet" href="public/css/pages/upload.css">
     <link rel="stylesheet" href="public/css/pages/dashboard.css">
     <link rel="stylesheet" href="public/css/pages/subscription.css">
+    <link rel="stylesheet" href="public/css/pages/recycle-bin.css">
     <link rel="stylesheet" href="public/pages/change/thongtin/css/style.css">
     <link rel="stylesheet" href="public/pages/change/matkhau/css/style.css">
 </head>
@@ -27,7 +29,7 @@
             <button class="menu-toggle" id="sidebar-toggle" aria-label="Mở menu điều hướng">
                 <i class="fas fa-bars"></i>
             </button>
-            <i class="fas fa-cloud"></i>
+            <img src="/public/img/favicon.png" alt="BeamShare" class="header-logo-icon">
             <span class="logo">BeamShare</span>
         </div>
         <div class="header-center"></div>
@@ -164,6 +166,7 @@
     <script src="public/js/pages/upload.js"></script>
     <script src="public/js/pages/dashboard.js"></script>
     <script src="public/js/pages/subscription.js"></script>
+    <script src="public/js/pages/recycle-bin.js"></script>
     <script src="public/pages/change/thongtin/js/main.js"></script>
     <script src="public/pages/change/matkhau/js/main.js"></script>
 
@@ -233,6 +236,12 @@
                     init: 'initSubscription',
                     cleanup: 'cleanupSubscription',
                     path: '/subscription'
+                },
+                'recycle-bin': {
+                    template: 'public/html/pages/recycle-bin.html',
+                    init: 'initRecycleBin',
+                    cleanup: 'cleanupRecycleBin',
+                    path: '/recycle'
                 },
                 'change-thongtin': {
                     template: 'public/pages/change/thongtin/index.html',

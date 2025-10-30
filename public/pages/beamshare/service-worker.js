@@ -19,8 +19,7 @@ const relativePathsToCache = [
     'scripts/libs/no-sleep.min.js',
     'scripts/libs/qr-code.min.js',
     'scripts/libs/zip.min.js',
-    'images/logo.svg',
-    'images/logo-maskable.svg',
+    '../../img/favicon.png',
     'lang/en.json',
     'lang/vi.json'
 ];

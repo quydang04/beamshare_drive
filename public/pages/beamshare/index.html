@@ -26,13 +26,13 @@
     <meta name="twitter:description" content="Chia sẻ file nhanh chóng giữa các thiết bị qua mạng LAN. Đơn giản, bảo mật, không cần đăng ký tài khoản.">
     <meta name="og:description" content="Chia sẻ file nhanh chóng giữa các thiết bị qua mạng LAN. Đơn giản, bảo mật, không cần đăng ký tài khoản.">
     <!-- Icons -->
-    <link rel="icon" type="image/svg+xml" href="images/logo.svg">
-    <link rel="shortcut icon" href="images/logo.svg">
-    <link rel="apple-touch-icon" href="images/logo.svg">
-    <meta name="msapplication-TileImage" content="images/logo.svg">
-    <link rel="fluid-icon" type="image/svg+xml" href="images/logo.svg">
-    <meta name="twitter:image" content="images/logo.svg">
-    <meta property="og:image" content="images/logo.svg">
+    <link rel="icon" type="image/png" href="/public/img/favicon.png">
+    <link rel="shortcut icon" href="/public/img/favicon.png">
+    <link rel="apple-touch-icon" href="/public/img/favicon.png">
+    <meta name="msapplication-TileImage" content="/public/img/favicon.png">
+    <link rel="fluid-icon" type="image/png" href="/public/img/favicon.png">
+    <meta name="twitter:image" content="/public/img/favicon.png">
+    <meta property="og:image" content="/public/img/favicon.png">
     <!-- Resources -->
     <link rel="preload" href="lang/en.json" as="fetch">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -171,6 +171,34 @@
                 <div class="row center wrap">
                     <span class="badge badge-room-ip" data-i18n-key="footer.on-this-network" data-i18n-attrs="text title"></span>
                 </div>
+            </div>
+            <div id="beamshare-plan-info" class="beamshare-plan-card panel border column" hidden>
+                <div class="row center plan-card-header">
+                    <span class="plan-card-title" data-i18n-key="plan-usage.heading" data-i18n-attrs="text">BeamShare usage</span>
+                </div>
+                <div class="plan-card-body column">
+                    <div class="plan-card-row">
+                        <span class="plan-card-label" data-i18n-key="plan-usage.plan" data-i18n-attrs="text">Plan</span>
+                        <span class="plan-card-value" id="beamshare-plan-name">—</span>
+                    </div>
+                    <div class="plan-card-row">
+                        <span class="plan-card-label" data-i18n-key="plan-usage.storage" data-i18n-attrs="text">Storage limit</span>
+                        <span class="plan-card-value" id="beamshare-plan-storage">—</span>
+                    </div>
+                    <div class="plan-card-row">
+                        <span class="plan-card-label" data-i18n-key="plan-usage.beamshare" data-i18n-attrs="text">BeamShare limit</span>
+                        <span class="plan-card-value" id="beamshare-plan-limit">—</span>
+                    </div>
+                    <div class="plan-card-row">
+                        <span class="plan-card-label" data-i18n-key="plan-usage.remaining" data-i18n-attrs="text">Remaining</span>
+                        <span class="plan-card-value" id="beamshare-plan-remaining">—</span>
+                    </div>
+                    <div class="plan-card-row" id="beamshare-plan-reset-row" hidden>
+                        <span class="plan-card-label" data-i18n-key="plan-usage.reset" data-i18n-attrs="text">Resets</span>
+                        <span class="plan-card-value" id="beamshare-plan-reset">—</span>
+                    </div>
+                </div>
+                <div class="plan-card-error" id="beamshare-plan-error" hidden></div>
             </div>
         </div>
     </footer>

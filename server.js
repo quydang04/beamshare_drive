@@ -12,6 +12,8 @@ const ApiRoutes = require('./modules/api-routes.js');
 const AuthRoutes = require('./modules/auth-routes.js');
 const ShareRoutes = require('./modules/share-routes.js');
 const BeamshareRoutes = require('./modules/beamshare-routes.js');
+const SubscriptionRoutes = require('./modules/subscription-routes.js');
+const BeamshareUsageService = require('./modules/services/beamshare-usage-service.js');
 const ShareWsServer = require('./modules/share-ws-server.js');
 const authMiddleware = require('./modules/middleware/auth.js');
 
@@ -19,16 +21,21 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const beamshareStaticDir = path.join(__dirname, 'public', 'pages', 'beamshare');
 const fileSharePagePath = path.join(__dirname, 'public', 'pages', 'file-share', 'index.html');
-const recycleBinPagePath = path.join(__dirname, 'public', 'pages', 'recycle_bin', 'index.html');
 
 // Initialize managers
 const fileMetadata = new FileMetadataManager();
 const uploadHandler = new UploadHandler();
 const conflictHandler = new ConflictHandler(fileMetadata);
+const beamshareUsageService = new BeamshareUsageService();
 const apiRoutes = new ApiRoutes(fileMetadata, uploadHandler, conflictHandler, authMiddleware);
 const authRoutes = new AuthRoutes();
-const shareRoutes = new ShareRoutes(fileMetadata, authMiddleware);
-const beamshareRoutes = new BeamshareRoutes(fileMetadata, authMiddleware);
+const shareRoutes = new ShareRoutes(fileMetadata, authMiddleware, beamshareUsageService);
+const beamshareRoutes = new BeamshareRoutes(fileMetadata, authMiddleware, beamshareUsageService);
+const subscriptionRoutes = new SubscriptionRoutes({
+    fileMetadata,
+    authMiddleware,
+    usageService: beamshareUsageService
+});
 
 // Core middleware
 app.use(cookieParser());
@@ -118,6 +125,7 @@ app.get('/files/d/:fileId', (_req, res) => {
 app.use('/api/auth', authRoutes.getRouter());
 app.use('/api/share', shareRoutes.getRouter());
 app.use('/api/beamshare', beamshareRoutes.getRouter());
+app.use('/api/subscriptions', subscriptionRoutes.getRouter());
 app.use('/api', apiRoutes.getRouter());
 
 const sendIndex = (_req, res) => {
@@ -134,15 +142,6 @@ const sendSsoPage = (res, page) => {
             }
         }
     );
-};
-
-const sendRecycleBinPage = (_req, res) => {
-    res.sendFile(recycleBinPagePath, (error) => {
-        if (error) {
-            console.error('Không thể tải trang thùng rác:', error.message);
-            res.redirect(302, '/');
-        }
-    });
 };
 
 const ensureAuthenticatedPage = (req, res, next) => {
@@ -166,7 +165,7 @@ app.get('/auth/login', (_req, res) => sendSsoPage(res, 'login'));
 app.get('/auth/register', (_req, res) => sendSsoPage(res, 'register'));
 app.get('/auth/forgot-password', (_req, res) => sendSsoPage(res, 'forgot-password'));
 app.get('/auth/reset-password', (_req, res) => sendSsoPage(res, 'reset-password'));
-app.get('/recycle', ensureAuthenticatedPage, sendRecycleBinPage);
+app.get('/recycle', ensureAuthenticatedPage, sendIndex);
 
 // Protected SPA entry
 app.get('/', ensureAuthenticatedPage, sendIndex);
@@ -183,7 +182,7 @@ app.get('*', (req, res) => {
         return res.redirect(302, legacyTarget);
     }
 
-    if (req.path.startsWith('/beamshare') || req.path.startsWith('/file') || req.path.startsWith('/files') || req.path.startsWith('/landing') || req.path.startsWith('/auth') || req.path.startsWith('/recycle')) {
+    if (req.path.startsWith('/beamshare') || req.path.startsWith('/file') || req.path.startsWith('/files') || req.path.startsWith('/landing') || req.path.startsWith('/auth')) {
         return res.redirect(302, req.path);
     }
 

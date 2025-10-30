@@ -174,6 +174,20 @@ class FileMetadataManager {
         return this.Model.find({ userId, isDeleted: false }).sort({ uploadDate: -1 }).lean();
     }
 
+    async getTotalUsageBytes(userId) {
+        const result = await this.Model.aggregate([
+            { $match: { userId, isDeleted: false } },
+            {
+                $group: {
+                    _id: '$userId',
+                    total: { $sum: '$size' }
+                }
+            }
+        ]);
+
+        return result?.[0]?.total || 0;
+    }
+
     async listRecycleBin(userId) {
         return this.Model.find({ userId, isDeleted: true }).sort({ deletedAt: -1 }).lean();
     }

@@ -4,14 +4,14 @@
     "description": "Chia sẻ file nhanh chóng giữa các thiết bị",
     "icons": [
         {
-            "src": "images/logo.svg",
+            "src": "/public/img/favicon.png",
             "sizes": "192x192",
-            "type": "image/svg+xml"
+            "type": "image/png"
         },
         {
-            "src": "images/logo-maskable.svg",
+            "src": "/public/img/favicon.png",
             "sizes": "512x512",
-            "type": "image/svg+xml",
+            "type": "image/png",
             "purpose": "any maskable"
         }
     ],
