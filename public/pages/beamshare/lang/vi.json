@@ -49,6 +49,8 @@
         "remaining": "Lượt còn lại",
         "remaining-value": "Còn {{remaining}} / {{max}} lượt",
         "remaining-unlimited": "Không giới hạn",
+        "limit-label-unlimited": "Không giới hạn",
+        "limit-label-unlimited-basic": "Không giới hạn lượt gửi, tối đa 200MB mỗi file",
         "reset": "Đặt lại",
         "reset-value": "{{time}}",
         "error": "Không thể tải thông tin gói",

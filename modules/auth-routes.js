@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const User = require('./models/user');
 const EmailService = require('./services/email-service');
-const { issueAuthCookie, clearAuthCookie, requireAuth } = require('./middleware/auth');
+const { issueAuthCookie, clearAuthCookie, requireAuth } = require('./middleware/auth-middleware');
 
 class AuthRoutes {
     constructor() {

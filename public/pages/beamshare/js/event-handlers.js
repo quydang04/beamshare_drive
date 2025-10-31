@@ -199,6 +199,45 @@ function setupFileDialogEvents() {
     }
 }
 
+function buildFileSizeLimitMessage(limitLabel, rejectedCount) {
+    const labelText = limitLabel || (window.BeamshareRuntimeLimits?.fileSizeLimitBytes
+        ? formatFileSize(window.BeamshareRuntimeLimits.fileSizeLimitBytes)
+        : null);
+    if (rejectedCount === 1) {
+        return labelText
+            ? `File bạn chọn vượt quá giới hạn ${labelText} của gói hiện tại.`
+            : 'File bạn chọn vượt quá giới hạn cho gói hiện tại.';
+    }
+    return labelText
+        ? `${rejectedCount} file vượt quá giới hạn ${labelText} của gói hiện tại.`
+        : `${rejectedCount} file vượt quá giới hạn cho gói hiện tại.`;
+}
+
+function filterFilesByLimit(files) {
+    const limits = window.BeamshareRuntimeLimits || {};
+    const limitBytes = Number(limits.fileSizeLimitBytes);
+    if (!Number.isFinite(limitBytes) || limitBytes <= 0) {
+        return files;
+    }
+
+    const allowed = [];
+    let rejectedCount = 0;
+
+    files.forEach((file) => {
+        if (file.size <= limitBytes) {
+            allowed.push(file);
+        } else {
+            rejectedCount += 1;
+        }
+    });
+
+    if (rejectedCount > 0 && typeof showNotification === 'function') {
+        showNotification(buildFileSizeLimitMessage(limits.fileSizeLimitLabel, rejectedCount), 'error');
+    }
+
+    return allowed;
+}
+
 // File handling functions
 function handleFileSelection(e) {
     const files = Array.from(e.target.files);
@@ -206,13 +245,27 @@ function handleFileSelection(e) {
 }
 
 function handleFiles(files) {
-    selectedFiles = files;
+    const sanitizedFiles = filterFilesByLimit(files || []);
+    selectedFiles = sanitizedFiles;
+
+    if (fileInput) {
+        if (typeof DataTransfer !== 'undefined') {
+            const dt = new DataTransfer();
+            sanitizedFiles.forEach((file) => dt.items.add(file));
+            fileInput.files = dt.files;
+        } else if (sanitizedFiles.length === 0) {
+            fileInput.value = '';
+        }
+    }
+
     displaySelectedFiles();
 
-    if (files.length > 0 && connections.size > 0) {
-        showNotification(`${files.length} ${t('filesSelected')}. ${t('clickDeviceToSend')}.`);
-    } else if (files.length > 0) {
-        showNotification(`${files.length} ${t('filesSelected')}. ${t('waitingForDevices')}`);
+    if (sanitizedFiles.length > 0 && connections.size > 0) {
+        showNotification(`${sanitizedFiles.length} ${t('filesSelected')}. ${t('clickDeviceToSend')}.`);
+    } else if (sanitizedFiles.length > 0) {
+        showNotification(`${sanitizedFiles.length} ${t('filesSelected')}. ${t('waitingForDevices')}`);
+    } else if ((files || []).length > 0) {
+        showNotification(t('pleaseSelectFiles'), 'warning');
     }
 }
 
@@ -411,6 +464,7 @@ window.selectDevice = selectDevice;
 window.saveSettings = saveSettings;
 window.updateDeviceNameRealtime = updateDeviceNameRealtime;
 window.updateLocalDeviceDisplay = updateLocalDeviceDisplay;
+window.filterFilesByLimit = filterFilesByLimit;
 
 // Join Room Dialog function
 function openJoinRoomDialog() {

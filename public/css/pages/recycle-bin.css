@@ -2,6 +2,33 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.recycle-page h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.recycle-page h2,
+.recycle-page h3,
+.recycle-page strong {
+    font-family: inherit;
+    font-weight: 600;
+}
+
+.recycle-page p,
+.recycle-page span,
+.recycle-page td,
+.recycle-page th,
+.recycle-page button,
+.recycle-page input,
+.recycle-page label {
+    font-family: inherit;
+    letter-spacing: inherit;
 }
 
 .recycle-info {

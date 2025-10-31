@@ -7,15 +7,21 @@ async function connectDatabase() {
         return connectionPromise;
     }
 
-    const uri = process.env.MONGODB_URI;
-    if (!uri) {
-        throw new Error('Missing MONGODB_URI environment variable');
+    const { MONGODB_URI, MONGODB_DB_NAME } = process.env;
+
+    if (!MONGODB_URI) {
+        throw new Error('MONGODB_URI is not configured. Please set it in your environment.');
+    }
+
+    if (!MONGODB_DB_NAME) {
+        throw new Error('MONGODB_DB_NAME is not configured. Please set it in your environment.');
     }
 
     mongoose.set('strictQuery', true);
 
-    connectionPromise = mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 5000
+    connectionPromise = mongoose.connect(MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000,
+    dbName: MONGODB_DB_NAME
     }).then((conn) => {
         console.log('Connected to MongoDB');
         return conn;

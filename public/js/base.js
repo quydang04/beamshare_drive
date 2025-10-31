@@ -740,8 +740,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Initialize with default page (My Files)
-    updateUserInfo('myfiles');
+    // Initialize with default page (Dashboard)
+    updateUserInfo('dashboard');
     
     // Global functions
     window.updateUserInfo = updateUserInfo;

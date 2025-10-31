@@ -1,39 +1,36 @@
 const FIVE_GIB = 5 * 1024 * 1024 * 1024;
 const FIFTEEN_GIB = 15 * 1024 * 1024 * 1024;
+const BASIC_BEAMSHARE_FILE_LIMIT = 200 * 1024 * 1024; // 200MB per file
 
 const PLAN_DEFINITIONS = {
     basic: {
         id: 'basic',
         title: 'Basic',
-        description: 'Gói miễn phí cho nhu cầu sử dụng cơ bản.',
+        description: 'Free plan for everyday personal transfers.',
         monthlyPrice: 0,
         currency: 'VND',
         storageLimitBytes: FIVE_GIB,
         beamshare: {
-            limitLabel: '10 lượt gửi mỗi 1 giờ',
-            windowMs: 60 * 60 * 1000,
-            maxTransfers: 10
+            limitLabel: 'Unlimited sends, up to 200MB per file',
+            fileSizeLimitBytes: BASIC_BEAMSHARE_FILE_LIMIT,
+            windowMs: null,
+            maxTransfers: null
         }
     },
     premium: {
         id: 'premium',
         title: 'Premium',
-        description: 'Dung lượng mở rộng và BeamShare không giới hạn.',
+        description: 'Expanded storage and unlimited BeamShare.',
         monthlyPrice: 50000,
         currency: 'VND',
         storageLimitBytes: FIFTEEN_GIB,
         beamshare: {
-            limitLabel: 'Không giới hạn',
-            windowMs: 0,
-            maxTransfers: 0
+            limitLabel: 'Unlimited',
+            fileSizeLimitBytes: null,
+            windowMs: null,
+            maxTransfers: null
         }
     }
-};
-
-const BEAMSHARE_GUEST_LIMIT = {
-    label: '5 lượt gửi mỗi 5 giờ',
-    windowMs: 5 * 60 * 60 * 1000,
-    maxTransfers: 5
 };
 
 function resolvePlan(planName) {
@@ -46,6 +43,5 @@ function resolvePlan(planName) {
 
 module.exports = {
     PLAN_DEFINITIONS,
-    BEAMSHARE_GUEST_LIMIT,
     resolvePlan
 };

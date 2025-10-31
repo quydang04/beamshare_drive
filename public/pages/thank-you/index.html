@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeamShare Drive | Cảm ơn bạn!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/public/pages/thank-you/css/style.css">
+</head>
+<body>
+    <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+    <div class="floating-orbs" aria-hidden="true">
+        <span class="orb orb-1"></span>
+        <span class="orb orb-2"></span>
+        <span class="orb orb-3"></span>
+    </div>
+    <main class="thankyou-wrapper">
+        <section class="thankyou-card" role="status">
+            <div class="card-header">
+                <span class="badge">Thanh toán thành công</span>
+                <h1>Xin cảm ơn vì bạn đã tin tưởng sử dụng dịch vụ của BeamShare!</h1>
+                <p id="thankyou-message">Giao dịch của bạn đã được xác nhận. Bạn có thể trải nghiệm đầy đủ các tính năng Premium cho tài khoản của bạn.</p>
+            </div>
+            <div class="card-highlight" id="plan-highlight">
+                <div class="sparkle" aria-hidden="true"></div>
+                <span class="highlight-label">BeamShare Premium</span>
+                <p>Không giới hạn BeamShare Live, dung lượng mở rộng và nhiều thứ khác nữa.</p>
+            </div>
+            <div class="card-actions">
+                <a class="btn primary" href="/">Về trang chính</a>
+            </div>
+            <div class="card-footer">
+                <p>Nếu bạn cần hỗ trợ thêm, vui lòng liên hệ qua <a href="mailto:webmaster@quydang.name.vn">webmaster@quydang.name.vn</a>.</p>
+            </div>
+        </section>
+    </main>
+    <script src="/public/pages/thank-you/js/thank-you.js" defer></script>
+</body>
+</html>

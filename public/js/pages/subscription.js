@@ -12,9 +12,9 @@
             currency: 'VND',
             storageBytes: 5 * BYTES_IN_GIB,
             storageLabel: '5 GB',
-            beamshareLimitLabel: 'BeamShare Live: 10 lượt gửi mỗi 1 giờ',
-            beamshareWindowMs: 60 * 60 * 1000,
-            beamshareMaxTransfers: 10
+            beamshareLimitLabel: 'BeamShare Live: Không giới hạn lượt gửi, tối đa 200MB mỗi file',
+            beamshareFileSizeBytes: 200 * 1024 * 1024,
+            beamshareFileSizeLabel: '200 MB'
         },
         premium: {
             id: 'premium',
@@ -23,8 +23,8 @@
             storageBytes: 15 * BYTES_IN_GIB,
             storageLabel: '15 GB',
             beamshareLimitLabel: 'BeamShare Live: Không giới hạn',
-            beamshareWindowMs: 0,
-            beamshareMaxTransfers: 0
+            beamshareFileSizeBytes: null,
+            beamshareFileSizeLabel: 'Không giới hạn'
         }
     };
 
@@ -39,7 +39,10 @@
         beamshareSummary: '[data-beamshare-summary]',
         upgradeButton: '[data-action="upgrade"]',
         switchPlanButtons: '[data-action="switch-plan"]',
-        beamshareGuest: '[data-beamshare-guest-limit]'
+        beamshareBasicSends: '[data-beamshare-basic-sends]',
+        beamshareBasicFileSize: '[data-beamshare-basic-filesize]',
+        beamsharePremiumSends: '[data-beamshare-premium-sends]',
+        beamsharePremiumFileSize: '[data-beamshare-premium-filesize]'
     };
 
     const elements = {
@@ -107,29 +110,6 @@
         } catch (_error) {
             return `${value} ${currency}`;
         }
-    }
-
-    function formatWindow(windowMs) {
-        if (!windowMs || windowMs <= 0) {
-            return 'Không giới hạn';
-        }
-
-        const minutes = Math.round(windowMs / 60000);
-        if (minutes % 60 === 0) {
-            const hours = minutes / 60;
-            if (hours % 24 === 0) {
-                const days = hours / 24;
-                return `${days} ngày`;
-            }
-            return `${hours} giờ`;
-        }
-
-        if (minutes >= 60) {
-            const hoursValue = (minutes / 60).toFixed(1).replace(/\.0$/, '');
-            return `${hoursValue} giờ`;
-        }
-
-        return `${minutes} phút`;
     }
 
     function pushToast(type, message, options) {
@@ -205,9 +185,13 @@
                         ? 'Đã ở gói Premium'
                         : overview.authenticated ? 'Nâng cấp ngay' : 'Đăng nhập để nâng cấp';
                 } else {
-                    cta.textContent = isCurrent
-                        ? 'Đang sử dụng'
-                        : overview.authenticated ? 'Liên hệ hỗ trợ để chuyển về Basic' : 'Đăng nhập để sử dụng';
+                    if (isCurrent) {
+                        cta.textContent = 'Đang sử dụng';
+                    } else if (overview.authenticated) {
+                        cta.textContent = 'Chuyển về gói Basic';
+                    } else {
+                        cta.textContent = 'Đăng nhập để sử dụng';
+                    }
                 }
             }
         });
@@ -223,21 +207,18 @@
         const usageProgress = elements.usageCard.querySelector(selectors.usageProgress);
         const beamshareSummary = elements.usageCard.querySelector(selectors.beamshareSummary);
 
-        if (!overview.authenticated) {
-            const basicDefaults = PLAN_DEFAULTS.basic;
+        if (!overview?.authenticated) {
             if (planLabel) {
-                planLabel.textContent = 'Bạn đang khám phá BeamShare ở chế độ khách.';
+                planLabel.textContent = 'Vui lòng đăng nhập để xem thông tin gói.';
             }
             if (usageText) {
-                usageText.textContent = `0 B / ${basicDefaults.storageLabel}`;
+                usageText.textContent = '0 B / 0 B';
             }
             if (usageProgress) {
                 usageProgress.style.width = '0%';
             }
             if (beamshareSummary) {
-                beamshareSummary.textContent = overview.beamshare?.limit?.limitLabel
-                    ? `Giới hạn BeamShare hiện tại: ${overview.beamshare.limit.limitLabel}`
-                    : 'Giới hạn BeamShare hiện tại: 5 lượt mỗi 5 giờ';
+                beamshareSummary.textContent = 'BeamShare Live yêu cầu đăng nhập.';
             }
             return;
         }
@@ -281,40 +262,40 @@
             return;
         }
 
-        const guestCell = elements.beamshareTable.querySelector(selectors.beamshareGuest);
-        const guestWindowCell = elements.beamshareTable.querySelector('[data-beamshare-guest-window]');
-        if (guestCell) {
-            if (overview.guestBeamshare) {
-                guestCell.textContent = `${overview.guestBeamshare.maxTransfers} lượt`;
-                if (guestWindowCell) {
-                    guestWindowCell.textContent = formatWindow(overview.guestBeamshare.windowMs);
-                }
-            } else {
-                guestCell.textContent = '5 lượt';
-                if (guestWindowCell) {
-                    guestWindowCell.textContent = '5 giờ';
-                }
-            }
+        const plans = Array.isArray(overview.plans) ? overview.plans : [];
+        const basicPlan = plans.find((plan) => normalizePlanId(plan.id) === 'basic');
+        const premiumPlan = plans.find((plan) => normalizePlanId(plan.id) === 'premium');
+
+        const basicSendCell = elements.beamshareTable.querySelector(selectors.beamshareBasicSends);
+        if (basicSendCell) {
+            basicSendCell.textContent = 'Không giới hạn';
         }
 
-        const basicCell = elements.beamshareTable.querySelector('[data-beamshare-basic-limit]');
-        const basicWindowCell = elements.beamshareTable.querySelector('[data-beamshare-basic-window]');
-        if (basicCell && overview.plans) {
-            const basicPlan = overview.plans.find((plan) => normalizePlanId(plan.id) === 'basic');
-            if (basicPlan?.beamshare) {
-                basicCell.textContent = `${basicPlan.beamshare.maxTransfers} lượt`;
-                if (basicWindowCell) {
-                    basicWindowCell.textContent = formatWindow(basicPlan.beamshare.windowMs);
-                }
-                return;
-            }
+        const premiumSendCell = elements.beamshareTable.querySelector(selectors.beamsharePremiumSends);
+        if (premiumSendCell) {
+            premiumSendCell.textContent = 'Không giới hạn';
         }
-        if (basicCell) {
-            const basicDefaults = PLAN_DEFAULTS.basic;
-            basicCell.textContent = `${basicDefaults.beamshareMaxTransfers} lượt`;
-            if (basicWindowCell) {
-                basicWindowCell.textContent = formatWindow(basicDefaults.beamshareWindowMs);
-            }
+
+        const basicFileCell = elements.beamshareTable.querySelector(selectors.beamshareBasicFileSize);
+        if (basicFileCell) {
+            const raw = basicPlan?.beamshare?.fileSizeLimitLabel
+                || PLAN_DEFAULTS.basic.beamshareFileSizeLabel
+                || '—';
+            const label = raw && raw !== 'Không giới hạn' && !/mỗi file/i.test(raw)
+                ? `${raw} mỗi file`
+                : raw;
+            basicFileCell.textContent = label;
+        }
+
+        const premiumFileCell = elements.beamshareTable.querySelector(selectors.beamsharePremiumFileSize);
+        if (premiumFileCell) {
+            const raw = premiumPlan?.beamshare?.fileSizeLimitLabel
+                || PLAN_DEFAULTS.premium.beamshareFileSizeLabel
+                || 'Không giới hạn';
+            const label = raw && raw !== 'Không giới hạn' && !/mỗi file/i.test(raw)
+                ? `${raw} mỗi file`
+                : raw;
+            premiumFileCell.textContent = label;
         }
     }
 
@@ -323,6 +304,11 @@
             const response = await fetch('/api/subscriptions/overview', {
                 credentials: 'include'
             });
+
+            if (response.status === 401) {
+                window.location.href = '/auth/login';
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
@@ -344,6 +330,73 @@
             console.error('Không thể tải thông tin gói:', error);
             pushToast('error', 'Không thể tải thông tin gói đăng ký.', { duration: 4000 });
             applyDefaultPlanDetails();
+        }
+    }
+
+    async function confirmBasicDowngrade() {
+        const modal = window.modalSystem;
+        const warningMessage = `
+            <p>Bạn sắp chuyển từ gói Premium về gói Basic.</p>
+            <p>Bạn sẽ mất các quyền lợi Premium như dung lượng cao hơn và giới hạn BeamShare không giới hạn.</p>
+            <p>Bạn có chắc chắn muốn tiếp tục?</p>
+        `;
+
+        if (modal && typeof modal.confirm === 'function') {
+            return modal.confirm({
+                title: 'Xác nhận chuyển về gói Basic',
+                message: warningMessage,
+                confirmText: 'Chuyển về Basic',
+                confirmClass: 'btn-danger',
+                cancelText: 'Hủy'
+            });
+        }
+
+        return window.confirm(
+            'Bạn sắp chuyển từ gói Premium về gói Basic và sẽ mất các quyền lợi Premium. Bạn có chắc chắn muốn tiếp tục?'
+        );
+    }
+
+    async function requestPlanSwitch(targetPlan) {
+        const planId = normalizePlanId(targetPlan);
+        const selector = `[data-action="switch-plan"][data-target="${planId}"]`;
+        const button = elements.plansContainer?.querySelector(selector) || null;
+
+        if (button) {
+            button.dataset.loadingSwitch = 'true';
+            button.dataset.originalLabel = button.textContent || '';
+            button.disabled = true;
+            button.textContent = 'Đang chuyển...';
+        }
+
+        try {
+            const response = await fetch('/api/subscriptions/plan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ plan: planId })
+            });
+
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                const message = payload?.error || 'Không thể đổi gói.';
+                throw new Error(message);
+            }
+
+            pushToast('success', payload?.message || 'Đã chuyển về gói Basic.', { duration: 3000 });
+            await loadOverview();
+        } catch (error) {
+            console.error('Switch plan error:', error);
+            pushToast('error', error.message || 'Không thể đổi gói.', { duration: 4000 });
+        } finally {
+            if (button && document.body.contains(button) && button.dataset.loadingSwitch === 'true') {
+                if (button.textContent === 'Đang chuyển...') {
+                    button.textContent = button.dataset.originalLabel || 'Chuyển về gói Basic';
+                    button.disabled = false;
+                }
+                delete button.dataset.loadingSwitch;
+                delete button.dataset.originalLabel;
+            }
         }
     }
 
@@ -401,17 +454,37 @@
                 return;
             }
             button.dataset.bound = 'true';
-            button.addEventListener('click', () => {
-                if (!state.overview?.authenticated) {
+            button.addEventListener('click', async () => {
+                if (!state.overview) {
+                    pushToast('info', 'Đang tải thông tin gói. Vui lòng thử lại sau giây lát.', { duration: 2500 });
+                    return;
+                }
+
+                if (!state.overview.authenticated) {
                     window.location.href = '/auth/login';
                     return;
                 }
 
-                if (state.overview.currentPlan === 'basic') {
+                const targetPlan = normalizePlanId(button.dataset.target);
+
+                if (state.overview.currentPlan === targetPlan) {
                     pushToast('success', 'Bạn đang ở gói Basic.', { duration: 2500 });
-                } else {
-                    pushToast('info', 'Liên hệ hỗ trợ để chuyển về gói Basic.', { duration: 3500 });
+                    return;
                 }
+
+                if (targetPlan === 'basic') {
+                    if (state.overview.currentPlan === 'premium') {
+                        const confirmed = await confirmBasicDowngrade();
+                        if (!confirmed) {
+                            return;
+                        }
+                    }
+
+                    await requestPlanSwitch('basic');
+                    return;
+                }
+
+                pushToast('info', 'Tính năng chuyển gói này hiện chưa hỗ trợ.', { duration: 3500 });
             });
         });
     }

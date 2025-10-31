@@ -409,6 +409,7 @@
         progress.min = '0';
         progress.max = '1000';
         progress.value = '0';
+        progress.style.setProperty('--progress-value', '0%');
 
         const durationEl = document.createElement('span');
         durationEl.className = 'media-time media-time--duration';
@@ -460,6 +461,11 @@
             autoHideControls: false,
             isVideo: false,
             ...options
+        };
+        const syncProgressBackground = () => {
+            const value = parseFloat(progress.value) || 0;
+            const percent = Math.max(0, Math.min(100, value / 10));
+            progress.style.setProperty('--progress-value', `${percent}%`);
         };
         if (!media) {
             return;
@@ -516,6 +522,7 @@
         media.addEventListener('ended', () => {
             progress.value = '0';
             currentTimeEl.textContent = '00:00';
+            syncProgressBackground();
             updatePlayVisual();
             if (config.autoHideControls) {
                 showControls();
@@ -549,6 +556,7 @@
             const clampedRatio = Math.max(0, Math.min(1, ratio || 0));
             progress.value = Math.round(clampedRatio * 1000).toString();
             currentTimeEl.textContent = formatTime(media.currentTime);
+            syncProgressBackground();
         });
 
         progress.addEventListener('input', () => {
@@ -556,10 +564,12 @@
             const ratio = parseFloat(progress.value) / 1000;
             const targetDuration = getSeekableDuration(media);
             if (!targetDuration) {
+                syncProgressBackground();
                 return;
             }
             const newTime = targetDuration * ratio;
             currentTimeEl.textContent = formatTime(newTime);
+            syncProgressBackground();
         });
 
         progress.addEventListener('change', () => {
@@ -569,6 +579,7 @@
                 media.currentTime = targetDuration * ratio;
             }
             isSeeking = false;
+            syncProgressBackground();
         });
 
         volume.addEventListener('input', () => {
@@ -601,6 +612,7 @@
 
         updatePlayVisual();
         updateDurationLabel();
+        syncProgressBackground();
 
         if (config.autoHideControls && controls) {
             controls.classList.add('media-controls--active');

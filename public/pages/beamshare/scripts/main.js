@@ -4,9 +4,7 @@ class PairDrop {
         this.$headerNotificationBtn = $('notification');
         this.$headerInstallBtn = $('install');
 
-        this.deferredStyles = [
-            "styles/styles-deferred.css"
-        ];
+        this.deferredStyles = [];
         this.deferredScripts = [
             "scripts/browser-tabs-connector.js",
             "scripts/util.js",
@@ -29,6 +27,12 @@ class PairDrop {
         this.headerUI = new HeaderUI();
         this.centerUI = new CenterUI();
         this.footerUI = new FooterUI();
+        this.runtimeLimits = {
+            fileSizeLimitBytes: 200 * 1024 * 1024,
+            fileSizeLimitLabel: '200 MB',
+            resolved: false
+        };
+        window.BeamshareRuntimeLimits = this.runtimeLimits;
         this.planUsageElements = {
             container: document.getElementById('beamshare-plan-info'),
             planValue: document.getElementById('beamshare-plan-name'),
@@ -277,6 +281,36 @@ class PairDrop {
         }
     }
 
+    formatRuntimeFileSizeLabel(bytes, fallbackLabel) {
+        if (!Number.isFinite(bytes) || bytes <= 0) {
+            return fallbackLabel;
+        }
+
+        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+        const value = bytes / (1024 ** exponent);
+        const formatted = value >= 10 || exponent === 0 ? value.toFixed(0) : value.toFixed(1);
+        return `${formatted} ${units[exponent]}`;
+    }
+
+    resolveLocalizedLimitLabel(label) {
+        if (typeof label !== 'string' || !label.trim()) {
+            return label;
+        }
+
+        const normalized = label.trim().toLowerCase();
+
+        if (normalized === 'unlimited') {
+            return Localization.getTranslation('plan-usage.limit-label-unlimited');
+        }
+
+        if (normalized === 'unlimited sends, up to 200mb per file') {
+            return Localization.getTranslation('plan-usage.limit-label-unlimited-basic');
+        }
+
+        return label;
+    }
+
     async loadPlanUsage() {
         const elements = this.planUsageElements || {};
         const container = elements.container;
@@ -323,6 +357,7 @@ class PairDrop {
             const plans = Array.isArray(payload.plans) ? payload.plans : [];
             const planInfo = plans.find((plan) => String(plan.id).toLowerCase() === planId) || null;
             const beamshareSummary = payload.beamshare || null;
+            const summaryLimit = beamshareSummary?.limit || null;
 
             const displayPlan = planInfo?.title || (planId ? planId.charAt(0).toUpperCase() + planId.slice(1) : '—');
             setText(planValue, displayPlan || '—');
@@ -330,19 +365,35 @@ class PairDrop {
             const storageLabel = planInfo?.storageLabel;
             setText(storageValue, storageLabel || fallbackStorage);
 
-            let limitLabel = beamshareSummary?.limit?.limitLabel || planInfo?.beamshare?.limitLabel || null;
-            if (beamshareSummary && !beamshareSummary.limit) {
-                limitLabel = unlimitedLabel;
-            }
-            setText(limitValue, limitLabel || fallbackLimit);
+            const resolvedFileSizeLimitBytes = Number.isFinite(beamshareSummary?.fileSizeLimitBytes)
+                ? beamshareSummary.fileSizeLimitBytes
+                : Number.isFinite(planInfo?.beamshare?.fileSizeLimitBytes)
+                    ? planInfo.beamshare.fileSizeLimitBytes
+                    : null;
+            const planFileSizeLabel = planInfo?.beamshare?.fileSizeLimitLabel || null;
+            const summaryFileSizeLabel = beamshareSummary?.fileSizeLimitLabel || null;
+            const resolvedFileSizeLimitLabel = summaryFileSizeLabel || planFileSizeLabel || null;
+            const planLimitLabel = planInfo?.beamshare?.limitLabel || null;
 
-            if (beamshareSummary && beamshareSummary.limit && typeof beamshareSummary.limit.maxTransfers === 'number' && beamshareSummary.limit.maxTransfers > 0) {
-                const maxTransfers = beamshareSummary.limit.maxTransfers;
-                const remaining = typeof beamshareSummary.remaining === 'number'
+            let limitLabel;
+            if (summaryLimit) {
+                limitLabel = summaryLimit.limitLabel || planLimitLabel || resolvedFileSizeLimitLabel || fallbackLimit;
+            } else {
+                limitLabel = planLimitLabel || resolvedFileSizeLimitLabel || unlimitedLabel;
+            }
+            const localizedLimitLabel = this.resolveLocalizedLimitLabel(limitLabel);
+            setText(limitValue, localizedLimitLabel || fallbackLimit);
+
+            if (summaryLimit && typeof summaryLimit.maxTransfers === 'number' && summaryLimit.maxTransfers > 0) {
+                const remaining = typeof beamshareSummary?.remaining === 'number'
                     ? Math.max(beamshareSummary.remaining, 0)
-                    : maxTransfers;
-                const formattedRemaining = Number.isFinite(remaining) ? remaining.toLocaleString() : String(remaining || '0');
-                const formattedMax = Number.isFinite(maxTransfers) ? maxTransfers.toLocaleString() : String(maxTransfers || '0');
+                    : summaryLimit.maxTransfers;
+                const formattedRemaining = Number.isFinite(remaining)
+                    ? remaining.toLocaleString()
+                    : String(remaining || '0');
+                const formattedMax = Number.isFinite(summaryLimit.maxTransfers)
+                    ? summaryLimit.maxTransfers.toLocaleString()
+                    : String(summaryLimit.maxTransfers || '0');
                 const text = Localization.getTranslation('plan-usage.remaining-value', null, {
                     remaining: formattedRemaining,
                     max: formattedMax
@@ -371,6 +422,24 @@ class PairDrop {
                 } else {
                     resetRow.hidden = true;
                     setText(resetValue, '');
+                }
+            }
+
+            const runtimeBytes = Number.isFinite(resolvedFileSizeLimitBytes) && resolvedFileSizeLimitBytes > 0
+                ? resolvedFileSizeLimitBytes
+                : null;
+            const runtimeLabelRaw = resolvedFileSizeLimitLabel
+                || this.formatRuntimeFileSizeLabel(runtimeBytes, unlimitedLabel);
+            const runtimeLabel = this.resolveLocalizedLimitLabel(runtimeLabelRaw);
+
+            this.runtimeLimits.fileSizeLimitBytes = runtimeBytes;
+            this.runtimeLimits.fileSizeLimitLabel = runtimeLabel;
+            this.runtimeLimits.resolved = true;
+
+            if (typeof window.filterFilesByLimit === 'function' && Array.isArray(window.selectedFiles) && window.selectedFiles.length > 0) {
+                const filtered = window.filterFilesByLimit(window.selectedFiles);
+                if (filtered.length !== window.selectedFiles.length) {
+                    window.handleFiles(filtered);
                 }
             }
 

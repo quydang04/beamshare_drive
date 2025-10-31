@@ -51,7 +51,7 @@
 
     function formatFileSize(bytes) {
         if (!Number.isFinite(bytes) || bytes <= 0) {
-            return '�';
+            return 'Không xác định';
         }
         const units = ['B', 'KB', 'MB', 'GB', 'TB'];
         const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
@@ -61,7 +61,7 @@
 
     function formatDateTime(value) {
         if (!value) {
-            return '�';
+            return 'Không xác định';
         }
 
         try {
@@ -74,24 +74,24 @@
                 minute: '2-digit'
             }).format(date);
         } catch (_error) {
-            return '';
+            return 'Không xác định';
         }
     }
 
     function formatRemainingTime(expiresAt) {
         if (!expiresAt) {
-            return '�';
+            return 'Không xác định';
         }
 
         const now = Date.now();
         const expiry = expiresAt instanceof Date ? expiresAt.getTime() : new Date(expiresAt).getTime();
         if (Number.isNaN(expiry)) {
-            return '�';
+            return 'Không xác định';
         }
 
         const diff = expiry - now;
         if (diff <= 0) {
-            return '<span class="recycle-time-expired">S?p x�a</span>';
+            return '<span class="recycle-time-expired">Sắp xóa</span>';
         }
 
         const totalMinutes = Math.floor(diff / 60000);
@@ -100,12 +100,12 @@
         const minutes = totalMinutes % 60;
 
         if (days > 0) {
-            return `${days} ng�y ${hours} gi?`;
+            return `${days} ngày ${hours} giờ`;
         }
         if (hours > 0) {
-            return `${hours} gi? ${minutes} ph�t`;
+            return `${hours} giờ ${minutes} phút`;
         }
-        return `${Math.max(minutes, 1)} ph�t`;
+        return `${Math.max(minutes, 1)} phút`;
     }
 
     function sanitizeIdSegment(value) {
@@ -141,16 +141,16 @@
 
         const total = state.files.length;
         if (!total) {
-            elements.summaryTotal.textContent = '0 m?c';
+            elements.summaryTotal.textContent = '0 mục';
             return;
         }
 
         const filteredCount = state.filteredFiles.length;
         const trimmedTerm = state.searchTerm.trim();
         if (trimmedTerm && filteredCount !== total) {
-            elements.summaryTotal.textContent = `${filteredCount}/${total} m?c`;
+            elements.summaryTotal.textContent = `${filteredCount}/${total} mục`;
         } else {
-            elements.summaryTotal.textContent = `${total} m?c`;
+            elements.summaryTotal.textContent = `${total} mục`;
         }
     }
 
@@ -294,7 +294,7 @@
             if (!targetButton.dataset.originalHtml) {
                 targetButton.dataset.originalHtml = targetButton.innerHTML;
             }
-            targetButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${action === 'delete' ? '�ang x�a' : '�ang kh�i ph?c'}`;
+            targetButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${action === 'delete' ? 'Đang xóa' : 'Đang khôi phục'}`;
             targetButton.disabled = true;
             state.busyAction = action;
             if (elements.selectionCancel) {
@@ -357,7 +357,7 @@
 
             const payload = await response.json().catch(() => ({}));
             if (!response.ok || payload.success !== true) {
-                throw new Error(payload.error || 'Thao t�c kh�ng th�nh c�ng');
+                throw new Error(payload.error || 'Thao tác không thành công');
             }
 
             const results = Array.isArray(payload.results) ? payload.results : [];
@@ -383,7 +383,7 @@
             await fetchRecycleBin();
         } catch (error) {
             console.error(`Bulk ${action} failed:`, error);
-            window.toastSystem?.error(error.message || 'Kh�ng th? ho�n t?t thao t�c.');
+            window.toastSystem?.error(error.message || 'Không thể hoàn tất thao tác.');
         } finally {
             setBulkActionLoading(action, false);
         }
@@ -396,13 +396,13 @@
         }
 
         const message = fileIds.length === 1
-            ? 'Kh�i ph?c m?c d� ch?n v? thu m?c My Files?'
-            : `Kh�i ph?c ${fileIds.length} m?c d� ch?n v? thu m?c My Files?`;
+            ? 'Khôi phục mục đã chọn về thư mục My Files?'
+            : `Khôi phục ${fileIds.length} mục đã chọn về thư mục My Files?`;
 
         const confirmed = await askForConfirmation({
-            title: 'Kh�i ph?c h�ng lo?t',
+            title: 'Khôi phục hàng loạt',
             message,
-            confirmText: 'Kh�i ph?c'
+            confirmText: 'Khôi phục'
         });
 
         if (!confirmed) {
@@ -412,10 +412,10 @@
         await executeBulkAction(
             'restore',
             '/api/recycle-bin/bulk/restore',
-            (count) => `�� kh�i ph?c ${count} m?c.`,
+            (count) => `Đã khôi phục ${count} mục.`,
             (total, names, suffix) => {
                 const detail = names.length ? ` (${names.join(', ')}${suffix})` : '';
-                return `Kh�ng th? kh�i ph?c ${total} m?c${detail}.`;
+                return `Không thể khôi phục ${total} mục${detail}.`;
             }
         );
     }
@@ -427,13 +427,13 @@
         }
 
         const message = fileIds.length === 1
-            ? 'X�a vinh vi?n m?c d� ch?n? H�nh d?ng n�y kh�ng th? ho�n t�c.'
-            : `X�a vinh vi?n ${fileIds.length} m?c d� ch?n? H�nh d?ng n�y kh�ng th? ho�n t�c.`;
+            ? 'Xóa vĩnh viễn mục đã chọn? Hành động này không thể hoàn tác.'
+            : `Xóa vĩnh viễn ${fileIds.length} mục đã chọn? Hành động này không thể hoàn tác.`;
 
         const confirmed = await askForConfirmation({
-            title: 'X�a vinh vi?n h�ng lo?t',
+            title: 'Xóa vĩnh viễn hàng loạt',
             message,
-            confirmText: 'X�a vinh vi?n',
+            confirmText: 'Xóa vĩnh viễn',
             confirmClass: 'btn-danger'
         });
 
@@ -444,10 +444,10 @@
         await executeBulkAction(
             'delete',
             '/api/recycle-bin/bulk/delete',
-            (count) => `�� x�a vinh vi?n ${count} m?c.`,
+            (count) => `Đã xóa vĩnh viễn ${count} mục.`,
             (total, names, suffix) => {
                 const detail = names.length ? ` (${names.join(', ')}${suffix})` : '';
-                return `Kh�ng th? x�a ${total} m?c${detail}.`;
+                return `Không thể xóa ${total} mục${detail}.`;
             }
         );
     }
@@ -490,7 +490,7 @@
                 <td colspan="6">
                     <div class="recycle-empty-row__content">
                         <i class="fas fa-search" aria-hidden="true"></i>
-                        <p>Kh�ng t�m th?y t?p ph� h?p v?i t�m ki?m hi?n t?i.</p>
+                        <p>Không tìm thấy tệp phù hợp với tìm kiếm hiện tại.</p>
                     </div>
                 </td>
             `;
@@ -517,7 +517,7 @@
 
             row.innerHTML = `
                 <td class="select-col">
-                    <label class="sr-only" for="${checkboxId}">Ch?n ${displayName}</label>
+                    <label class="sr-only" for="${checkboxId}">Chọn ${displayName}</label>
                     <input type="checkbox" class="recycle-row-checkbox" id="${checkboxId}" data-file-id="${escapeHtml(file.internalName)}"${isSelected ? ' checked' : ''}>
                 </td>
                 <td>
@@ -533,11 +533,11 @@
                     <div class="recycle-actions">
                         <button class="recycle-action-btn restore" type="button">
                             <i class="fas fa-undo"></i>
-                            Kh�i ph?c
+                            Khôi phục
                         </button>
                         <button class="recycle-action-btn delete" type="button">
                             <i class="fas fa-trash-alt"></i>
-                            X�a vinh vi?n
+                            Xóa vĩnh viễn
                         </button>
                     </div>
                 </td>
@@ -614,7 +614,7 @@
             const payload = isJson ? await response.json().catch(() => ({})) : {};
 
             if (!response.ok) {
-                throw new Error(payload?.error || 'Kh�ng th? t?i th�ng r�c');
+                throw new Error(payload?.error || 'Không thể tải thùng rác');
             }
 
             const files = Array.isArray(payload?.files) ? payload.files : [];
@@ -629,10 +629,10 @@
 
             console.error('Recycle bin load failed:', error);
             if (elements.summaryTotal) {
-                elements.summaryTotal.textContent = 'Kh�ng th? t?i';
+                elements.summaryTotal.textContent = 'Không thể tải';
             }
             setViewState({ isLoading: false, hasData: false });
-            window.toastSystem?.error(error.message || 'Kh�ng th? t?i danh s�ch th�ng r�c. Vui l�ng th? l?i.');
+            window.toastSystem?.error(error.message || 'Không thể tải danh sách thùng rác. Vui lòng thử lại.');
         } finally {
             if (state.abortController === controller) {
                 state.abortController = null;
@@ -642,11 +642,11 @@
 
     async function handleRestore(file) {
         const displayName = file.displayName || file.originalName || file.internalName;
-        const confirmMessage = `Kh�i ph?c "${displayName}" v? thu m?c My Files?`;
+        const confirmMessage = `Khôi phục "${displayName}" về thư mục My Files?`;
         const confirmed = await askForConfirmation({
-            title: 'Kh�i ph?c t?p',
+            title: 'Khôi phục tệp',
             message: confirmMessage,
-            confirmText: 'Kh�i ph?c'
+            confirmText: 'Khôi phục'
         });
 
         if (!confirmed) {
@@ -660,10 +660,10 @@
 
             const payload = await response.json().catch(() => ({}));
             if (!response.ok) {
-                throw new Error(payload?.error || 'Kh�ng th? kh�i ph?c t?p');
+                throw new Error(payload?.error || 'Không thể khôi phục tệp');
             }
 
-            window.toastSystem?.success(payload?.message || `�� kh�i ph?c "${displayName}".`);
+            window.toastSystem?.success(payload?.message || `Đã khôi phục "${displayName}".`);
             state.selected.delete(file.internalName);
             updateSelectionSummary();
             syncRowSelectionState();
@@ -671,17 +671,17 @@
             await fetchRecycleBin();
         } catch (error) {
             console.error('Restore failed:', error);
-            window.toastSystem?.error(error.message || 'Kh�ng th? kh�i ph?c t?p.');
+            window.toastSystem?.error(error.message || 'Không thể khôi phục tệp.');
         }
     }
 
     async function handlePermanentDelete(file) {
         const displayName = file.displayName || file.originalName || file.internalName;
-        const confirmMessage = `X�a vinh vi?n "${displayName}"? H�nh d?ng n�y kh�ng th? ho�n t�c.`;
+        const confirmMessage = `Xóa vĩnh viễn "${displayName}"? Hành động này không thể hoàn tác.`;
         const confirmed = await askForConfirmation({
-            title: 'X�a vinh vi?n',
+            title: 'Xóa vĩnh viễn',
             message: confirmMessage,
-            confirmText: 'X�a vinh vi?n',
+            confirmText: 'Xóa vĩnh viễn',
             confirmClass: 'btn-danger'
         });
 
@@ -696,10 +696,10 @@
 
             const payload = await response.json().catch(() => ({}));
             if (!response.ok) {
-                throw new Error(payload?.error || 'Kh�ng th? x�a vinh vi?n t?p');
+                throw new Error(payload?.error || 'Không thể xóa vĩnh viễn tệp');
             }
 
-            window.toastSystem?.success(payload?.message || `�� x�a vinh vi?n "${displayName}".`);
+            window.toastSystem?.success(payload?.message || `Đã xóa vĩnh viễn "${displayName}".`);
             state.selected.delete(file.internalName);
             updateSelectionSummary();
             syncRowSelectionState();
@@ -707,19 +707,19 @@
             await fetchRecycleBin();
         } catch (error) {
             console.error('Permanent delete failed:', error);
-            window.toastSystem?.error(error.message || 'Kh�ng th? x�a vinh vi?n t?p.');
+            window.toastSystem?.error(error.message || 'Không thể xóa vĩnh viễn tệp.');
         }
     }
 
     async function askForConfirmation(options) {
         if (window.modalSystem && typeof window.modalSystem.confirm === 'function') {
             return window.modalSystem.confirm({
-                cancelText: 'H?y',
+                cancelText: 'Hủy',
                 ...options
             });
         }
 
-        return window.confirm(options?.message || 'B?n c� ch?c ch?n?');
+        return window.confirm(options?.message || 'Bạn có chắc chắn?');
     }
 
     function attachEventListeners() {
@@ -824,7 +824,7 @@
         }
 
         if (elements.summaryTotal) {
-            elements.summaryTotal.textContent = '0 m?c';
+            elements.summaryTotal.textContent = '0 mục';
         }
 
         updateSelectionSummary();
@@ -847,7 +847,7 @@
             elements.tableBody.innerHTML = '';
         }
         if (elements.summaryTotal) {
-            elements.summaryTotal.textContent = '0 m?c';
+            elements.summaryTotal.textContent = '0 mục';
         }
 
         if (elements.searchInput) {

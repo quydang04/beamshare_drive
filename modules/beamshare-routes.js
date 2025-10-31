@@ -3,13 +3,13 @@ const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
 const FileUtils = require('./file-utils');
+const { resolvePlan } = require('./constants/plans');
 
 class BeamshareRoutes {
-    constructor(fileMetadata, authMiddleware, usageService) {
+    constructor(fileMetadata, authMiddleware) {
         this.router = express.Router();
         this.fileMetadata = fileMetadata;
         this.authMiddleware = authMiddleware;
-        this.usageService = usageService;
         this.uploadsRoot = path.join(__dirname, '..', 'uploads');
         this.setupRoutes();
     }
@@ -18,21 +18,6 @@ class BeamshareRoutes {
         this.router.use(this.authMiddleware.requireAuth);
         this.router.get('/files/:fileId/metadata', this.sendMetadata.bind(this));
         this.router.get('/files/:fileId/download', this.downloadFile.bind(this));
-    }
-
-    resolveClientIp(req) {
-        const forwarded = (req.headers['x-forwarded-for'] || req.headers['cf-connecting-ip'] || '')
-            .split(',')
-            .map((token) => token.trim())
-            .find(Boolean);
-        const raw = forwarded || req.ip || req.connection?.remoteAddress || '127.0.0.1';
-        if (raw.startsWith('::ffff:')) {
-            return raw.slice(7);
-        }
-        if (raw === '::1') {
-            return '127.0.0.1';
-        }
-        return raw;
     }
 
     async resolveOwnedFile(req, res) {
@@ -55,25 +40,24 @@ class BeamshareRoutes {
             return null;
         }
 
-        if (this.usageService) {
-            const usageResult = await this.usageService.assertAndConsume({
-                plan: req.user?.plan || 'basic',
-                userId: req.user?.userId,
-                clientKey: this.resolveClientIp(req)
+        const stats = FileUtils.getFileStats(filePath);
+        const fileSize = stats?.size ?? metadata.size ?? 0;
+
+        const plan = resolvePlan(req.user?.plan || 'basic');
+        const rawFileLimit = Number(plan?.beamshare?.fileSizeLimitBytes);
+        const fileSizeLimitBytes = Number.isFinite(rawFileLimit) && rawFileLimit > 0 ? rawFileLimit : null;
+
+        if (fileSizeLimitBytes && fileSize > fileSizeLimitBytes) {
+            const limitLabel = FileUtils.formatFileSize(fileSizeLimitBytes);
+            res.status(413).json({
+                error: limitLabel
+                    ? `File vượt quá giới hạn ${limitLabel} cho BeamShare trong gói của bạn.`
+                    : 'File vượt quá giới hạn BeamShare cho gói của bạn.'
             });
-
-            if (!usageResult.allowed) {
-                res.status(429).json({
-                    error: usageResult.message || 'Đã đạt giới hạn BeamShare cho gói của bạn.',
-                    resetAt: usageResult.resetAt
-                });
-                return null;
-            }
-
-            req.beamshareUsage = usageResult;
+            return null;
         }
 
-        return { metadata, filePath };
+        return { metadata, filePath, stats };
     }
 
     async sendMetadata(req, res) {
@@ -83,8 +67,7 @@ class BeamshareRoutes {
                 return;
             }
 
-            const { metadata, filePath } = resolved;
-            const stats = FileUtils.getFileStats(filePath);
+            const { metadata, filePath, stats } = resolved;
             const typeInfo = FileUtils.getFileTypeInfo(metadata.originalName);
 
             res.json({
@@ -115,8 +98,7 @@ class BeamshareRoutes {
                 return;
             }
 
-            const { metadata, filePath } = resolved;
-            const stats = FileUtils.getFileStats(filePath);
+            const { metadata, filePath, stats } = resolved;
 
             res.setHeader('Content-Disposition', `attachment; filename="${metadata.originalName}"`);
             if (stats?.size) {

@@ -1,11 +1,10 @@
-const cacheVersion = 'v1.11.3';
+const cacheVersion = 'v1.11.4';
 const cacheTitle = `beamshare-cache-${cacheVersion}`;
 const relativePathsToCache = [
     './',
     'index.html',
     'manifest.json',
-    'styles/styles-main.css',
-    'styles/styles-deferred.css',
+    'css/beamshare-core.css',
     'scripts/browser-tabs-connector.js',
     'scripts/localization.js',
     'scripts/main.js',

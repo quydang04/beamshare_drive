@@ -3,13 +3,13 @@ const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
 const FileUtils = require('./file-utils');
+const { resolvePlan } = require('./constants/plans');
 
 class ShareRoutes {
-    constructor(fileMetadata, authMiddleware, usageService) {
+    constructor(fileMetadata, authMiddleware) {
         this.router = express.Router();
         this.fileMetadata = fileMetadata;
         this.authMiddleware = authMiddleware;
-        this.usageService = usageService;
         this.uploadsRoot = path.join(__dirname, '..', 'uploads');
         this.setupRoutes();
     }
@@ -18,21 +18,6 @@ class ShareRoutes {
     this.router.get('/:fileId/metadata', this.authMiddleware.optionalAuth, this.ensureAccess.bind(this), this.sendMetadata.bind(this));
         this.router.get('/:fileId/preview', this.authMiddleware.optionalAuth, this.ensureAccess.bind(this), this.previewFile.bind(this));
         this.router.get('/:fileId/download', this.authMiddleware.optionalAuth, this.ensureAccess.bind(this), this.downloadFile.bind(this));
-    }
-
-    resolveClientIp(req) {
-        const forwarded = (req.headers['x-forwarded-for'] || req.headers['cf-connecting-ip'] || '')
-            .split(',')
-            .map((token) => token.trim())
-            .find(Boolean);
-        const raw = forwarded || req.ip || req.connection?.remoteAddress || '127.0.0.1';
-        if (raw.startsWith('::ffff:')) {
-            return raw.slice(7);
-        }
-        if (raw === '::1') {
-            return '127.0.0.1';
-        }
-        return raw;
     }
 
     async ensureAccess(req, res, next) {
@@ -65,22 +50,29 @@ class ShareRoutes {
             req.shareMetadata = metadata;
             req.shareIsOwner = isOwner;
 
-            if (this.usageService && String(req.query.beamshare).toLowerCase() === '1') {
-                const plan = req.user?.plan || (req.user ? 'basic' : 'guest');
-                const usageResult = await this.usageService.assertAndConsume({
-                    plan,
-                    userId: req.user?.userId,
-                    clientKey: this.resolveClientIp(req)
-                });
-
-                if (!usageResult.allowed) {
-                    return res.status(429).json({
-                        error: usageResult.message || 'Đã vượt quá giới hạn BeamShare. Vui lòng thử lại sau.',
-                        resetAt: usageResult.resetAt
-                    });
+            if (String(req.query.beamshare).toLowerCase() === '1') {
+                if (!req.user) {
+                    return res.status(401).json({ error: 'Bạn cần đăng nhập để sử dụng BeamShare.' });
                 }
 
-                req.beamshareUsage = usageResult;
+                const plan = resolvePlan(req.user.plan || 'basic');
+                const rawFileLimit = Number(plan?.beamshare?.fileSizeLimitBytes);
+                const fileSizeLimitBytes = Number.isFinite(rawFileLimit) && rawFileLimit > 0 ? rawFileLimit : null;
+
+                if (fileSizeLimitBytes) {
+                    const filePath = this.getFilePath(metadata);
+                    const stats = FileUtils.getFileStats(filePath);
+                    const fileSize = stats?.size ?? metadata.size ?? 0;
+                    if (fileSize > fileSizeLimitBytes) {
+                        const limitLabel = FileUtils.formatFileSize(fileSizeLimitBytes);
+                        return res.status(413).json({
+                            error: limitLabel
+                                ? `File vượt quá giới hạn ${limitLabel} cho BeamShare trong gói của bạn.`
+                                : 'File vượt quá giới hạn BeamShare cho gói của bạn.'
+                        });
+                    }
+                    req.shareFileStats = stats;
+                }
             }
 
             next();
@@ -99,7 +91,7 @@ class ShareRoutes {
                 return res.status(404).json({ error: 'File not found' });
             }
 
-            const stats = FileUtils.getFileStats(filePath);
+            const stats = req.shareFileStats || FileUtils.getFileStats(filePath);
             const typeInfo = FileUtils.getFileTypeInfo(metadata.originalName);
             const thumbnail = typeInfo.isImage ? FileUtils.generateThumbnail(filePath, metadata.mimeType || typeInfo.mimeType) : null;
 
@@ -165,7 +157,7 @@ class ShareRoutes {
                 return res.status(404).json({ error: 'File not found' });
             }
 
-            const stats = FileUtils.getFileStats(filePath);
+            const stats = req.shareFileStats || FileUtils.getFileStats(filePath);
             res.setHeader('Content-Disposition', `attachment; filename="${metadata.originalName}"`);
             if (stats?.size) {
                 res.setHeader('Content-Length', stats.size);

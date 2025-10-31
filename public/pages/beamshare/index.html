@@ -5,19 +5,19 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <!-- Web App Config -->
-    <title>BeamShare | Chia sẻ file nhanh chóng - Không cần cài đặt</title>
+    <title>BeamShare Live</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#e74c3c">
     <meta name="color-scheme" content="dark light">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="BeamShare">
-    <meta name="application-name" content="BeamShare">
+    <meta name="apple-mobile-web-app-title" content="BeamShare Live">
+    <meta name="application-name" content="BeamShare Live">
     <!-- Descriptions -->
     <meta name="description" content="Chia sẻ file nhanh chóng giữa các thiết bị qua mạng LAN. Đơn giản, bảo mật, không cần đăng ký tài khoản.">
     <meta name="keywords" content="Chia sẻ file, Transfer, Share, Network, LAN">
     <meta name="author" content="BeamShare Team">
-    <meta property="og:title" content="BeamShare">
+    <meta property="og:title" content="BeamShare Live">
     <meta property="og:type" content="application">
     <meta property="og:url" content="#">
     <meta property="og:author" content="#">
@@ -38,8 +38,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap">
-    <link rel="stylesheet" type="text/css" href="styles/styles-main.css">
-    <link rel="stylesheet" type="text/css" href="styles/beamshare-theme.css">
+    <link rel="stylesheet" type="text/css" href="css/beamshare-core.css">
+    <link rel="stylesheet" type="text/css" href="css/beamshare-theme.css">
     <link rel="manifest" href="manifest.json">
 </head>
 
@@ -95,15 +95,6 @@
         <!-- Peers -->
         <x-peers class="center grow-5"></x-peers>
         <x-no-peers class="center grow fade-in no-animation-on-load" data-i18n-key="instructions.no-peers" data-i18n-attrs="data-drop-bg">
-            <div class="welcome-animation">
-                <div class="cloud-icon">☁️</div>
-                <div class="transfer-line"></div>
-                <div class="devices-group">
-                    <div class="device">📱</div>
-                    <div class="device">💻</div>
-                    <div class="device">🖥️</div>
-                </div>
-            </div>
             <h2 data-i18n-key="instructions.no-peers-title" data-i18n-attrs="text">Chờ thiết bị khác kết nối...</h2>
             <div data-i18n-key="instructions.no-peers-subtitle" data-i18n-attrs="text">Các thiết bị trong cùng mạng sẽ xuất hiện ở đây</div>
         </x-no-peers>
@@ -144,17 +135,9 @@
     </div>
     <!-- Footer -->
     <footer class="column opacity-0">
-        <div class="app-logo">
-            <div class="logo-container">
-                <div class="cloud-transfer-logo">
-                    <div class="cloud-shape"></div>
-                    <div class="transfer-arrows">
-                        <div class="arrow arrow-up">↗</div>
-                        <div class="arrow arrow-down">↙</div>
-                    </div>
-                </div>
-                <div class="logo-text">BeamShare</div>
-            </div>
+        <div class="beamshare-brand center">
+            <img class="beamshare-brand__icon" src="/public/img/favicon.png" alt="BeamShare Live icon">
+            <span class="beamshare-brand__name">BeamShare Live</span>
         </div>
         <div class="column">
             <div class="known-as-wrapper">
@@ -206,8 +189,13 @@
     <x-dialog id="language-select-dialog">
         <x-background class="full center text-center">
             <x-paper shadow="2">
-                <div class="row center p-2">
+                <div class="row language-dialog-header">
                     <h2 class="dialog-title" data-i18n-key="dialogs.language-selector-title" data-i18n-attrs="text">Select Language</h2>
+                    <button class="close-language-btn icon-button" type="button" data-i18n-key="dialogs.close" data-i18n-attrs="title aria-label" close>
+                        <svg class="icon">
+                            <use xlink:href="#close-icon"></use>
+                        </svg>
+                    </button>
                 </div>
                 <div class="column language-buttons">
                     <button class="btn" type="button" value="">
@@ -412,20 +400,14 @@
                 </div>
                 <div class="about-content p-2">
                     <div class="about-logo center">
-                        <div class="cloud-transfer-logo large">
-                            <div class="cloud-shape"></div>
-                            <div class="transfer-arrows">
-                                <div class="arrow arrow-up">↗</div>
-                                <div class="arrow arrow-down">↙</div>
-                            </div>
-                        </div>
+                        <img src="/public/img/favicon.png" alt="BeamShare Live logo" class="about-logo__image">
                     </div>
                     <div class="title-wrapper center" dir="ltr">
-                        <h1>BeamShare</h1>
+                        <h1>BeamShare Live</h1>
                         <div class="font-subheading version-badge">v1.0</div>
                     </div>
                     <p class="about-description text-center">
-                        Chia sẻ file nhanh chóng và an toàn giữa các thiết bị trong cùng mạng
+                        BeamShare Live là cổng chia sẻ tệp nội bộ dành cho BeamShare Drive, giúp bạn truyền dữ liệu tức thì giữa các thiết bị đã đăng nhập.
                     </p>
                     <div class="github-section">
                         <a href="https://github.com/quydang04/beamshare" target="_blank" rel="noopener noreferrer" class="github-link">
@@ -436,7 +418,7 @@
                         </a>
                     </div>
                     <div class="about-footer text-center">
-                        <p class="copyright">© 2025 BeamShare.</p>
+                        <p class="copyright">© 2025 BeamShare Drive.</p>
                     </div>
                 </div>
             </x-paper>

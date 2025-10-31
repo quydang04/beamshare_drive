@@ -49,6 +49,8 @@
         "remaining": "Transfers remaining",
         "remaining-value": "{{remaining}} / {{max}} transfers",
         "remaining-unlimited": "Unlimited",
+    "limit-label-unlimited": "Unlimited",
+    "limit-label-unlimited-basic": "Unlimited sends, up to 200MB per file",
         "reset": "Resets",
         "reset-value": "{{time}}",
         "error": "Unable to load plan details",
