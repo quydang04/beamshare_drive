@@ -23,13 +23,18 @@
                 <button class="icon-button" onclick="refreshFiles()" title="Làm mới danh sách">
                     <i class="fas fa-sync-alt"></i>
                 </button>
+                <button class="icon-button" id="create-folder-button" title="Tạo thư mục mới" type="button">
+                    <i class="fas fa-folder-plus"></i>
+                </button>
                 <button class="btn-upload" onclick="window.loadPage('upload')">
                     <i class="fas fa-plus"></i>
                     Tải lên
                 </button>
             </div>
         </div>
-        
+
+        <div class="folder-breadcrumbs" id="folder-breadcrumbs" aria-label="Vị trí hiện tại"></div>
+
         <div class="file-filters">
             <div class="search-wrapper">
                 <i class="fas fa-search"></i>
@@ -56,6 +61,10 @@
                 <span class="selection-count"><span id="file-selection-count">0</span> mục đã chọn</span>
             </div>
             <div class="selection-actions">
+                <button type="button" class="selection-action" id="file-selection-select-all">
+                    <i class="fas fa-check-double"></i>
+                    Chọn tất cả
+                </button>
                 <button type="button" class="selection-action danger" id="file-selection-delete" disabled>
                     <i class="fas fa-trash"></i>
                     Xóa bỏ
@@ -84,7 +93,7 @@
         <div class="files-content" id="files-content">
             <!-- Files will be loaded here -->
         </div>
-        
+
         <div class="empty-state" id="empty-state">
             <div class="empty-icon">
                 <img src="/public/img/favicon.png" alt="" class="empty-icon__image">
@@ -99,5 +108,7 @@
             </div>
 
         </div>
+
+        <div class="context-menu" id="myfiles-context-menu" hidden role="menu"></div>
     </div>
 </div>

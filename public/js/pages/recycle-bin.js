@@ -31,6 +31,7 @@
             selectionRestore: document.getElementById('recycle-selection-restore'),
             selectionDelete: document.getElementById('recycle-selection-delete'),
             selectionCancel: document.getElementById('recycle-selection-cancel'),
+            selectionSelectAll: document.getElementById('recycle-selection-select-all'),
             selectAll: document.getElementById('recycle-select-all'),
             table: document.querySelector('.recycle-table')
         };
@@ -196,7 +197,8 @@
         }
 
         const selectedCount = state.selected.size;
-        if (selectedCount > 0) {
+        const hasContent = state.filteredFiles.length > 0;
+        if (selectedCount > 0 || hasContent) {
             elements.selectionBar.removeAttribute('hidden');
         } else {
             elements.selectionBar.setAttribute('hidden', '');
@@ -215,6 +217,11 @@
         }
         if (elements.selectionCancel) {
             elements.selectionCancel.disabled = disableActions || Boolean(state.busyAction);
+        }
+
+        if (elements.selectionSelectAll) {
+            const allSelected = state.filteredFiles.length > 0 && state.selected.size >= state.filteredFiles.length;
+            elements.selectionSelectAll.disabled = state.filteredFiles.length === 0 || allSelected || Boolean(state.busyAction);
         }
 
         syncSelectAllCheckbox();
@@ -746,6 +753,15 @@
             elements.selectionDelete.addEventListener('click', state.handlers.bulkDelete);
         }
 
+        if (elements.selectionSelectAll) {
+            state.handlers.bulkSelectAll = () => {
+                selectAllVisibleFiles();
+                updateSelectionSummary();
+                syncRowSelectionState();
+            };
+            elements.selectionSelectAll.addEventListener('click', state.handlers.bulkSelectAll);
+        }
+
         if (elements.selectAll) {
             state.handlers.selectAll = (event) => {
                 const shouldSelect = Boolean(event?.target?.checked);
@@ -788,6 +804,11 @@
         if (state.handlers.bulkDelete && elements.selectionDelete) {
             elements.selectionDelete.removeEventListener('click', state.handlers.bulkDelete);
             state.handlers.bulkDelete = null;
+        }
+
+        if (state.handlers.bulkSelectAll && elements.selectionSelectAll) {
+            elements.selectionSelectAll.removeEventListener('click', state.handlers.bulkSelectAll);
+            state.handlers.bulkSelectAll = null;
         }
 
         if (state.handlers.selectAll && elements.selectAll) {

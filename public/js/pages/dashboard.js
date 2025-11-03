@@ -400,8 +400,9 @@
                 throw new Error(`HTTP ${response.status}`);
             }
 
-            const files = await response.json();
-            state.files = Array.isArray(files) ? files : [];
+            const payload = await response.json();
+            const files = Array.isArray(payload?.files) ? payload.files : (Array.isArray(payload) ? payload : []);
+            state.files = files;
             state.lastUpdated = new Date();
 
             renderDashboard();

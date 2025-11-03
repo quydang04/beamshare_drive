@@ -1,6 +1,37 @@
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const Module = require('module');
+const wsSubprotocolStub = require('./utils/ws-subprotocol-stub');
+
+const wsMainPath = require.resolve('ws');
+const wsDir = path.dirname(wsMainPath);
+const wsSubprotocolPath = path.join(wsDir, 'lib', 'subprotocol.js');
+
+if (!fs.existsSync(wsSubprotocolPath)) {
+    const stubSourcePath = path.join(__dirname, 'utils', 'ws-subprotocol-stub.js');
+    try {
+        const source = fs.readFileSync(stubSourcePath, 'utf8');
+        fs.writeFileSync(wsSubprotocolPath, `${source}\n`);
+    } catch (writeError) {
+        console.warn('Unable to persist WebSocket subprotocol shim:', writeError);
+    }
+}
+
+if (!fs.existsSync(wsSubprotocolPath) && !require.cache[wsSubprotocolPath]) {
+    const stubModule = new Module.Module(wsSubprotocolPath, module);
+    stubModule.filename = wsSubprotocolPath;
+    stubModule.parent = module;
+    stubModule.paths = Module.Module._nodeModulePaths
+        ? Module.Module._nodeModulePaths(path.dirname(wsSubprotocolPath))
+        : Module._nodeModulePaths(path.dirname(wsSubprotocolPath));
+    stubModule.loaded = true;
+    stubModule.exports = wsSubprotocolStub;
+    require.cache[wsSubprotocolPath] = stubModule;
+}
+
 const WebSocket = require('ws');
 const { Server: WebSocketServer } = WebSocket;
-const crypto = require('crypto');
 
 const DEFAULT_OPTIONS = {
     path: '/beamshare/server',

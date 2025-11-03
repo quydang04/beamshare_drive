@@ -5,6 +5,7 @@ const mime = require('mime-types');
 const FileUtils = require('./file-utils');
 const createRecycleApi = require('./recycle-api');
 const fsp = fs.promises;
+const FolderManager = require('./models/folder.js');
 
 class ApiRoutes {
     constructor(fileMetadata, uploadHandler, conflictHandler, authMiddleware) {
@@ -16,7 +17,21 @@ class ApiRoutes {
         this.uploadsRoot = path.join(__dirname, '..', 'uploads');
         this.recycleRetentionDays = 30;
         this.recycleRetentionMs = this.recycleRetentionDays * 24 * 60 * 60 * 1000;
+        this.folderManager = new FolderManager();
         this.setupRoutes();
+    }
+
+    normalizeFolderId(raw) {
+        if (raw === null || raw === undefined) {
+            return null;
+        }
+
+        const stringValue = String(raw).trim();
+        if (!stringValue || stringValue.toLowerCase() === 'null' || stringValue.toLowerCase() === 'undefined') {
+            return null;
+        }
+
+        return stringValue;
     }
 
     setupRoutes() {
@@ -35,6 +50,7 @@ class ApiRoutes {
         this.router.post('/files/get-details', this.getFileDetailsByName.bind(this));
         this.router.get('/files/:filename/details', this.getFileDetailsById.bind(this));
         this.router.post('/files/resolve-conflicts', this.resolveConflicts.bind(this));
+        this.router.post('/files/transfer', this.transferFiles.bind(this));
 
         this.router.post('/upload', this.uploadHandler.array('files', 10), this.uploadMultiple.bind(this));
         this.router.post('/upload-single', this.uploadHandler.single('file'), this.uploadSingle.bind(this));
@@ -44,12 +60,26 @@ class ApiRoutes {
         this.router.delete('/files/:filename', this.deleteFile.bind(this));
         this.router.put('/files/:filename', this.renameFile.bind(this));
         this.router.patch('/files/:filename/share', this.updateShareState.bind(this));
+
+        this.router.get('/folders', this.listFolders.bind(this));
+        this.router.post('/folders', this.createFolder.bind(this));
+        this.router.put('/folders/:folderId', this.renameFolder.bind(this));
+        this.router.delete('/folders/:folderId', this.deleteFolder.bind(this));
     }
 
     async getFiles(req, res) {
         try {
             const userId = req.user.userId;
-            const documents = await this.fileMetadata.listFilesForUser(userId);
+            const parentFolderId = this.normalizeFolderId(req.query.folderId);
+            let parentFolder = null;
+            if (parentFolderId) {
+                parentFolder = await this.folderManager.getFolderById(userId, parentFolderId);
+                if (!parentFolder) {
+                    return res.status(404).json({ error: 'Folder not found' });
+                }
+            }
+            const documents = await this.fileMetadata.listFilesForUser(userId, { parentFolderId });
+            const folders = await this.folderManager.listFolders(userId, parentFolderId || null);
             const summaries = [];
 
             for (const doc of documents) {
@@ -60,7 +90,22 @@ class ApiRoutes {
             }
 
             summaries.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
-            res.json(summaries);
+            res.json({
+                currentFolder: parentFolder ? {
+                    id: parentFolder._id.toString(),
+                    name: parentFolder.name,
+                    parentId: parentFolder.parentId ? parentFolder.parentId.toString() : null,
+                    path: parentFolder.path
+                } : null,
+                breadcrumbs: parentFolder ? await this.#buildFolderBreadcrumbs(userId, parentFolder) : [],
+                files: summaries,
+                folders: folders.map(folder => ({
+                    id: folder._id.toString(),
+                    name: folder.name,
+                    parentId: folder.parentId ? folder.parentId.toString() : null,
+                    path: folder.path
+                }))
+            });
         } catch (error) {
             console.error('Error getting files:', error);
             res.status(500).json({ error: 'Failed to get files' });
@@ -69,17 +114,23 @@ class ApiRoutes {
 
     async checkFileExists(req, res) {
         try {
-            const { filename } = req.body || {};
+            const { filename, folderId = null } = req.body || {};
             if (!filename) {
                 return res.status(400).json({ error: 'Filename is required' });
             }
 
-            const exists = await this.fileMetadata.displayNameExists(req.user.userId, filename);
+            const normalizedFolderId = this.normalizeFolderId(folderId);
+
+            const exists = await this.fileMetadata.displayNameExists(req.user.userId, filename, normalizedFolderId);
             if (!exists) {
                 return res.json({ exists: false });
             }
 
-            const internalName = await this.fileMetadata.getInternalFilename(req.user.userId, filename);
+            const internalName = await this.fileMetadata.getInternalFilename(
+                req.user.userId,
+                filename,
+                normalizedFolderId
+            );
             return res.json({ exists: true, internalFilename: internalName, displayName: filename });
         } catch (error) {
             console.error('Error checking file existence:', error);
@@ -89,14 +140,17 @@ class ApiRoutes {
 
     async checkFileConflict(req, res) {
         try {
-            const { filename, fileSize, fileType } = req.body || {};
+            const { filename, fileSize, fileType, folderId = null } = req.body || {};
             if (!filename) {
                 return res.status(400).json({ error: 'Filename is required' });
             }
 
+            const normalizedFolderId = this.normalizeFolderId(folderId);
+
             const conflictInfo = await this.conflictHandler.checkFileConflict(
                 req.user.userId,
                 filename,
+                normalizedFolderId,
                 fileSize,
                 fileType
             );
@@ -107,7 +161,8 @@ class ApiRoutes {
 
             const suggestions = await this.conflictHandler.generateFilenameSuggestions(
                 req.user.userId,
-                filename
+                filename,
+                normalizedFolderId
             );
 
             res.json({
@@ -126,12 +181,18 @@ class ApiRoutes {
 
     async getFileDetailsByName(req, res) {
         try {
-            const { filename } = req.body || {};
+            const { filename, folderId = null } = req.body || {};
             if (!filename) {
                 return res.status(400).json({ error: 'Filename is required' });
             }
 
-            const internalName = await this.fileMetadata.getInternalFilename(req.user.userId, filename);
+            const normalizedFolderId = this.normalizeFolderId(folderId);
+
+            const internalName = await this.fileMetadata.getInternalFilename(
+                req.user.userId,
+                filename,
+                normalizedFolderId
+            );
             if (!internalName) {
                 return res.status(404).json({ error: 'File not found' });
             }
@@ -198,14 +259,21 @@ class ApiRoutes {
 
                 let resolvedName = conflict.filename;
 
+                const conflictFolderId = conflict?.folderId || null;
+
                 if (resolution.action === 'auto_rename') {
                     resolvedName = await this.conflictHandler.generateUniqueFilename(
                         req.user.userId,
-                        conflict.filename
+                        conflict.filename,
+                        conflictFolderId
                     );
                 } else if (resolution.action === 'rename') {
                     const targetName = resolution.newName.trim();
-                    const exists = await this.fileMetadata.displayNameExists(req.user.userId, targetName);
+                    const exists = await this.fileMetadata.displayNameExists(
+                        req.user.userId,
+                        targetName,
+                        conflictFolderId
+                    );
                     if (exists) {
                         errors.push({
                             originalName: conflict.filename,
@@ -225,7 +293,8 @@ class ApiRoutes {
                 results.push({
                     originalName: conflict.filename,
                     action: resolution.action,
-                    resolvedName
+                    resolvedName,
+                    folderId: conflictFolderId
                 });
             }
 
@@ -281,29 +350,53 @@ class ApiRoutes {
                         ? body.customName[files.indexOf(file)]
                         : body.customName;
 
+                    const folderField = Array.isArray(body.folderId)
+                        ? body.folderId[files.indexOf(file)]
+                        : (body.folderId || body.parentFolderId || body.targetFolderId);
+                    const parentFolderId = this.normalizeFolderId(folderField);
+
                     const autoResolve = String(body.autoResolve).toLowerCase() === 'true';
 
                     let displayName = requestedName || file.originalname;
 
-                    const conflictInfo = await this.conflictHandler.checkFileConflict(userId, displayName, file.size, file.mimetype);
+                    const conflictInfo = await this.conflictHandler.checkFileConflict(
+                        userId,
+                        displayName,
+                        parentFolderId,
+                        file.size,
+                        file.mimetype
+                    );
 
                     if (conflictInfo.hasConflict && !conflictAction) {
                         if (autoResolve) {
-                            displayName = await this.conflictHandler.generateUniqueFilename(userId, displayName);
+                            displayName = await this.conflictHandler.generateUniqueFilename(
+                                userId,
+                                displayName,
+                                parentFolderId
+                            );
                         } else {
                             FileUtils.deleteFile(file.path);
                             conflicts.push({
                                 filename: file.originalname,
                                 conflictType: conflictInfo.type,
                                 existingFile: conflictInfo.existingFile,
-                                suggestions: await this.conflictHandler.generateFilenameSuggestions(userId, displayName)
+                                folderId: parentFolderId,
+                                suggestions: await this.conflictHandler.generateFilenameSuggestions(
+                                    userId,
+                                    displayName,
+                                    parentFolderId
+                                )
                             });
                             continue;
                         }
                     }
 
                     if (conflictAction === 'replace') {
-                        const existingName = await this.fileMetadata.getInternalFilename(userId, displayName);
+                        const existingName = await this.fileMetadata.getInternalFilename(
+                            userId,
+                            displayName,
+                            parentFolderId
+                        );
                         if (existingName) {
                             const existingMetadata = await this.fileMetadata.getFileMetadataForUser(userId, existingName);
                             if (existingMetadata) {
@@ -313,7 +406,11 @@ class ApiRoutes {
                         }
                     } else if (conflictAction === 'rename') {
                         const newName = requestedName || displayName;
-                        const exists = await this.fileMetadata.displayNameExists(userId, newName);
+                        const exists = await this.fileMetadata.displayNameExists(
+                            userId,
+                            newName,
+                            parentFolderId
+                        );
                         if (exists) {
                             FileUtils.deleteFile(file.path);
                             errors.push({
@@ -324,7 +421,11 @@ class ApiRoutes {
                         }
                         displayName = newName;
                     } else if (conflictAction === 'auto_rename') {
-                        displayName = await this.conflictHandler.generateUniqueFilename(userId, displayName);
+                        displayName = await this.conflictHandler.generateUniqueFilename(
+                            userId,
+                            displayName,
+                            parentFolderId
+                        );
                     } else if (conflictAction === 'skip') {
                         FileUtils.deleteFile(file.path);
                         continue;
@@ -343,6 +444,7 @@ class ApiRoutes {
 
                     const metadata = await this.fileMetadata.addFile({
                         userId,
+                        parentFolderId,
                         displayName,
                         originalName: file.originalname,
                         storageName,
@@ -566,7 +668,11 @@ class ApiRoutes {
             }
 
             const sanitized = newName.trim();
-            const exists = await this.fileMetadata.displayNameExists(req.user.userId, sanitized);
+            const exists = await this.fileMetadata.displayNameExists(
+                req.user.userId,
+                sanitized,
+                metadata.parentFolderId || null
+            );
             if (exists && sanitized !== metadata.displayName) {
                 return res.status(400).json({ error: 'A file with this name already exists' });
             }
@@ -626,6 +732,358 @@ class ApiRoutes {
             console.error('Share update error:', error);
             res.status(500).json({ error: 'Failed to update share state' });
         }
+    }
+
+    async transferFiles(req, res) {
+        try {
+            const { action, fileIds, targetFolderId = null } = req.body || {};
+            const normalizedAction = String(action || '').toLowerCase();
+            if (!['move', 'copy'].includes(normalizedAction)) {
+                return res.status(400).json({ error: 'Unsupported transfer action' });
+            }
+
+            if (!Array.isArray(fileIds) || !fileIds.length) {
+                return res.status(400).json({ error: 'No files specified' });
+            }
+
+            const userId = req.user.userId;
+            const normalizedFolderId = this.normalizeFolderId(targetFolderId);
+            let folderDetails = null;
+            if (normalizedFolderId) {
+                folderDetails = await this.folderManager.getFolderById(userId, normalizedFolderId);
+                if (!folderDetails) {
+                    return res.status(404).json({ error: 'Target folder not found' });
+                }
+            }
+
+            const results = [];
+            const errors = [];
+
+            for (const fileId of fileIds) {
+                const internalName = String(fileId || '').trim();
+                if (!internalName) {
+                    errors.push({ fileId, error: 'Invalid file identifier' });
+                    continue;
+                }
+
+                const metadata = await this.fileMetadata.getFileMetadataForUser(userId, internalName);
+                if (!metadata || metadata.isDeleted) {
+                    errors.push({ fileId, error: 'File not found' });
+                    continue;
+                }
+
+                try {
+                    if (normalizedAction === 'move') {
+                        const result = await this.#moveFileToFolder(metadata, normalizedFolderId);
+                        results.push(result);
+                    } else if (normalizedAction === 'copy') {
+                        const result = await this.#copyFileToFolder(metadata, normalizedFolderId);
+                        results.push(result);
+                    }
+                } catch (operationError) {
+                    console.error(`Transfer error for ${internalName}:`, operationError);
+                    errors.push({ fileId: internalName, error: operationError.message });
+                }
+            }
+
+            res.json({
+                success: errors.length === 0,
+                results,
+                errors
+            });
+        } catch (error) {
+            console.error('Transfer error:', error);
+            res.status(500).json({ error: 'Failed to transfer files' });
+        }
+    }
+
+    async listFolders(req, res) {
+        try {
+            const userId = req.user.userId;
+            const parentId = this.normalizeFolderId(req.query.parentId);
+            if (parentId) {
+                const exists = await this.folderManager.getFolderById(userId, parentId);
+                if (!exists) {
+                    return res.status(404).json({ error: 'Folder not found' });
+                }
+            }
+
+            const folders = await this.folderManager.listFolders(userId, parentId || null);
+            res.json(folders.map(folder => ({
+                id: folder._id.toString(),
+                name: folder.name,
+                parentId: folder.parentId ? folder.parentId.toString() : null,
+                path: folder.path
+            })));
+        } catch (error) {
+            console.error('List folders error:', error);
+            res.status(500).json({ error: 'Failed to list folders' });
+        }
+    }
+
+    async createFolder(req, res) {
+        try {
+            const userId = req.user.userId;
+            const { name, parentId = null } = req.body || {};
+            const normalizedParentId = this.normalizeFolderId(parentId);
+
+            if (!name || !name.trim()) {
+                return res.status(400).json({ error: 'Folder name is required' });
+            }
+
+            if (normalizedParentId) {
+                const parentFolder = await this.folderManager.getFolderById(userId, normalizedParentId);
+                if (!parentFolder) {
+                    return res.status(404).json({ error: 'Parent folder not found' });
+                }
+            }
+
+            let created;
+            try {
+                created = await this.folderManager.createFolder({
+                    userId,
+                    name: name.trim(),
+                    parentId: normalizedParentId
+                });
+            } catch (creationError) {
+                if (creationError.code === 11000 || creationError.code === 'FOLDER_NAME_CONFLICT') {
+                    return res.status(409).json({ error: 'Folder name already exists in this location' });
+                }
+                throw creationError;
+            }
+
+            res.status(201).json({
+                success: true,
+                folder: {
+                    id: created._id.toString(),
+                    name: created.name,
+                    parentId: created.parentId ? created.parentId.toString() : null,
+                    path: created.path
+                }
+            });
+        } catch (error) {
+            console.error('Create folder error:', error);
+            res.status(500).json({ error: 'Failed to create folder' });
+        }
+    }
+
+    async renameFolder(req, res) {
+        try {
+            const userId = req.user.userId;
+            const folderId = req.params.folderId;
+            const { name } = req.body || {};
+
+            const normalizedFolderId = this.normalizeFolderId(folderId);
+            if (!normalizedFolderId) {
+                return res.status(400).json({ error: 'Invalid folder identifier' });
+            }
+
+            if (!name || !name.trim()) {
+                return res.status(400).json({ error: 'Folder name is required' });
+            }
+
+            try {
+                const renamed = await this.folderManager.renameFolder(userId, normalizedFolderId, name.trim());
+                if (!renamed) {
+                    return res.status(404).json({ error: 'Folder not found' });
+                }
+
+                res.json({
+                    success: true,
+                    folder: {
+                        id: renamed._id.toString(),
+                        name: renamed.name,
+                        parentId: renamed.parentId ? renamed.parentId.toString() : null,
+                        path: renamed.path
+                    }
+                });
+            } catch (renameError) {
+                if (renameError.code === 11000 || renameError.code === 'FOLDER_NAME_CONFLICT') {
+                    return res.status(409).json({ error: 'Folder name already exists in this location' });
+                }
+                throw renameError;
+            }
+        } catch (error) {
+            console.error('Rename folder error:', error);
+            res.status(500).json({ error: 'Failed to rename folder' });
+        }
+    }
+
+    async deleteFolder(req, res) {
+        try {
+            const userId = req.user.userId;
+            const folderId = this.normalizeFolderId(req.params.folderId);
+            if (!folderId) {
+                return res.status(400).json({ error: 'Invalid folder identifier' });
+            }
+
+            const folder = await this.folderManager.getFolderById(userId, folderId);
+            if (!folder) {
+                return res.status(404).json({ error: 'Folder not found' });
+            }
+
+            const recycleResults = await this.#recycleFolderHierarchy(userId, folderId);
+            await this.folderManager.markDeleted(userId, folderId);
+
+            res.json({
+                success: true,
+                removedFolderId: folderId,
+                recycledFiles: recycleResults.files,
+                recycleErrors: recycleResults.errors
+            });
+        } catch (error) {
+            console.error('Delete folder error:', error);
+            res.status(500).json({ error: 'Failed to delete folder' });
+        }
+    }
+
+    async #buildFolderBreadcrumbs(userId, folder) {
+        const breadcrumbs = [];
+        let current = folder;
+
+        while (current) {
+            breadcrumbs.push({
+                id: current._id.toString(),
+                name: current.name,
+                parentId: current.parentId ? current.parentId.toString() : null,
+                path: current.path
+            });
+
+            if (!current.parentId) {
+                break;
+            }
+
+            current = await this.folderManager.getFolderById(userId, current.parentId.toString());
+        }
+
+        return breadcrumbs.reverse();
+    }
+
+    async #moveFileToFolder(metadata, targetFolderId) {
+        const userId = metadata.userId;
+        const currentFolderId = metadata.parentFolderId ? metadata.parentFolderId.toString() : null;
+        const normalizedTarget = this.normalizeFolderId(targetFolderId);
+
+        if (currentFolderId === normalizedTarget) {
+            return {
+                fileId: metadata.internalName,
+                action: 'move',
+                folderId: normalizedTarget,
+                displayName: metadata.displayName,
+                renamed: false,
+                status: 'unchanged'
+            };
+        }
+
+        let finalName = metadata.displayName;
+        const nameConflict = await this.fileMetadata.displayNameExists(userId, finalName, normalizedTarget);
+        let renamed = false;
+        if (nameConflict) {
+            finalName = await this.conflictHandler.generateUniqueFilename(userId, finalName, normalizedTarget);
+            renamed = finalName !== metadata.displayName;
+        }
+
+        const updated = await this.fileMetadata.updateLocation(userId, metadata.internalName, {
+            parentFolderId: normalizedTarget,
+            displayName: renamed ? finalName : null
+        });
+
+        return {
+            fileId: updated.internalName,
+            action: 'move',
+            folderId: normalizedTarget,
+            displayName: updated.displayName,
+            renamed,
+            status: 'moved'
+        };
+    }
+
+    async #copyFileToFolder(metadata, targetFolderId) {
+        const userId = metadata.userId;
+        const normalizedTarget = this.normalizeFolderId(targetFolderId);
+
+        const sourcePath = this.getFilePath(metadata);
+        if (!FileUtils.fileExists(sourcePath)) {
+            throw new Error('Source file is missing');
+        }
+
+        let displayName = metadata.displayName;
+        const nameConflict = await this.fileMetadata.displayNameExists(userId, displayName, normalizedTarget);
+        let renamed = false;
+        if (nameConflict) {
+            displayName = await this.conflictHandler.generateUniqueFilename(userId, displayName, normalizedTarget);
+            renamed = displayName !== metadata.displayName;
+        }
+
+        const storageName = await this.generateAvailableStorageName(userId, metadata.storageName, null);
+        const destinationPath = path.join(this.uploadsRoot, userId, storageName);
+        await fsp.copyFile(sourcePath, destinationPath);
+
+        let size = metadata.size;
+        try {
+            const stats = await fsp.stat(destinationPath);
+            size = stats.size;
+        } catch (statError) {
+            console.warn('Unable to resolve copied file size, falling back to metadata', statError);
+        }
+
+        const newMetadata = await this.fileMetadata.addFile({
+            userId,
+            parentFolderId: normalizedTarget,
+            displayName,
+            originalName: metadata.originalName,
+            storageName,
+            size,
+            mimeType: metadata.mimeType,
+            checksum: metadata.checksum,
+            visibility: metadata.visibility
+        });
+
+        return {
+            fileId: newMetadata.internalName,
+            action: 'copy',
+            folderId: normalizedTarget,
+            displayName: newMetadata.displayName,
+            renamed,
+            sourceId: metadata.internalName,
+            status: 'copied'
+        };
+    }
+
+    async #recycleFolderHierarchy(userId, folderId) {
+        const files = [];
+        const errors = [];
+        const stack = [folderId];
+        const recycleExpiresAt = new Date(Date.now() + this.recycleRetentionMs);
+
+        while (stack.length) {
+            const currentId = stack.pop();
+            const childFolders = await this.folderManager.listFolders(userId, currentId);
+            for (const child of childFolders) {
+                stack.push(child._id.toString());
+            }
+
+            const folderFiles = await this.fileMetadata.listFilesForUser(userId, { parentFolderId: currentId });
+            for (const file of folderFiles) {
+                try {
+                    const updated = await this.fileMetadata.moveToRecycleBin(userId, file.internalName, recycleExpiresAt);
+                    files.push({
+                        internalName: file.internalName,
+                        displayName: file.displayName,
+                        folderId: currentId,
+                        recycle: {
+                            deletedAt: updated?.deletedAt || new Date(),
+                            recycleExpiresAt: updated?.recycleExpiresAt || recycleExpiresAt
+                        }
+                    });
+                } catch (fileError) {
+                    console.error(`Unable to recycle file ${file.internalName}:`, fileError);
+                    errors.push({ fileId: file.internalName, error: fileError.message });
+                }
+            }
+        }
+
+        return { files, errors };
     }
 
     resolveDesiredStorageName(file, displayName) {
