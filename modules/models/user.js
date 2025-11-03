@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 const userSchema = new mongoose.Schema({
 	userId: {
@@ -53,9 +53,9 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre('validate', function assignUserId(next) {
-	if (!this.userId) {
-		this.userId = uuidv4();
-	}
+        if (!this.userId) {
+                this.userId = randomUUID();
+        }
 	next();
 });
 
