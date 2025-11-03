@@ -8,8 +8,8 @@ class ConflictHandler {
         this.uploadsRoot = path.join(__dirname, '..', 'uploads');
     }
 
-    async checkFileConflict(userId, displayName, newFileSize = null, newFileType = null) {
-        const internalName = await this.fileMetadata.getInternalFilename(userId, displayName);
+    async checkFileConflict(userId, displayName, folderId = null, newFileSize = null, newFileType = null) {
+        const internalName = await this.fileMetadata.getInternalFilename(userId, displayName, folderId);
 
         if (!internalName) {
             return { hasConflict: false };
@@ -105,7 +105,7 @@ class ConflictHandler {
     }
 
     // Enhanced unique filename generation with comprehensive edge case handling
-    async generateUniqueFilename(userId, originalName) {
+    async generateUniqueFilename(userId, originalName, parentFolderId = null) {
         const lastDotIndex = originalName.lastIndexOf('.');
         const nameWithoutExt = lastDotIndex > 0 ? originalName.substring(0, lastDotIndex) : originalName;
         const extension = lastDotIndex > 0 ? originalName.substring(lastDotIndex) : '';
@@ -118,7 +118,7 @@ class ConflictHandler {
         let newName = originalName;
         const maxAttempts = 10000;
 
-        while (await this.fileMetadata.displayNameExists(userId, newName) && counter < maxAttempts) {
+        while (await this.fileMetadata.displayNameExists(userId, newName, parentFolderId) && counter < maxAttempts) {
             newName = `${baseName} (${counter})${extension}`;
             counter++;
         }
@@ -127,7 +127,7 @@ class ConflictHandler {
             const timestamp = Date.now();
             newName = `${baseName}_${timestamp}${extension}`;
 
-            if (await this.fileMetadata.displayNameExists(userId, newName)) {
+            if (await this.fileMetadata.displayNameExists(userId, newName, parentFolderId)) {
                 const randomSuffix = Math.random().toString(36).substring(2, 8);
                 newName = `${baseName}_${timestamp}_${randomSuffix}${extension}`;
             }
@@ -145,7 +145,7 @@ class ConflictHandler {
     }
 
     // Generate filename suggestions
-    async generateFilenameSuggestions(userId, originalName) {
+    async generateFilenameSuggestions(userId, originalName, parentFolderId = null) {
         const suggestions = [];
         const lastDotIndex = originalName.lastIndexOf('.');
         const nameWithoutExt = lastDotIndex > 0 ? originalName.substring(0, lastDotIndex) : originalName;
@@ -153,20 +153,20 @@ class ConflictHandler {
 
         for (let i = 1; i <= 5; i++) {
             const suggestion = `${nameWithoutExt} (${i})${extension}`;
-            if (!(await this.fileMetadata.displayNameExists(userId, suggestion))) {
+            if (!(await this.fileMetadata.displayNameExists(userId, suggestion, parentFolderId))) {
                 suggestions.push(suggestion);
             }
         }
 
         const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
         const timestampSuggestion = `${nameWithoutExt}_${timestamp}${extension}`;
-        if (!(await this.fileMetadata.displayNameExists(userId, timestampSuggestion))) {
+        if (!(await this.fileMetadata.displayNameExists(userId, timestampSuggestion, parentFolderId))) {
             suggestions.push(timestampSuggestion);
         }
 
         const dateStr = new Date().toISOString().slice(0, 10);
         const dateSuggestion = `${nameWithoutExt}_${dateStr}${extension}`;
-        if (!(await this.fileMetadata.displayNameExists(userId, dateSuggestion))) {
+        if (!(await this.fileMetadata.displayNameExists(userId, dateSuggestion, parentFolderId))) {
             suggestions.push(dateSuggestion);
         }
 

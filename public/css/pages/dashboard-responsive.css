@@ -1,0 +1,110 @@
+/* Responsive Design for Dashboard */
+@media (max-width: 1280px) {
+    .storage-overview {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .storage-card,
+    .quick-actions {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 992px) {
+    #dashboard-page .page-header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .btn-upload-new {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-tabs {
+        overflow-x: auto;
+        padding-bottom: 12px;
+        gap: 12px;
+    }
+
+    .dashboard-tabs .tab-btn {
+        flex: 1 0 auto;
+        white-space: nowrap;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .storage-overview {
+        gap: 16px;
+    }
+
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .recent-file-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .storage-progress-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+@media (max-width: 640px) {
+    .user-info-dashboard {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .btn-upload-new {
+        padding: 12px 16px;
+    }
+
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .recent-files {
+        padding: 20px;
+    }
+
+    .storage-details {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .recent-file-name {
+        white-space: normal;
+    }
+}

@@ -17,6 +17,20 @@ let myFilesAutoRefreshIntervalId = null;
 let shareOverrides = {};
 let detailSnapshots = {};
 const selectedFileIds = new Set();
+let currentFolderId = null;
+let currentFolderInfo = null;
+let currentFolders = [];
+let folderBreadcrumbs = [];
+const folderCache = new Map();
+const transferClipboard = {
+    action: null,
+    items: []
+};
+const contextMenuState = {
+    type: null,
+    folderId: null,
+    fileId: null
+};
 const BYTES_IN_GIB = 1024 * 1024 * 1024;
 const PLAN_STORAGE_LIMITS = {
     basic: {
@@ -41,6 +55,71 @@ function normalizePlanId(planId) {
 function resolvePlanInfo(planId) {
     const normalized = normalizePlanId(planId);
     return PLAN_STORAGE_LIMITS[normalized] || PLAN_STORAGE_LIMITS.basic;
+}
+
+function normalizeFolderId(value) {
+    if (value === null || value === undefined) {
+        return null;
+    }
+
+    const stringValue = String(value).trim();
+    if (!stringValue || stringValue.toLowerCase() === 'null' || stringValue.toLowerCase() === 'undefined') {
+        return null;
+    }
+
+    return stringValue;
+}
+
+async function showTextPrompt(options = {}) {
+    const {
+        title = 'Nhập thông tin',
+        message = '',
+        placeholder = '',
+        defaultValue = ''
+    } = options;
+
+    if (window.modalSystem?.prompt) {
+        try {
+            const result = await window.modalSystem.prompt({
+                title,
+                message,
+                placeholder,
+                defaultValue
+            });
+            return typeof result === 'string' ? result.trim() : result;
+        } catch (error) {
+            console.warn('Modal prompt was cancelled or failed', error);
+            return null;
+        }
+    }
+
+    const fallback = window.prompt(`${title}\n${message}`, defaultValue || placeholder || '');
+    return fallback === null ? null : fallback.trim();
+}
+
+async function showConfirm(options = {}) {
+    const {
+        title = 'Xác nhận',
+        message = 'Bạn có chắc chắn?',
+        confirmText = 'Đồng ý',
+        cancelText = 'Hủy'
+    } = options;
+
+    if (window.modalSystem?.confirm) {
+        try {
+            return await window.modalSystem.confirm({
+                title,
+                message,
+                confirmText,
+                cancelText
+            });
+        } catch (error) {
+            console.warn('Modal confirm failed', error);
+            return false;
+        }
+    }
+
+    return window.confirm(`${title}\n${message}`);
 }
 
 function getActivePlanInfo() {
@@ -86,6 +165,15 @@ function normalizeFileId(fileOrId) {
         fileOrId.originalName ||
         null
     );
+}
+
+function findFileById(fileId) {
+    const normalized = normalizeFolderId(fileId) || normalizeFileId(fileId);
+    if (!normalized) {
+        return null;
+    }
+
+    return allFiles.find(file => normalizeFileId(file) === normalized) || null;
 }
 
 function openShareTabForFile(fileId, displayName, options = {}) {
@@ -955,8 +1043,9 @@ window.initMyFiles = function() {
 
     // Initialize UI
     initializeUI();
+    setupContextMenuListeners();
     attachMyFilesProfileListener();
-    
+
     // Load existing files from server
     loadFiles();
     
@@ -1054,8 +1143,413 @@ function initializeUI() {
     setupSearchAndSort();
     setupViewToggles();
     setupBulkSelectionControls();
+    setupCreateFolderButton();
     updateBulkSelectionUI();
     console.log('UI initialized');
+}
+
+function setupContextMenuListeners() {
+    const container = document.querySelector('.myfiles-container');
+    const menu = document.getElementById('myfiles-context-menu');
+    if (!container || !menu) {
+        return;
+    }
+
+    container.addEventListener('contextmenu', event => {
+        if (event.target.closest('.file-item') || event.target.closest('.folder-item') || event.target.closest('#myfiles-context-menu')) {
+            return;
+        }
+
+        event.preventDefault();
+        showContextMenu({
+            type: 'root',
+            anchorEvent: event
+        });
+    });
+
+    document.addEventListener('click', event => {
+        if (!event.target.closest('#myfiles-context-menu')) {
+            hideContextMenu();
+        }
+    });
+
+    window.addEventListener('resize', hideContextMenu);
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideContextMenu();
+        }
+    });
+
+    const filesContent = document.getElementById('files-content');
+    filesContent?.addEventListener('scroll', hideContextMenu);
+}
+
+function getContextMenuElement() {
+    return document.getElementById('myfiles-context-menu');
+}
+
+function showContextMenu({ type, folderId = null, fileId = null, anchorEvent = null }) {
+    const menu = getContextMenuElement();
+    if (!menu) {
+        return;
+    }
+
+    hideContextMenu();
+
+    contextMenuState.type = type;
+    contextMenuState.folderId = normalizeFolderId(folderId);
+    contextMenuState.fileId = fileId ? String(fileId) : null;
+
+    menu.innerHTML = buildContextMenuMarkup(contextMenuState);
+    menu.hidden = false;
+    menu.style.opacity = '0';
+    menu.style.left = '0px';
+    menu.style.top = '0px';
+
+    requestAnimationFrame(() => {
+        const pointerX = anchorEvent?.clientX ?? window.innerWidth / 2;
+        const pointerY = anchorEvent?.clientY ?? window.innerHeight / 2;
+        const menuRect = menu.getBoundingClientRect();
+        const padding = 12;
+
+        let left = pointerX;
+        let top = pointerY;
+
+        if (left + menuRect.width > window.innerWidth) {
+            left = window.innerWidth - menuRect.width - padding;
+        }
+        if (top + menuRect.height > window.innerHeight) {
+            top = window.innerHeight - menuRect.height - padding;
+        }
+
+        menu.style.left = `${Math.max(padding, left)}px`;
+        menu.style.top = `${Math.max(padding, top)}px`;
+        menu.style.opacity = '1';
+
+        menu.querySelectorAll('button[data-action]').forEach(button => {
+            button.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                const action = button.getAttribute('data-action');
+                hideContextMenu();
+                handleContextMenuAction(action);
+            });
+        });
+    });
+}
+
+function hideContextMenu() {
+    const menu = getContextMenuElement();
+    if (!menu) {
+        return;
+    }
+
+    menu.hidden = true;
+    menu.innerHTML = '';
+    contextMenuState.type = null;
+    contextMenuState.folderId = null;
+    contextMenuState.fileId = null;
+}
+
+function buildContextMenuMarkup(state) {
+    const items = [];
+    const hasClipboard = transferClipboard.action && transferClipboard.items.length;
+    const clipboardLabel = transferClipboard.action === 'move' ? 'Dán (di chuyển)' : 'Dán (sao chép)';
+
+    if (state.type === 'folder') {
+        items.push({ action: 'open-folder', icon: 'fa-folder-open', label: 'Mở thư mục' });
+        items.push({ action: 'create-folder', icon: 'fa-folder-plus', label: 'Tạo thư mục con' });
+        items.push({ action: 'rename-folder', icon: 'fa-i-cursor', label: 'Đổi tên thư mục' });
+        if (hasClipboard) {
+            items.push({ action: 'paste', icon: 'fa-paste', label: clipboardLabel });
+        }
+        items.push({ action: 'delete-folder', icon: 'fa-trash', label: 'Xóa thư mục', variant: 'danger' });
+    } else if (state.type === 'file') {
+        items.push({ action: 'file-open', icon: 'fa-eye', label: 'Xem chi tiết' });
+        items.push({ action: 'file-download', icon: 'fa-download', label: 'Tải xuống' });
+        items.push({ action: 'file-rename', icon: 'fa-edit', label: 'Đổi tên' });
+        items.push({ action: 'file-cut', icon: 'fa-scissors', label: 'Cắt' });
+        items.push({ action: 'file-copy', icon: 'fa-copy', label: 'Sao chép' });
+        items.push({ action: 'file-delete', icon: 'fa-trash', label: 'Xóa', variant: 'danger' });
+    } else {
+        items.push({ action: 'create-folder', icon: 'fa-folder-plus', label: 'Tạo thư mục mới' });
+        if (hasClipboard) {
+            items.push({ action: 'paste', icon: 'fa-paste', label: clipboardLabel });
+        }
+        items.push({ action: 'refresh', icon: 'fa-sync-alt', label: 'Làm mới' });
+    }
+
+    return `
+        <div class="context-menu-content">
+            ${items.map(item => `
+                <button type="button" class="context-menu-item${item.variant ? ` context-${item.variant}` : ''}" data-action="${item.action}">
+                    <i class="fas ${item.icon}"></i>
+                    <span>${escapeHtml(item.label)}</span>
+                </button>
+            `).join('')}
+        </div>
+    `;
+}
+
+async function handleContextMenuAction(action) {
+    const state = { ...contextMenuState };
+
+    switch (action) {
+        case 'open-folder':
+            if (state.folderId) {
+                navigateToFolder(state.folderId);
+            }
+            break;
+        case 'create-folder':
+            await promptCreateFolder(state.type === 'folder' ? state.folderId : currentFolderId);
+            break;
+        case 'rename-folder':
+            if (state.folderId) {
+                await promptRenameFolder(state.folderId);
+            }
+            break;
+        case 'delete-folder':
+            if (state.folderId) {
+                await confirmDeleteFolder(state.folderId);
+            }
+            break;
+        case 'paste':
+            await handleClipboardPaste(state.type === 'folder' ? state.folderId : currentFolderId);
+            break;
+        case 'refresh':
+            refreshFiles();
+            break;
+        case 'file-open':
+            if (state.fileId) {
+                viewFileDetails(state.fileId);
+            }
+            break;
+        case 'file-download': {
+            const file = findFileById(state.fileId);
+            if (file) {
+                downloadFile(state.fileId, file.originalName || file.displayName || file.name);
+            }
+            break;
+        }
+        case 'file-rename': {
+            const file = findFileById(state.fileId);
+            if (file) {
+                renameFile(state.fileId, file.displayName || file.originalName || file.name);
+            }
+            break;
+        }
+        case 'file-cut':
+            handleClipboardSet('move', getSelectedFileIdsForContext(state.fileId));
+            break;
+        case 'file-copy':
+            handleClipboardSet('copy', getSelectedFileIdsForContext(state.fileId));
+            break;
+        case 'file-delete': {
+            const file = findFileById(state.fileId);
+            if (file) {
+                deleteFile(state.fileId, file.displayName || file.originalName || file.name);
+            }
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+function getSelectedFileIdsForContext(targetFileId) {
+    const normalizedTarget = normalizeFileId(targetFileId);
+    if (!normalizedTarget) {
+        return [];
+    }
+
+    if (selectedFileIds.has(normalizedTarget)) {
+        return Array.from(selectedFileIds);
+    }
+
+    return [normalizedTarget];
+}
+
+function handleClipboardSet(action, fileIds = []) {
+    const normalizedAction = action === 'move' ? 'move' : 'copy';
+    const uniqueIds = Array.from(new Set(fileIds.map(normalizeFileId).filter(Boolean)));
+
+    if (!uniqueIds.length) {
+        window.toastSystem?.warning('Không có tệp nào được chọn để sao chép hoặc cắt.', { duration: 2500 });
+        return;
+    }
+
+    transferClipboard.action = normalizedAction;
+    transferClipboard.items = uniqueIds;
+
+    window.toastSystem?.info(`${normalizedAction === 'move' ? 'Đã cắt' : 'Đã sao chép'} ${uniqueIds.length} tệp. Điều hướng đến thư mục đích và chọn "Dán" để hoàn tất.`, {
+        duration: 4000
+    });
+}
+
+async function handleClipboardPaste(targetFolderId) {
+    if (!transferClipboard.action || !transferClipboard.items.length) {
+        window.toastSystem?.warning('Không có tệp nào trong bộ nhớ tạm để dán.', { duration: 2500 });
+        return;
+    }
+
+    const payload = {
+        action: transferClipboard.action,
+        fileIds: transferClipboard.items,
+        targetFolderId: normalizeFolderId(targetFolderId)
+    };
+
+    try {
+        const response = await fetch('/api/files/transfer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data?.error || 'Không thể chuyển tệp');
+        }
+
+        window.toastSystem?.success(`${payload.action === 'move' ? 'Đã di chuyển' : 'Đã sao chép'} ${payload.fileIds.length} tệp thành công.`, {
+            duration: 3000
+        });
+
+        if (payload.action === 'move') {
+            transferClipboard.action = null;
+            transferClipboard.items = [];
+        }
+
+        await loadFiles({ folderId: currentFolderId });
+    } catch (error) {
+        console.error('Paste operation failed:', error);
+        window.toastSystem?.error(error.message || 'Không thể dán các tệp đã chọn.', {
+            duration: 4000
+        });
+    }
+}
+
+async function promptCreateFolder(parentFolderId = currentFolderId) {
+    const name = await showTextPrompt({
+        title: 'Tạo thư mục mới',
+        message: 'Nhập tên cho thư mục mới.',
+        placeholder: 'Thư mục mới'
+    });
+
+    if (!name) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/folders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name,
+                parentId: normalizeFolderId(parentFolderId)
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data?.error || 'Không thể tạo thư mục');
+        }
+
+        window.toastSystem?.success(`Đã tạo thư mục "${name}".`, { duration: 2500 });
+
+        if (data?.folder?.id) {
+            folderCache.set(data.folder.id, { ...data.folder, id: data.folder.id });
+        }
+
+        const normalizedParent = normalizeFolderId(parentFolderId);
+        await loadFiles({ folderId: currentFolderId });
+
+        if (normalizedParent && normalizedParent !== currentFolderId) {
+            const parentName = folderCache.get(normalizedParent)?.name || 'thư mục đã chọn';
+            window.toastSystem?.info(`Thư mục mới nằm trong ${parentName}.`, { duration: 2800 });
+        }
+    } catch (error) {
+        console.error('Create folder failed:', error);
+        window.toastSystem?.error(error.message || 'Không thể tạo thư mục mới.', {
+            duration: 4000
+        });
+    }
+}
+
+async function promptRenameFolder(folderId) {
+    const folder = folderCache.get(folderId);
+    const currentName = folder?.name || 'Thư mục';
+    const newName = await showTextPrompt({
+        title: 'Đổi tên thư mục',
+        message: `Tên hiện tại: ${currentName}`,
+        defaultValue: currentName
+    });
+
+    if (!newName || newName === currentName) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/folders/${encodeURIComponent(folderId)}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: newName })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data?.error || 'Không thể đổi tên thư mục');
+        }
+
+        window.toastSystem?.success(`Đã đổi tên thư mục thành "${newName}".`, { duration: 2500 });
+        folderCache.set(folderId, { ...folder, ...data?.folder, id: folderId, name: newName });
+        await loadFiles({ folderId: currentFolderId });
+    } catch (error) {
+        console.error('Rename folder failed:', error);
+        window.toastSystem?.error(error.message || 'Không thể đổi tên thư mục.', {
+            duration: 4000
+        });
+    }
+}
+
+async function confirmDeleteFolder(folderId) {
+    const folder = folderCache.get(folderId);
+    const folderName = folder?.name || 'Thư mục';
+    const confirmed = await showConfirm({
+        title: 'Xóa thư mục',
+        message: `Xóa thư mục "${folderName}"? Tất cả tệp bên trong sẽ được chuyển vào Thùng rác.`,
+        confirmText: 'Xóa',
+        cancelText: 'Hủy'
+    });
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/folders/${encodeURIComponent(folderId)}`, {
+            method: 'DELETE'
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data?.error || 'Không thể xóa thư mục');
+        }
+
+        folderCache.delete(folderId);
+        window.toastSystem?.success(`Đã xóa thư mục "${folderName}".`, { duration: 2500 });
+        await loadFiles({ folderId: currentFolderId });
+    } catch (error) {
+        console.error('Delete folder failed:', error);
+        window.toastSystem?.error(error.message || 'Không thể xóa thư mục.', {
+            duration: 4000
+        });
+    }
 }
 
 function setupSearchAndSort() {
@@ -1119,6 +1613,17 @@ function setupViewToggles() {
     updateFilesContentView();
 }
 
+function setupCreateFolderButton() {
+    const createButton = document.getElementById('create-folder-button');
+    if (!createButton) {
+        return;
+    }
+
+    createButton.addEventListener('click', () => {
+        promptCreateFolder(currentFolderId);
+    });
+}
+
 function setActiveViewMode(mode, options = {}) {
     const normalized = mode === 'grid' ? 'grid' : 'list';
     const hasChanged = normalized !== activeViewMode;
@@ -1180,17 +1685,35 @@ function saveViewMode(mode) {
 }
 
 // Load files from server
-async function loadFiles() {
+async function loadFiles(options = {}) {
     try {
-        const response = await fetch('/api/files');
-        const files = await response.json();
-        const fetchedFiles = Array.isArray(files) ? files : [];
-        setAllFiles(fetchedFiles);
+        const targetFolderId = normalizeFolderId(options.folderId ?? currentFolderId);
+        const query = targetFolderId ? `?folderId=${encodeURIComponent(targetFolderId)}` : '';
+        const response = await fetch(`/api/files${query}`);
+        const payload = await response.json();
 
-        if (fetchedFiles.length > 0) {
-            console.log(`Loaded ${fetchedFiles.length} files successfully`);
+        if (!response.ok) {
+            throw new Error(payload?.error || 'Failed to load files');
+        }
+
+        const fetchedFiles = Array.isArray(payload?.files) ? payload.files : [];
+        const fetchedFolders = Array.isArray(payload?.folders) ? payload.folders : [];
+
+        currentFolderId = targetFolderId;
+        currentFolderInfo = payload?.currentFolder || null;
+        folderBreadcrumbs = Array.isArray(payload?.breadcrumbs) ? payload.breadcrumbs : [];
+
+        updateFolderCache(fetchedFolders, currentFolderInfo);
+        clearFileSelection({ silent: true });
+        setCurrentFolders(fetchedFolders);
+        setAllFiles(fetchedFiles);
+        renderBreadcrumbs();
+        updateFolderHeadline();
+
+        if (fetchedFiles.length > 0 || fetchedFolders.length > 0) {
+            console.log(`Loaded ${fetchedFolders.length} folders and ${fetchedFiles.length} files successfully`);
         } else {
-            console.log('No files found');
+            console.log('Folder is empty');
         }
     } catch (error) {
         console.error('Error loading files:', error);
@@ -1199,7 +1722,21 @@ async function loadFiles() {
                 duration: 4000
             });
         }
+
+        if (options?.folderId) {
+            // Nếu thư mục không tồn tại, quay về thư mục gốc
+            await loadFiles({ folderId: null });
+        }
     }
+}
+
+function navigateToFolder(folderId) {
+    const targetFolderId = normalizeFolderId(folderId);
+    if (targetFolderId === currentFolderId) {
+        return;
+    }
+
+    loadFiles({ folderId: targetFolderId });
 }
 
 function setAllFiles(files) {
@@ -1208,6 +1745,67 @@ function setAllFiles(files) {
     allFiles = serverFiles.map(applyShareOverrideToFile);
     pruneSelectedFileIds(allFiles);
     applyFiltersAndRender();
+}
+
+function setCurrentFolders(folders) {
+    currentFolders = Array.isArray(folders) ? folders : [];
+}
+
+function updateFolderCache(folders = [], currentFolder = null) {
+    if (currentFolder && currentFolder.id) {
+        folderCache.set(currentFolder.id, {
+            ...currentFolder,
+            id: currentFolder.id
+        });
+    }
+
+    folders.forEach(folder => {
+        if (folder?.id) {
+            folderCache.set(folder.id, { ...folder, id: folder.id });
+        }
+    });
+}
+
+function renderBreadcrumbs() {
+    const container = document.getElementById('folder-breadcrumbs');
+    if (!container) {
+        return;
+    }
+
+    const crumbs = [
+        { id: null, name: 'Tất cả tệp', path: '/' },
+        ...folderBreadcrumbs.filter(Boolean)
+    ];
+
+    container.innerHTML = crumbs.map((crumb, index) => {
+        const isLast = index === crumbs.length - 1;
+        const label = escapeHtml(crumb.name || 'Thư mục');
+        const folderIdAttr = crumb.id ? ` data-folder-id="${escapeHtml(crumb.id)}"` : '';
+        const tag = isLast ? 'span' : 'button';
+        const classes = `breadcrumb-item${isLast ? ' is-active' : ''}`;
+        return `<${tag} class="${classes}"${folderIdAttr} ${isLast ? '' : 'type="button"'}>${label}</${tag}>`;
+    }).join('<span class="breadcrumb-separator">/</span>');
+
+    container.querySelectorAll('button[data-folder-id]').forEach(button => {
+        button.addEventListener('click', () => {
+            const folderId = button.getAttribute('data-folder-id');
+            navigateToFolder(folderId);
+        });
+    });
+}
+
+function updateFolderHeadline() {
+    const headerText = document.querySelector('.header-text h1');
+    if (!headerText) {
+        return;
+    }
+
+    if (!currentFolderInfo) {
+        headerText.textContent = 'Tệp của tôi';
+        return;
+    }
+
+    headerText.textContent = currentFolderInfo.name || 'Thư mục';
 }
 
 function syncShareOverridesWithServer(files) {
@@ -1265,6 +1863,7 @@ function applyFiltersAndRender() {
     activeSortOption = sortOption;
 
     let workingFiles = [...allFiles];
+    let workingFolders = [...currentFolders];
 
     if (searchTerm) {
         workingFiles = workingFiles.filter(file => {
@@ -1280,13 +1879,18 @@ function applyFiltersAndRender() {
                 tags.includes(searchTerm)
             );
         });
+
+        workingFolders = workingFolders.filter(folder => {
+            const folderName = (folder.name || '').toLowerCase();
+            return folderName.includes(searchTerm);
+        });
     }
 
     filteredFiles = sortFiles(workingFiles, sortOption);
-    renderFileList(filteredFiles);
+    renderFileList(filteredFiles, workingFolders);
 }
 
-function renderFileList(files) {
+function renderFileList(files, foldersOverride = null) {
     const filesContent = document.getElementById('files-content');
     const emptyState = document.getElementById('empty-state');
 
@@ -1297,13 +1901,15 @@ function renderFileList(files) {
     }
 
     const workingFiles = Array.isArray(files) ? files : filteredFiles;
+    const folders = Array.isArray(foldersOverride) ? foldersOverride : currentFolders;
+    const hasFolders = Array.isArray(folders) && folders.length > 0;
 
-    if (!allFiles.length) {
+    if (!allFiles.length && !hasFolders) {
         if (emptyState) emptyState.style.display = 'block';
         filesContent.classList.remove('has-files');
         filesContent.style.display = 'none';
         filesContent.innerHTML = '';
-        updateFileCount([], 0);
+        updateFileCount([], []);
         updateFileInsights([]);
         clearFileSelection({ silent: true });
         updateBulkSelectionUI();
@@ -1314,7 +1920,7 @@ function renderFileList(files) {
     filesContent.classList.add('has-files');
     filesContent.style.display = 'block';
 
-    if (!workingFiles.length) {
+    if (!workingFiles.length && !hasFolders) {
         filesContent.innerHTML = `
             <div class="no-results">
                 <i class="fas fa-search"></i>
@@ -1322,15 +1928,16 @@ function renderFileList(files) {
                 <p>Thử điều chỉnh từ khóa tìm kiếm hoặc thay đổi tiêu chí sắp xếp.</p>
             </div>
         `;
-        updateFileCount(workingFiles, allFiles.length);
+        updateFileCount(workingFiles, folders);
         updateFileInsights(allFiles);
         updateBulkSelectionUI();
         return;
     }
 
-    filesContent.innerHTML = createFileListHTML(workingFiles);
-    updateFileCount(workingFiles, allFiles.length);
+    filesContent.innerHTML = `${createFolderListHTML(folders)}${createFileListHTML(workingFiles)}`;
+    updateFileCount(workingFiles, folders);
     updateFileInsights(allFiles);
+    addFolderInteractions();
     addFileInteractions();
     syncSelectionDom();
 }
@@ -1393,11 +2000,14 @@ function updateBulkSelectionUI() {
     const countEl = document.getElementById('file-selection-count');
     const deleteBtn = document.getElementById('file-selection-delete');
     const cancelBtn = document.getElementById('file-selection-cancel');
+    const selectAllBtn = document.getElementById('file-selection-select-all');
 
     const selectedCount = selectedFileIds.size;
+    const hasFiles = Array.isArray(filteredFiles) && filteredFiles.length > 0;
+    const hasContent = hasFiles || (Array.isArray(currentFolders) && currentFolders.length > 0);
 
     if (selectionBar) {
-        if (selectedCount > 0) {
+        if (selectedCount > 0 || hasContent) {
             selectionBar.removeAttribute('hidden');
         } else {
             selectionBar.setAttribute('hidden', '');
@@ -1415,6 +2025,24 @@ function updateBulkSelectionUI() {
     if (cancelBtn) {
         cancelBtn.disabled = selectedCount === 0;
     }
+
+    if (selectAllBtn) {
+        const totalSelectable = hasFiles ? filteredFiles.length : 0;
+        const alreadyAllSelected = totalSelectable > 0 && selectedCount >= totalSelectable;
+        selectAllBtn.disabled = !hasFiles || alreadyAllSelected;
+    }
+}
+
+function selectAllVisibleFiles() {
+    const visibleFiles = Array.isArray(filteredFiles) ? filteredFiles : [];
+    visibleFiles.forEach(file => {
+        const fileId = normalizeFileId(file);
+        if (fileId) {
+            selectedFileIds.add(fileId);
+        }
+    });
+
+    syncSelectionDom();
 }
 
 function setupBulkSelectionControls() {
@@ -1432,6 +2060,14 @@ function setupBulkSelectionControls() {
             handleBulkDeleteSelected();
         });
         deleteBtn.dataset.bulkBound = 'true';
+    }
+
+    const selectAllBtn = document.getElementById('file-selection-select-all');
+    if (selectAllBtn && !selectAllBtn.dataset.bulkBound) {
+        selectAllBtn.addEventListener('click', () => {
+            selectAllVisibleFiles();
+        });
+        selectAllBtn.dataset.bulkBound = 'true';
     }
 }
 
@@ -1701,6 +2337,48 @@ function createFileList(files) {
     setAllFiles(Array.isArray(files) ? files : []);
 }
 
+function createFolderListHTML(folders) {
+    if (!Array.isArray(folders) || !folders.length) {
+        return '';
+    }
+
+    const listClassName = `folder-list ${activeViewMode === 'grid' ? 'grid-view' : 'list-view'}`;
+
+    return `
+        <div class="folder-section">
+            <div class="section-heading">
+                <i class="fas fa-folder"></i>
+                <span>Thư mục</span>
+            </div>
+            <div class="${listClassName}">
+                ${folders.map((folder, index) => {
+                    const folderId = folder.id || folder._id || `folder-${index}`;
+                    const folderName = escapeHtml(folder.name || 'Thư mục');
+                    const folderPath = escapeHtml(folder.path || '');
+                    const folderIdAttr = escapeHtml(folderId);
+                    const description = folderPath ? `/${folderPath}` : 'Nhấp đúp để mở';
+                    return `
+                        <div class="folder-item" data-folder-id="${folderIdAttr}" tabindex="0" aria-label="Mở ${folderName}">
+                            <div class="folder-icon-wrapper">
+                                <i class="fas fa-folder"></i>
+                            </div>
+                            <div class="folder-details">
+                                <div class="folder-name" title="${folderName}">${folderName}</div>
+                                <div class="folder-meta" title="${escapeHtml(description)}">${escapeHtml(description)}</div>
+                            </div>
+                            <div class="folder-actions">
+                                <button type="button" class="folder-open-btn" title="Mở thư mục">
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+}
+
 // Generate HTML for file list
 function createFileListHTML(files) {
     const listClassName = `file-list ${activeViewMode === 'grid' ? 'grid-view' : 'list-view'}`;
@@ -1928,20 +2606,23 @@ function formatAbsoluteDateTime(value) {
 }
 
 // Update file count display
-function updateFileCount(files, totalFilesCount) {
+function updateFileCount(files, foldersOverride = currentFolders) {
     const fileCount = document.querySelector('.file-count');
     if (!fileCount) {
         return;
     }
 
     const currentCount = Array.isArray(files) ? files.length : Number(files) || 0;
-    const totalCount = typeof totalFilesCount === 'number' ? totalFilesCount : currentCount;
+    const folderCount = Array.isArray(foldersOverride) ? foldersOverride.length : 0;
+    const parts = [];
 
-    if (totalCount && totalCount !== currentCount) {
-        fileCount.textContent = `${currentCount}/${totalCount} tệp tin`;
-    } else {
-        fileCount.textContent = `${currentCount} tệp tin`;
+    if (folderCount) {
+        parts.push(`${folderCount} thư mục`);
     }
+
+    parts.push(`${currentCount} tệp`);
+
+    fileCount.textContent = parts.join(' • ');
 }
 
 function updateFileInsights(files = allFiles) {
@@ -1997,6 +2678,40 @@ function updateFileInsights(files = allFiles) {
     }
 }
 
+function addFolderInteractions() {
+    const folderItems = document.querySelectorAll('.folder-item');
+    folderItems.forEach(item => {
+        const folderId = item.getAttribute('data-folder-id');
+        const openButton = item.querySelector('.folder-open-btn');
+
+        const openFolder = () => navigateToFolder(folderId);
+
+        item.addEventListener('dblclick', openFolder);
+        item.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openFolder();
+            }
+        });
+
+        if (openButton) {
+            openButton.addEventListener('click', event => {
+                event.stopPropagation();
+                openFolder();
+            });
+        }
+
+        item.addEventListener('contextmenu', event => {
+            event.preventDefault();
+            showContextMenu({
+                type: 'folder',
+                folderId,
+                anchorEvent: event
+            });
+        });
+    });
+}
+
 // Add file interaction handlers
 function addFileInteractions() {
     const fileItems = document.querySelectorAll('.file-item');
@@ -2012,6 +2727,20 @@ function addFileInteractions() {
             if (fileId) {
                 viewFileDetails(fileId);
             }
+        });
+
+        item.addEventListener('contextmenu', event => {
+            event.preventDefault();
+            const fileId = item.getAttribute('data-file-id');
+            if (!fileId) {
+                return;
+            }
+
+            showContextMenu({
+                type: 'file',
+                fileId,
+                anchorEvent: event
+            });
         });
     });
     

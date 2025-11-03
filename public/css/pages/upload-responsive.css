@@ -1,0 +1,129 @@
+/* Responsive Design for Upload */
+@media (max-width: 1200px) {
+    .upload-container {
+        max-width: 760px;
+    }
+
+    .upload-drop-zone {
+        padding: 48px 32px;
+    }
+}
+
+@media (max-width: 992px) {
+    .upload-main {
+        margin-bottom: 40px;
+    }
+
+    .upload-info {
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    .upload-actions {
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .upload-container {
+        padding: 0 16px;
+    }
+
+    .upload-header {
+        margin-bottom: 28px;
+    }
+
+    .upload-header h1 {
+        font-size: 28px;
+    }
+
+    .upload-header p {
+        font-size: 16px;
+    }
+
+    .upload-drop-zone {
+        padding: 40px 20px;
+    }
+
+    .cloud-icon {
+        font-size: 50px;
+    }
+
+    .upload-drop-zone h3 {
+        font-size: 22px;
+    }
+
+    .upload-drop-zone p {
+        font-size: 16px;
+    }
+
+    .upload-info {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .upload-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn-upload-primary,
+    .btn-upload-secondary {
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .upload-features {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-top: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    .upload-progress-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .upload-progress-item .file-info {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .upload-progress-item .progress-text {
+        width: 100%;
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .upload-header h1 {
+        font-size: 24px;
+    }
+
+    .upload-drop-zone {
+        padding: 30px 16px;
+    }
+
+    .cloud-icon {
+        font-size: 40px;
+    }
+
+    .upload-drop-zone h3 {
+        font-size: 20px;
+    }
+
+    .upload-drop-zone p {
+        font-size: 15px;
+    }
+
+    .upload-info {
+        gap: 15px;
+    }
+
+    .feature-card {
+        padding: 25px 20px;
+    }
+}

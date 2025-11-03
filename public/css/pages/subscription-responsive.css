@@ -1,0 +1,118 @@
+/* Responsive Design for Subscription */
+@media (max-width: 1200px) {
+    .subscription-container {
+        padding: 52px 22px 68px;
+    }
+
+    .pricing-cards {
+        gap: 24px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .subscription-container {
+        padding: 48px 20px 60px;
+    }
+
+    .pricing-cards {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .current-usage {
+        padding: 30px 26px;
+    }
+}
+
+@media (max-width: 820px) {
+    .subscription-header {
+        padding: 0 12px;
+    }
+
+    .pricing-card,
+    .current-usage {
+        padding: 28px 24px;
+    }
+
+    .payment-celebration__card {
+        padding: 44px 36px;
+    }
+}
+
+@media (max-width: 768px) {
+    .subscription-container {
+        padding: 36px 18px 52px;
+        gap: 32px;
+    }
+
+    .pricing-cards {
+        gap: 20px;
+    }
+
+    .pricing-card,
+    .current-usage {
+        padding: 28px 24px;
+    }
+
+    .price {
+        gap: 6px;
+    }
+
+    .usage-text {
+        text-align: left;
+    }
+
+    .payment-celebration__card {
+        padding: 42px 32px;
+    }
+
+    .payment-celebration__message {
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 640px) {
+    .subscription-header {
+        gap: 10px;
+    }
+
+    .pricing-card,
+    .current-usage {
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .features {
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .subscription-container {
+        padding: 32px 16px 48px;
+    }
+
+    .pricing-card,
+    .current-usage {
+        padding: 24px 20px;
+    }
+
+    .feature {
+        padding: 10px 12px;
+    }
+
+    .payment-celebration {
+        padding: 32px 16px;
+    }
+
+    .payment-celebration__card {
+        padding: 36px 24px;
+    }
+
+    .payment-celebration__title {
+        font-size: 24px;
+    }
+
+    .payment-celebration__message {
+        font-size: 14px;
+    }
+}

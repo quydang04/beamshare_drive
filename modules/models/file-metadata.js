@@ -1,11 +1,17 @@
 const mongoose = require('mongoose');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 const fileMetadataSchema = new mongoose.Schema({
     userId: {
         type: String,
         required: true,
+        index: true
+    },
+    parentFolderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'DriveFolder',
+        default: null,
         index: true
     },
     displayName: {
@@ -57,7 +63,7 @@ const fileMetadataSchema = new mongoose.Schema({
     },
     shareToken: {
         type: String,
-        default: uuidv4,
+        default: randomUUID,
         unique: true
     },
     isDeleted: {
@@ -79,7 +85,7 @@ const fileMetadataSchema = new mongoose.Schema({
     timestamps: true
 });
 
-fileMetadataSchema.index({ userId: 1, displayName: 1 }, { unique: true });
+fileMetadataSchema.index({ userId: 1, parentFolderId: 1, displayName: 1 }, { unique: true });
 fileMetadataSchema.index({ userId: 1, isDeleted: 1, deletedAt: -1 });
 fileMetadataSchema.index({ isDeleted: 1, recycleExpiresAt: 1 });
 
@@ -96,6 +102,7 @@ class FileMetadataManager {
 
     async addFile({
         userId,
+        parentFolderId = null,
         displayName,
         originalName,
         storageName,
@@ -118,6 +125,7 @@ class FileMetadataManager {
             mimeType,
             checksum,
             visibility,
+            parentFolderId: parentFolderId || null,
             uploadDate: new Date(),
             lastModified: new Date()
         });
@@ -125,13 +133,23 @@ class FileMetadataManager {
         return document.toObject();
     }
 
-    async displayNameExists(userId, displayName) {
-        const existing = await this.Model.exists({ userId, displayName, isDeleted: false });
+    async displayNameExists(userId, displayName, parentFolderId = null) {
+        const existing = await this.Model.exists({
+            userId,
+            displayName,
+            parentFolderId: parentFolderId || null,
+            isDeleted: false
+        });
         return Boolean(existing);
     }
 
-    async getInternalFilename(userId, displayName) {
-        const document = await this.Model.findOne({ userId, displayName, isDeleted: false }).lean();
+    async getInternalFilename(userId, displayName, parentFolderId = null) {
+        const document = await this.Model.findOne({
+            userId,
+            displayName,
+            parentFolderId: parentFolderId || null,
+            isDeleted: false
+        }).lean();
         return document ? document.internalName : null;
     }
 
@@ -170,8 +188,12 @@ class FileMetadataManager {
         return result.deletedCount > 0;
     }
 
-    async listFilesForUser(userId) {
-        return this.Model.find({ userId, isDeleted: false }).sort({ uploadDate: -1 }).lean();
+    async listFilesForUser(userId, { parentFolderId = null } = {}) {
+        return this.Model.find({
+            userId,
+            parentFolderId: parentFolderId || null,
+            isDeleted: false
+        }).sort({ uploadDate: -1 }).lean();
     }
 
     async getTotalUsageBytes(userId) {
@@ -278,9 +300,49 @@ class FileMetadataManager {
         const updated = await this.Model.findOneAndUpdate(
             { userId, internalName, isDeleted: false },
             {
-                shareToken: uuidv4(),
+                shareToken: randomUUID(),
                 lastModified: new Date()
             },
+            { new: true }
+        ).lean();
+
+        return updated;
+    }
+
+    async updateParentFolder(userId, internalName, parentFolderId = null) {
+        const update = {
+            $set: {
+                parentFolderId: parentFolderId || null,
+                lastModified: new Date()
+            },
+            $inc: { version: 1 }
+        };
+
+        const updated = await this.Model.findOneAndUpdate(
+            { userId, internalName, isDeleted: false },
+            update,
+            { new: true }
+        ).lean();
+
+        return updated;
+    }
+
+    async updateLocation(userId, internalName, { parentFolderId = null, displayName = null }) {
+        const update = {
+            $set: {
+                parentFolderId: parentFolderId || null,
+                lastModified: new Date()
+            },
+            $inc: { version: 1 }
+        };
+
+        if (displayName) {
+            update.$set.displayName = displayName;
+        }
+
+        const updated = await this.Model.findOneAndUpdate(
+            { userId, internalName, isDeleted: false },
+            update,
             { new: true }
         ).lean();
 
