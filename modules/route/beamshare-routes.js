@@ -2,7 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
-const FileUtils = require('../utils/file-utils');
+const FileUtils = require('../file-utils');
 const { resolvePlan } = require('../constants/plans');
 
 class BeamshareRoutes {
