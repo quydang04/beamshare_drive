@@ -8,11 +8,11 @@ const { connectDatabase } = require('./modules/db');
 const FileMetadataManager = require('./modules/models/file-metadata.js');
 const UploadHandler = require('./modules/upload-handler.js');
 const ConflictHandler = require('./modules/conflict-handler.js');
-const ApiRoutes = require('./modules/api-routes.js');
-const AuthRoutes = require('./modules/auth-routes.js');
-const ShareRoutes = require('./modules/share-routes.js');
-const BeamshareRoutes = require('./modules/beamshare-routes.js');
-const SubscriptionRoutes = require('./modules/subscription-routes.js');
+const ApiRoutes = require('./modules/route/api-routes.js');
+const AuthRoutes = require('./modules/route/auth-routes.js');
+const ShareRoutes = require('./modules/route/share-routes.js');
+const BeamshareRoutes = require('./modules/route/beamshare-routes.js');
+const SubscriptionRoutes = require('./modules/route/subscription-routes.js');
 const ShareWsServer = require('./modules/share-ws-server.js');
 const authMiddleware = require('./modules/middleware/auth-middleware.js');
 

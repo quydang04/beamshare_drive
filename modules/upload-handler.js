@@ -2,7 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
-const FileUtils = require('./file-utils');
+const FileUtils = require('./utils/file-utils');
 
 class UploadHandler {
     constructor() {
