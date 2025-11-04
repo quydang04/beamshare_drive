@@ -4,37 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BeamShare Drive | Cảm ơn bạn!</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/public/pages/thank-you/css/style.css">
+    <meta name="description" content="Trang xác nhận thanh toán BeamShare Drive với thông tin gói và hướng dẫn tiếp theo." />
+    <link rel="icon" type="image/png" href="/public/img/favicon.png">
+    <link rel="stylesheet" href="/public/css/base.css">
+    <link rel="stylesheet" href="/public/css/responsive/responsive.css">
+    <link rel="stylesheet" href="/public/css/responsive/thank-you-responsive.css">
 </head>
-<body>
+<body class="thank-you-page">
     <canvas id="confetti-canvas" aria-hidden="true"></canvas>
-    <div class="floating-orbs" aria-hidden="true">
-        <span class="orb orb-1"></span>
-        <span class="orb orb-2"></span>
-        <span class="orb orb-3"></span>
-    </div>
-    <main class="thankyou-wrapper">
-        <section class="thankyou-card" role="status">
-            <div class="card-header">
-                <span class="badge">Thanh toán thành công</span>
-                <h1>Xin cảm ơn vì bạn đã tin tưởng sử dụng dịch vụ của BeamShare!</h1>
-                <p id="thankyou-message">Giao dịch của bạn đã được xác nhận. Bạn có thể trải nghiệm đầy đủ các tính năng Premium cho tài khoản của bạn.</p>
+    <header class="thankyou-header">
+        <a class="thankyou-brand" href="/">
+            <img src="/public/img/favicon.png" alt="BeamShare" class="brand-logo">
+            <div class="brand-copy">
+                <span class="brand-name">BeamShare Drive</span>
+                <span class="brand-tagline">Chia sẻ &amp; lưu trữ thông minh</span>
             </div>
-            <div class="card-highlight" id="plan-highlight">
-                <div class="sparkle" aria-hidden="true"></div>
-                <span class="highlight-label">BeamShare Premium</span>
-                <p>Không giới hạn BeamShare Live, dung lượng mở rộng và nhiều thứ khác nữa.</p>
-            </div>
-            <div class="card-actions">
-                <a class="btn primary" href="/">Về trang chính</a>
-            </div>
-            <div class="card-footer">
-                <p>Nếu bạn cần hỗ trợ thêm, vui lòng liên hệ qua <a href="mailto:webmaster@quydang.name.vn">webmaster@quydang.name.vn</a>.</p>
-            </div>
-        </section>
+        </a>
+        <a class="thankyou-link" href="/subscription">Quản lý gói</a>
+    </header>
+    <main class="thankyou-main">
+        <div class="thankyou-grid">
+            <section class="thankyou-copy">
+                <h1>Xin cảm ơn vì bạn đã tin tưởng BeamShare!</h1>
+                <p id="thankyou-message">Giao dịch của bạn đã được xác nhận. Bạn có thể trải nghiệm đầy đủ các tính năng Premium cho tài khoản của mình.</p>
+                <ul class="thankyou-benefits">
+                    <li>
+                        <h2>Không gian lưu trữ linh hoạt</h2>
+                        <p>Quản lý dữ liệu nhẹ nhàng với dung lượng mở rộng và đồng bộ an toàn.</p>
+                    </li>
+                    <li>
+                        <h2>BeamShare Live nâng cao</h2>
+                        <p>Kết nối thiết bị và chia sẻ trong tích tắc với tốc độ ổn định.</p>
+                    </li>
+                    <li>
+                        <h2>Hỗ trợ ưu tiên</h2>
+                        <p>Đội ngũ BeamShare luôn sẵn sàng 24/7 để đồng hành cùng bạn.</p>
+                    </li>
+                </ul>
+            </section>
+            <section class="thankyou-card" role="status">
+                <div class="card-status">
+                    <span class="status-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false">
+                            <path d="M12 22c5.522 0 10-4.477 10-10S17.522 2 12 2 2 6.477 2 12s4.478 10 10 10Zm0-2a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm-1.293-4.707 5.364-5.364a1 1 0 1 0-1.414-1.414l-4.657 4.657-2.071-2.071a1 1 0 1 0-1.414 1.414l2.778 2.778a1 1 0 0 0 1.414 0Z"></path>
+                        </svg>
+                    </span>
+                    <span class="badge">Thanh toán thành công</span>
+                </div>
+                <div class="card-highlight" id="plan-highlight">
+                    <span class="highlight-label">BeamShare Premium</span>
+                    <p>Không giới hạn BeamShare Live, dung lượng mở rộng và nhiều thứ khác nữa.</p>
+                </div>
+                <div class="card-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">Trạng thái</span>
+                        <span class="summary-value" id="payment-status-label">Hoàn tất</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Gói của bạn</span>
+                        <span class="summary-value" id="plan-name">BeamShare Premium</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Gợi ý tiếp theo</span>
+                        <span class="summary-value">Khám phá BeamShare Live để chia sẻ ngay lập tức.</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <a class="thankyou-button primary" href="/">Về trang chính</a>
+                    <a class="thankyou-button ghost" href="/subscription">Xem lợi ích gói</a>
+                </div>
+                <div class="card-footer">
+                    <p>Nếu bạn cần hỗ trợ thêm, vui lòng liên hệ <a href="mailto:webmaster@quydang.name.vn">webmaster@quydang.name.vn</a> hoặc gọi <a href="tel:19009009">1900 9009</a>.</p>
+                </div>
+            </section>
+        </div>
     </main>
     <script src="/public/pages/thank-you/js/thank-you.js" defer></script>
 </body>

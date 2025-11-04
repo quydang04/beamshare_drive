@@ -2,15 +2,15 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
-const FileUtils = require('./file-utils');
-const { resolvePlan } = require('./constants/plans');
+const FileUtils = require('../file-utils');
+const { resolvePlan } = require('../constants/plans');
 
 class ShareRoutes {
     constructor(fileMetadata, authMiddleware) {
         this.router = express.Router();
         this.fileMetadata = fileMetadata;
         this.authMiddleware = authMiddleware;
-        this.uploadsRoot = path.join(__dirname, '..', 'uploads');
+        this.uploadsRoot = path.join(__dirname, '..', '..', 'uploads');
         this.setupRoutes();
     }
 

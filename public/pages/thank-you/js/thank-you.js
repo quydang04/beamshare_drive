@@ -5,6 +5,10 @@
     const badge = document.querySelector('.badge');
     const highlightLabel = planHighlight ? planHighlight.querySelector('.highlight-label') : null;
     const highlightDescription = planHighlight ? planHighlight.querySelector('p') : null;
+    const paymentStatusLabel = document.getElementById('payment-status-label');
+    const planNameElement = document.getElementById('plan-name');
+    const statusIcon = document.querySelector('.status-icon');
+    const body = document.body;
 
     const params = new URLSearchParams(window.location.search);
     const paymentStatus = (params.get('paymentStatus') || 'success').toLowerCase();
@@ -30,21 +34,33 @@
         };
     }
 
+    function setStatusIcon(isSuccess) {
+        if (!statusIcon) {
+            return;
+        }
+
+        const successIcon = '<svg viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M12 22c5.522 0 10-4.477 10-10S17.522 2 12 2 2 6.477 2 12s4.478 10 10 10Zm0-2a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm-1.293-4.707 5.364-5.364a1 1 0 1 0-1.414-1.414l-4.657 4.657-2.071-2.071a1 1 0 1 0-1.414 1.414l2.778 2.778a1 1 0 0 0 1.414 0Z"></path></svg>';
+        const pendingIcon = '<svg viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><path d="M12 22a10 10 0 1 0-9.543-13.1 1 1 0 0 0 1.9.63A8 8 0 1 1 4 12v.25a1 1 0 0 0 .553.894l5.697 2.849A1 1 0 0 0 12 15.1V9a1 1 0 0 1 2 0v7.382a1 1 0 0 1-1.447.894L8.5 15.382v.118a3.5 3.5 0 1 0 6.7 1.382 1 1 0 1 1 1.894.632A5.5 5.5 0 1 1 8 16.63v-1.512L5 13.63V13a7 7 0 1 1 7 7 1 1 0 0 1 0-2Z"></path></svg>';
+
+        statusIcon.innerHTML = isSuccess ? successIcon : pendingIcon;
+    }
+
     function hydrateCopy() {
         const planCopy = getPlanCopy(planParam);
+        const isSuccess = paymentStatus === 'success';
 
         if (messageElement) {
             if (messageParam) {
                 messageElement.textContent = messageParam;
             } else {
-                messageElement.textContent = paymentStatus === 'success'
+                messageElement.textContent = isSuccess
                     ? 'Giao dịch của bạn đã được xác nhận. Chúc bạn có trải nghiệm tuyệt vời cùng BeamShare.'
                     : 'Chúng tôi chưa thể xác nhận giao dịch. Vui lòng kiểm tra lại trạng thái thanh toán hoặc liên hệ hỗ trợ.';
             }
         }
 
         if (badge) {
-            badge.textContent = paymentStatus === 'success' ? 'Thanh toán thành công' : 'Cập nhật thanh toán';
+            badge.textContent = isSuccess ? 'Thanh toán thành công' : 'Cập nhật thanh toán';
         }
 
         if (highlightLabel) {
@@ -55,15 +71,28 @@
             highlightDescription.textContent = planCopy.description;
         }
 
-        if (paymentStatus !== 'success' && planHighlight) {
-            planHighlight.classList.add('is-muted');
+        if (planNameElement) {
+            planNameElement.textContent = planCopy.label;
         }
 
-        if (paymentStatus === 'success') {
-            document.title = 'BeamShare Drive | Cảm ơn bạn!';
-        } else {
-            document.title = 'BeamShare Drive | Cập nhật thanh toán';
+        if (paymentStatusLabel) {
+            paymentStatusLabel.textContent = isSuccess ? 'Hoàn tất' : 'Đang chờ xác nhận';
+            paymentStatusLabel.classList.toggle('is-warning', !isSuccess);
         }
+
+        if (planHighlight) {
+            planHighlight.classList.toggle('is-muted', !isSuccess);
+        }
+
+        if (body && body.classList.contains('thank-you-page')) {
+            body.classList.toggle('is-pending', !isSuccess);
+        }
+
+        setStatusIcon(isSuccess);
+
+        document.title = isSuccess
+            ? 'BeamShare Drive | Cảm ơn bạn!'
+            : 'BeamShare Drive | Cập nhật thanh toán';
     }
 
     // Confetti animation
