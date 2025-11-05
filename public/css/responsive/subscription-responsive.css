@@ -1,0 +1,137 @@
+/* Responsive overrides for Subscription */
+@media (max-width: 1280px) {
+    .subscription-container {
+        padding: 56px 28px 72px;
+    }
+
+    .pricing-cards {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .subscription-container {
+        padding: 48px 22px 64px;
+    }
+
+    .pricing-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 860px) {
+    .subscription-container {
+        padding: 40px 20px 56px;
+        gap: 32px;
+    }
+
+    .subscription-header {
+        text-align: center;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .subscription-icon {
+        margin: 0 auto;
+    }
+
+    .pricing-card,
+    .current-usage {
+        padding: 28px 24px;
+    }
+
+    .usage-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .plan-comparison__grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .payment-celebration__card {
+        padding: 42px 32px;
+    }
+}
+
+@media (max-width: 640px) {
+    .subscription-container {
+        padding: 36px 18px 52px;
+    }
+
+    .subscription-header p {
+        font-size: 0.95rem;
+    }
+
+    .pricing-cards {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .feature {
+        padding: 12px 14px;
+    }
+
+    .payment-celebration {
+        padding: 32px 18px;
+    }
+
+    .current-usage {
+        padding: 24px 18px;
+        gap: 16px;
+    }
+
+    .beamshare-table {
+        font-size: 13px;
+    }
+
+    .beamshare-note {
+        font-size: 12px;
+        text-align: left;
+    }
+}
+
+@media (max-width: 520px) {
+    .subscription-container {
+        padding: 32px 16px 48px;
+    }
+
+    .pricing-card,
+    .current-usage {
+        padding: 24px 20px;
+    }
+
+    .payment-celebration__title {
+        font-size: 1.5rem;
+    }
+
+    .payment-celebration__message {
+        font-size: 0.95rem;
+    }
+
+    .celebration-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .celebration-actions a {
+        width: 100%;
+    }
+
+    .beamshare-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .beamshare-table {
+        min-width: 520px;
+    }
+
+    .beamshare-table th,
+    .beamshare-table td {
+        font-size: 13px;
+        padding: 12px 16px;
+    }
+}
+

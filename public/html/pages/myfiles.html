@@ -7,25 +7,25 @@
                     <img src="/public/img/favicon.png" alt="BeamShare" class="header-icon__image">
                 </div>
                 <div class="header-text">
-                    <h1>Tệp của tôi</h1>
-                    <span class="file-count">0 tệp tin</span>
+                    <h1 data-i18n="pages.myfiles.title">Tệp của tôi</h1>
+                    <span class="file-count" data-i18n="pages.myfiles.fileCount" data-i18n-options='{"count":"0"}'>0 tệp tin</span>
                 </div>
             </div>
             <div class="header-actions">
-                <div class="view-toggle-group" role="group" aria-label="Chế độ hiển thị">
-                    <button class="view-toggle-btn is-active" data-view="list" title="Hiển thị dạng danh sách">
+                <div class="view-toggle-group" role="group" aria-label="Chế độ hiển thị" data-i18n="pages.myfiles.viewMode.groupLabel" data-i18n-attr="aria-label">
+                    <button class="view-toggle-btn is-active" data-view="list" title="Hiển thị dạng danh sách" data-i18n="pages.myfiles.viewMode.list" data-i18n-attr="title">
                         <i class="fas fa-list"></i>
                     </button>
-                    <button class="view-toggle-btn" data-view="grid" title="Hiển thị dạng lưới">
+                    <button class="view-toggle-btn" data-view="grid" title="Hiển thị dạng lưới" data-i18n="pages.myfiles.viewMode.grid" data-i18n-attr="title">
                         <i class="fas fa-th-large"></i>
                     </button>
                 </div>
-                <button class="icon-button" onclick="refreshFiles()" title="Làm mới danh sách">
+                <button class="icon-button" onclick="refreshFiles()" title="Làm mới danh sách" data-i18n="pages.myfiles.refresh" data-i18n-attr="title">
                     <i class="fas fa-sync-alt"></i>
                 </button>
                 <button class="btn-upload" onclick="window.loadPage('upload')">
                     <i class="fas fa-plus"></i>
-                    Tải lên
+                    <span data-i18n="pages.myfiles.upload">Tải lên</span>
                 </button>
             </div>
         </div>
@@ -33,51 +33,58 @@
         <div class="file-filters">
             <div class="search-wrapper">
                 <i class="fas fa-search"></i>
-                <input type="text" id="file-search" placeholder="Tìm kiếm tệp theo tên, loại..." aria-label="Tìm kiếm tệp">
+                <input type="text" id="file-search" placeholder="Tìm kiếm tệp theo tên, loại..." aria-label="Tìm kiếm tệp" data-i18n="pages.myfiles.filter.searchPlaceholder" data-i18n-attr="placeholder" data-i18n-options='{"term":""}'>
             </div>
             <div class="sort-wrapper">
-                <label for="file-sort">Sắp xếp:</label>
-                <select id="file-sort" aria-label="Sắp xếp tệp">
-                    <option value="date-desc">Ngày tải lên (mới nhất)</option>
-                    <option value="date-asc">Ngày tải lên (cũ nhất)</option>
-                    <option value="name-asc">Tên (A-Z)</option>
-                    <option value="name-desc">Tên (Z-A)</option>
-                    <option value="size-desc">Dung lượng (lớn nhất)</option>
-                    <option value="size-asc">Dung lượng (nhỏ nhất)</option>
+                <label for="file-sort" data-i18n="pages.myfiles.filter.sortLabel">Sắp xếp:</label>
+                <select id="file-sort" aria-label="Sắp xếp tệp" data-i18n="pages.myfiles.filter.sortAria" data-i18n-attr="aria-label">
+                    <option value="date-desc" data-i18n="pages.myfiles.filter.sort.dateDesc">Ngày tải lên (mới nhất)</option>
+                    <option value="date-asc" data-i18n="pages.myfiles.filter.sort.dateAsc">Ngày tải lên (cũ nhất)</option>
+                    <option value="name-asc" data-i18n="pages.myfiles.filter.sort.nameAsc">Tên (A-Z)</option>
+                    <option value="name-desc" data-i18n="pages.myfiles.filter.sort.nameDesc">Tên (Z-A)</option>
+                    <option value="size-desc" data-i18n="pages.myfiles.filter.sort.sizeDesc">Dung lượng (lớn nhất)</option>
+                    <option value="size-asc" data-i18n="pages.myfiles.filter.sort.sizeAsc">Dung lượng (nhỏ nhất)</option>
                 </select>
             </div>
         </div>
 
         <div class="file-selection-bar" id="file-selection-bar" hidden>
             <div class="selection-left">
-                <button type="button" class="selection-dismiss" id="file-selection-cancel" aria-label="Bỏ chọn">
+                <button type="button" class="selection-dismiss" id="file-selection-cancel" aria-label="Bỏ chọn" data-i18n="pages.myfiles.selection.cancel" data-i18n-attr="aria-label">
                     <i class="fas fa-times"></i>
                 </button>
-                <span class="selection-count"><span id="file-selection-count">0</span> mục đã chọn</span>
+                <span class="selection-count" data-i18n="pages.myfiles.selection.count" data-i18n-options='{"count":"0"}'>
+                    <span id="file-selection-count">0</span>
+                    mục đã chọn
+                </span>
             </div>
             <div class="selection-actions">
+                <button type="button" class="selection-action secondary" id="file-selection-select-all" disabled>
+                    <i class="fas fa-check-double"></i>
+                    <span data-i18n="pages.myfiles.selection.selectAll">Chọn tất cả</span>
+                </button>
                 <button type="button" class="selection-action danger" id="file-selection-delete" disabled>
                     <i class="fas fa-trash"></i>
-                    Xóa bỏ
+                    <span data-i18n="pages.myfiles.selection.delete">Xóa bỏ</span>
                 </button>
             </div>
         </div>
 
         <div class="file-insights" id="file-insights">
             <div class="insight-card" data-insight="total-files">
-                <span class="insight-label">Tổng tệp</span>
+                <span class="insight-label" data-i18n="pages.myfiles.insights.total">Tổng tệp</span>
                 <span class="insight-value">0</span>
-                <span class="insight-sub">Đang cập nhật...</span>
+                <span class="insight-sub" data-i18n="pages.myfiles.insights.updating">Đang cập nhật...</span>
             </div>
             <div class="insight-card" data-insight="storage-used">
-                <span class="insight-label">Dung lượng đã dùng</span>
+                <span class="insight-label" data-i18n="pages.myfiles.insights.storage">Dung lượng đã dùng</span>
                 <span class="insight-value">0 MB</span>
-                <span class="insight-sub">Đang cập nhật...</span>
+                <span class="insight-sub" data-i18n="pages.myfiles.insights.updating">Đang cập nhật...</span>
             </div>
             <div class="insight-card" data-insight="public-files">
-                <span class="insight-label">Đang chia sẻ</span>
+                <span class="insight-label" data-i18n="pages.myfiles.insights.shared">Đang chia sẻ</span>
                 <span class="insight-value">0</span>
-                <span class="insight-sub">Đang cập nhật...</span>
+                <span class="insight-sub" data-i18n="pages.myfiles.insights.updating">Đang cập nhật...</span>
             </div>
         </div>
 
@@ -89,12 +96,12 @@
             <div class="empty-icon">
                 <img src="/public/img/favicon.png" alt="" class="empty-icon__image">
             </div>
-            <h3>Không có tệp tin nào</h3>
-            <p>Bạn chưa tải lên tệp tin nào. Hãy bắt đầu bằng cách tải lên tệp đầu tiên của bạn.</p>
+            <h3 data-i18n="pages.myfiles.empty.title">Không có tệp tin nào</h3>
+            <p data-i18n="pages.myfiles.empty.description">Bạn chưa tải lên tệp tin nào. Hãy bắt đầu bằng cách tải lên tệp đầu tiên của bạn.</p>
             <div class="empty-actions">
                 <button class="btn-primary" onclick="window.loadPage('upload')">
                     <i class="fas fa-cloud-upload-alt"></i>
-                    Tải lên tệp
+                    <span data-i18n="pages.myfiles.empty.cta">Tải lên tệp</span>
                 </button>
             </div>
 

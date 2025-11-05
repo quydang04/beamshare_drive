@@ -1,0 +1,358 @@
+{
+  "app": {
+    "name": "BeamShare"
+  },
+  "header": {
+    "menuToggle": "Mở menu điều hướng",
+    "userMenu": {
+      "open": "Mở menu người dùng",
+      "openFor": "Mở menu người dùng cho {{name}}",
+      "profile": "Thay đổi thông tin",
+      "password": "Đổi mật khẩu",
+      "logout": "Đăng xuất"
+    }
+  },
+  "language": {
+    "sectionLabel": "Lựa chọn ngôn ngữ",
+    "label": "Ngôn ngữ",
+    "optionsLabel": "Tùy chọn ngôn ngữ",
+    "vietnamese": "Tiếng Việt",
+    "english": "English"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "upload": "Upload",
+    "myFiles": "Tệp của tôi",
+    "recycleBin": "Thùng rác",
+    "subscription": "Gói đăng ký",
+    "info": "Thông tin",
+    "beamshareLive": "BeamShare Live"
+  },
+  "sidebar": {
+    "logout": "Đăng xuất"
+  },
+  "common": {
+    "userFallbackName": "User",
+    "userFallbackInitials": "U"
+  },
+  "auth": {
+    "logout": {
+      "inProgress": "Đang đăng xuất...",
+      "failed": "Không thể đăng xuất. Vui lòng thử lại."
+    }
+  },
+  "pages": {
+    "dashboard": {
+      "header": {
+        "title": "Dashboard",
+        "subtitle": "Quản lý và theo dõi trạng thái lưu trữ của bạn",
+        "greeting": "Xin chào, {{name}}",
+        "uploadButton": "Tải lên tệp mới"
+      },
+      "tabs": {
+        "overview": "Tổng quan",
+        "files": "Tệp của tôi",
+        "analytics": "Phân tích"
+      },
+      "stats": {
+        "totalFiles": "Tổng số tệp",
+        "storageUsed": "Dung lượng đã dùng",
+        "recentFiles": "Tệp mới (7 ngày)",
+        "topType": "Loại phổ biến"
+      },
+      "storage": {
+        "title": "Trạng thái lưu trữ",
+        "subtitle": "Giám sát mức sử dụng không gian của bạn",
+        "quota": "Dung lượng tối đa {{quota}}",
+        "used": "Đang dùng {{value}}",
+        "noData": "Chưa có dữ liệu để hiển thị"
+      },
+      "quickActions": {
+        "title": "Hành động nhanh",
+        "subtitle": "Thực hiện thao tác nhanh chóng với tệp của bạn",
+        "upload": "Tải tệp lên",
+        "myFiles": "Xem tệp của tôi",
+        "refresh": "Làm mới dữ liệu"
+      },
+      "recent": {
+        "title": "Tệp gần đây",
+        "viewAll": "Xem tất cả",
+        "empty": "Chưa có tệp nào được tải lên"
+      },
+      "files": {
+        "title": "Top tệp kích thước lớn",
+        "subtitle": "Xem nhanh các tệp chiếm nhiều dung lượng nhất",
+        "headers": {
+          "name": "Tên tệp",
+          "size": "Dung lượng",
+          "date": "Ngày tải lên"
+        },
+        "empty": "Hiện chưa có dữ liệu để hiển thị"
+      },
+      "analytics": {
+        "title": "Phân tích nhanh",
+        "subtitle": "Nắm bắt xu hướng lưu trữ của bạn",
+        "typeDistribution": "Phân bổ loại tệp",
+        "typeCount": "{{count}} loại",
+        "typeEmpty": "Chưa đủ dữ liệu để phân tích",
+        "sizeTitle": "Chỉ số dung lượng",
+        "lastUpdated": "Chưa cập nhật",
+        "averageSize": "Dung lượng trung bình",
+        "maxSize": "Tệp lớn nhất",
+        "minSize": "Tệp nhỏ nhất"
+      }
+    },
+    "myfiles": {
+      "title": "Tệp của tôi",
+      "fileCount": "{{count}} tệp tin",
+      "viewMode": {
+        "groupLabel": "Chế độ hiển thị",
+        "list": "Hiển thị dạng danh sách",
+        "grid": "Hiển thị dạng lưới"
+      },
+      "refresh": "Làm mới danh sách",
+      "upload": "Tải lên",
+      "filter": {
+        "searchPlaceholder": "Tìm kiếm tệp theo tên, loại...",
+        "sortLabel": "Sắp xếp:",
+        "sortAria": "Sắp xếp tệp",
+        "sort": {
+          "dateDesc": "Ngày tải lên (mới nhất)",
+          "dateAsc": "Ngày tải lên (cũ nhất)",
+          "nameAsc": "Tên (A-Z)",
+          "nameDesc": "Tên (Z-A)",
+          "sizeDesc": "Dung lượng (lớn nhất)",
+          "sizeAsc": "Dung lượng (nhỏ nhất)"
+        }
+      },
+      "selection": {
+        "cancel": "Bỏ chọn",
+        "count": "{{count}} mục đã chọn",
+        "selectAll": "Chọn tất cả",
+        "delete": "Xóa bỏ"
+      },
+      "insights": {
+        "total": "Tổng tệp",
+        "storage": "Dung lượng đã dùng",
+        "shared": "Đang chia sẻ",
+        "updating": "Đang cập nhật..."
+      },
+      "empty": {
+        "title": "Không có tệp tin nào",
+        "description": "Bạn chưa tải lên tệp tin nào. Hãy bắt đầu bằng cách tải lên tệp đầu tiên của bạn.",
+        "cta": "Tải lên tệp"
+      }
+    },
+    "upload": {
+      "title": "Tải Lên Tệp",
+      "subtitle": "Chia sẻ tệp của bạn một cách an toàn và nhanh chóng",
+      "dropZone": {
+        "label": "Khu vực tải tệp",
+        "title": "Kéo & thả tệp vào đây",
+        "description": "hoặc <span class=\"highlight\">chọn tệp từ máy tính</span>"
+      },
+      "info": {
+        "maxFiles": "Tối đa 5 tệp",
+        "maxSize": "2GB mỗi tệp",
+        "security": "Bảo mật cao"
+      },
+      "selectButton": "Chọn Tệp"
+    },
+    "recycle": {
+      "title": "Thùng rác",
+      "description": "Các tệp đã xóa được lưu tạm thời trong 30 ngày trước khi xóa vĩnh viễn.",
+      "refresh": "Làm mới thùng rác",
+      "infoAria": "Thông tin thùng rác",
+      "info": {
+        "retentionTitle": "Thời gian lưu",
+        "retentionDescription": "Các tệp bị xóa sẽ tự động bị loại bỏ sau 30 ngày.",
+        "totalTitle": "Tổng số mục",
+        "totalCount": "{{count}} mục"
+      },
+      "tableAria": "Danh sách tệp trong thùng rác",
+      "searchPlaceholder": "Tìm kiếm theo tên tệp...",
+      "selection": {
+        "cancel": "Bỏ chọn",
+        "count": "{{count}} mục đã chọn",
+        "selectAll": "Chọn tất cả",
+        "restore": "Khôi phục",
+        "delete": "Xóa vĩnh viễn"
+      },
+      "empty": "Thùng rác hiện trống. Các tệp đã xóa sẽ xuất hiện tại đây.",
+      "table": {
+        "selectAllLabel": "Chọn tất cả",
+        "selectAllAria": "Chọn tất cả tệp trong thùng rác",
+        "headers": {
+          "name": "Tên tệp",
+          "size": "Kích thước",
+          "deletedAt": "Đã xóa lúc",
+          "remaining": "Thời gian còn lại",
+          "actions": "Thao tác"
+        }
+      }
+    },
+    "subscription": {
+      "title": "BeamShare Subscription",
+      "subtitle": "Chọn gói phù hợp để mở rộng dung lượng lưu trữ và trải nghiệm BeamShare Live tốt nhất.",
+      "plans": {
+        "basic": {
+          "badge": "Miễn phí",
+          "title": "Gói Basic",
+          "description": "Giải pháp tiết kiệm cho nhu cầu cơ bản.",
+          "featureLink": "Chia sẻ file nhanh chóng qua liên kết bảo mật",
+          "cta": "Sử dụng ngay"
+        },
+        "premium": {
+          "badge": "BeamShare Live",
+          "title": "Gói Premium",
+          "description": "Dành cho nhóm và doanh nghiệp cần BeamShare không giới hạn.",
+          "featureExtra": "Nhiều thứ khác nữa đang chờ đợi bạn",
+          "cta": "Nâng cấp qua VNPay",
+          "note": "Thanh toán nhanh qua VNPay, hỗ trợ hầu hết ngân hàng nội địa."
+        }
+      },
+      "pricePeriod": "/tháng",
+      "usage": {
+        "title": "Thông tin gói hiện tại",
+        "loading": "Đang cập nhật...",
+        "label": "Dung lượng đã sử dụng"
+      },
+      "matrix": {
+        "title": "Giới hạn BeamShare Live",
+        "subtitle": "So sánh nhanh số lượt gửi miễn phí theo trạng thái tài khoản và gói hiện tại.",
+        "headers": {
+          "audience": "Đối tượng",
+          "sends": "Lượt gửi",
+          "filesize": "Dung lượng tối đa mỗi file"
+        },
+        "rows": {
+          "basic": {
+            "audience": "Thành viên Basic",
+            "sends": "Không giới hạn",
+            "filesize": "200 MB mỗi file"
+          },
+          "premium": {
+            "audience": "Thành viên Premium",
+            "sends": "Không giới hạn",
+            "filesize": "Không giới hạn"
+          }
+        },
+        "note": "* BeamShare Live hiện không giới hạn số lượt gửi cho người dùng đã đăng nhập. Gói Basic áp dụng giới hạn 200MB cho mỗi file được gửi."
+      },
+      "runtime": {
+        "storageLabel": "Dung lượng lưu trữ {{amount}}",
+        "storageUpdating": "Đang cập nhật dung lượng lưu trữ",
+        "beamshareSummary": "BeamShare Live: {{label}}",
+        "beamshareSummaryRemaining": "BeamShare Live: {{label}}, {{remaining}}",
+        "priceFree": "Miễn phí",
+        "labels": {
+          "beamshareBasic": "Không giới hạn lượt gửi, tối đa 200MB mỗi file",
+          "beamsharePremium": "Không giới hạn",
+          "beamshareUnlimited": "Không giới hạn",
+          "beamsharePerFile": "{{value}} mỗi file"
+        },
+        "cta": {
+          "premiumCurrent": "Đã ở gói Premium",
+          "premiumUpgrade": "Nâng cấp ngay",
+          "premiumLogin": "Đăng nhập để nâng cấp",
+          "basicCurrent": "Đang sử dụng",
+          "basicSwitch": "Chuyển về gói Basic",
+          "basicLogin": "Đăng nhập để sử dụng",
+          "switching": "Đang chuyển..."
+        },
+        "messages": {
+          "loadError": "Không thể tải thông tin gói đăng ký.",
+          "loginRequired": "Vui lòng đăng nhập để xem thông tin gói.",
+          "beamshareLoginRequired": "BeamShare Live yêu cầu đăng nhập.",
+          "currentPlan": "Gói hiện tại: {{plan}}",
+          "beamshareRemaining": "còn {{count}} lượt trong cửa sổ hiện tại",
+          "toastLoading": "Đang tải thông tin gói. Vui lòng thử lại sau giây lát.",
+          "toastCurrentPremium": "Bạn đang ở gói Premium.",
+          "toastCurrentBasic": "Bạn đang ở gói Basic.",
+          "toastSwitchUnsupported": "Hiện chưa hỗ trợ chuyển sang gói này.",
+          "toastSwitchSuccess": "Đã chuyển về gói Basic.",
+          "toastSwitchError": "Không thể đổi gói.",
+          "toastPaymentInit": "Đang khởi tạo VNPay...",
+          "toastPaymentMissing": "Không nhận được đường dẫn thanh toán.",
+          "toastPaymentError": "Không thể khởi tạo thanh toán.",
+          "toastPaymentSuccess": "Thanh toán thành công.",
+          "toastPaymentFailure": "Thanh toán thất bại."
+        },
+        "dialogs": {
+          "downgradeTitle": "Xác nhận chuyển về gói Basic",
+          "downgradeMessage": "<p>Bạn sắp chuyển từ gói Premium về gói Basic.</p><p>Bạn sẽ mất các quyền lợi Premium như dung lượng cao hơn và giới hạn BeamShare không giới hạn.</p><p>Bạn có chắc chắn muốn tiếp tục?</p>",
+          "downgradeConfirm": "Chuyển về Basic",
+          "downgradeCancel": "Hủy",
+          "downgradePrompt": "Bạn sắp chuyển từ gói Premium về gói Basic và sẽ mất các quyền lợi Premium. Bạn có chắc chắn muốn tiếp tục?"
+        }
+      }
+    },
+    "info": {
+      "title": "Thông tin dự án & hệ thống",
+      "subtitle": "Tổng quan về nền tảng lưu trữ và chia sẻ tệp BeamShare.",
+      "meta": {
+        "versionLabel": "Phiên bản",
+        "statusLabel": "Trạng thái",
+        "statusValue": "Giai đoạn RC lần thứ 2"
+      },
+      "section": {
+        "intro": {
+          "title": "BeamShare là gì?",
+          "description": "BeamShare là web app quản lý, lưu trữ và chia sẻ tệp được xây dựng với Node.js, Express và WebSocket. Hệ thống cho phép người dùng tải file, xem trước tài liệu, chia sẻ thông qua link hoặc truyền realtime bằng BeamShare Live.",
+          "highlights": {
+            "uploadTitle": "Upload & quản lý",
+            "uploadDescription": "Hỗ trợ kéo thả, xem trước và sắp xếp tệp với metadata được lưu trữ tập trung.",
+            "shareTitle": "Chia sẻ an toàn",
+            "shareDescription": "Tạo liên kết tải xuống hoặc sử dụng BeamShare Live qua WebSocket.",
+            "monitorTitle": "Theo dõi dung lượng",
+            "monitorDescription": "Dashboard trực quan thể hiện dung lượng đã sử dụng, loại tệp phổ biến."
+          }
+        },
+        "contact": {
+          "title": "Liên hệ",
+          "description": "BeamShare được xây dựng nhằm phục vụ nhu cầu học tập. Mọi đóng góp ý kiến hoặc phản hồi vui lòng liên hệ qua các phương thức:"
+        }
+      }
+    },
+    "changeProfile": {
+      "title": "Thông tin tài khoản",
+      "subtitle": "Cập nhật tên hiển thị để đồng bộ avatar và lời chào trên mọi trang.",
+      "back": "Quay lại Dashboard",
+      "section": {
+        "title": "Thông tin cá nhân",
+        "description": "Đảm bảo tên hiển thị phản ánh chính xác người dùng của bạn."
+      },
+      "summary": {
+        "email": "Email đăng nhập",
+        "currentName": "Tên đang hiển thị"
+      },
+      "form": {
+        "label": "Tên hiển thị mới",
+        "placeholder": "Nhập tên hiển thị",
+        "hint": "Tên này được dùng cho chữ cái avatar và lời chào.",
+        "cancel": "Hủy",
+        "submit": "Lưu thay đổi"
+      }
+    },
+    "changePassword": {
+      "title": "Đổi mật khẩu",
+      "subtitle": "Tăng cường bảo mật cho tài khoản của bạn bằng mật khẩu mới.",
+      "back": "Quay lại Dashboard",
+      "section": {
+        "title": "Cập nhật bảo mật",
+        "description": "Chọn mật khẩu dài tối thiểu 6 ký tự và khác với mật khẩu hiện tại."
+      },
+      "tips": {
+        "strongPassword": "Sử dụng chữ hoa, chữ thường, số hoặc ký tự đặc biệt để tăng độ mạnh.",
+        "uniquePassword": "Không nên tái sử dụng mật khẩu đã dùng ở những dịch vụ khác."
+      },
+      "form": {
+        "current": "Mật khẩu hiện tại",
+        "new": "Mật khẩu mới",
+        "confirm": "Nhập lại mật khẩu mới",
+        "cancel": "Hủy",
+        "submit": "Đổi mật khẩu"
+      }
+    }
+  }
+}

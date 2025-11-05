@@ -31,6 +31,7 @@
             selectionRestore: document.getElementById('recycle-selection-restore'),
             selectionDelete: document.getElementById('recycle-selection-delete'),
             selectionCancel: document.getElementById('recycle-selection-cancel'),
+            selectionSelectAll: document.getElementById('recycle-selection-select-all'),
             selectAll: document.getElementById('recycle-select-all'),
             table: document.querySelector('.recycle-table')
         };
@@ -173,6 +174,7 @@
 
     function syncSelectAllCheckbox() {
         if (!elements.selectAll) {
+            updateSelectionToggleButton();
             return;
         }
 
@@ -181,6 +183,7 @@
             elements.selectAll.checked = false;
             elements.selectAll.indeterminate = false;
             elements.selectAll.disabled = state.files.length === 0 || Boolean(state.busyAction);
+            updateSelectionToggleButton();
             return;
         }
 
@@ -188,6 +191,39 @@
         elements.selectAll.disabled = Boolean(state.busyAction);
         elements.selectAll.checked = selectedVisibleCount === visibleCount;
         elements.selectAll.indeterminate = selectedVisibleCount > 0 && selectedVisibleCount < visibleCount;
+        updateSelectionToggleButton();
+    }
+
+    function updateSelectionToggleButton() {
+        const button = elements.selectionSelectAll;
+        if (!button) {
+            return;
+        }
+
+        const icon = button.querySelector('i');
+        const label = button.querySelector('span');
+        const totalVisible = state.filteredFiles.length;
+        const selectedVisibleCount = state.filteredFiles.filter((file) => state.selected.has(file.internalName)).length;
+        const allVisibleSelected = totalVisible > 0 && selectedVisibleCount === totalVisible;
+
+        const shouldDisable = totalVisible === 0 || Boolean(state.busyAction);
+        button.disabled = shouldDisable;
+
+        if (allVisibleSelected) {
+            if (icon) {
+                icon.className = 'fas fa-undo';
+            }
+            if (label) {
+                label.textContent = 'Bỏ chọn tất cả';
+            }
+        } else {
+            if (icon) {
+                icon.className = 'fas fa-check-double';
+            }
+            if (label) {
+                label.textContent = 'Chọn tất cả';
+            }
+        }
     }
 
     function updateSelectionSummary() {
@@ -309,6 +345,9 @@
             if (elements.selectAll) {
                 elements.selectAll.disabled = true;
             }
+            if (elements.selectionSelectAll) {
+                elements.selectionSelectAll.disabled = true;
+            }
         } else {
             if (targetButton.dataset.originalHtml) {
                 targetButton.innerHTML = targetButton.dataset.originalHtml;
@@ -317,6 +356,9 @@
             state.busyAction = null;
             if (elements.selectAll) {
                 elements.selectAll.disabled = false;
+            }
+            if (elements.selectionSelectAll) {
+                elements.selectionSelectAll.disabled = false;
             }
             updateSelectionSummary();
         }
@@ -746,6 +788,27 @@
             elements.selectionDelete.addEventListener('click', state.handlers.bulkDelete);
         }
 
+        if (elements.selectionSelectAll) {
+            state.handlers.toggleVisibleSelection = () => {
+                if (state.busyAction) {
+                    return;
+                }
+
+                const totalVisible = state.filteredFiles.length;
+                if (!totalVisible) {
+                    return;
+                }
+
+                const allVisibleSelected = state.filteredFiles.every((file) => state.selected.has(file.internalName));
+                if (allVisibleSelected) {
+                    deselectVisibleFiles();
+                } else {
+                    selectAllVisibleFiles();
+                }
+            };
+            elements.selectionSelectAll.addEventListener('click', state.handlers.toggleVisibleSelection);
+        }
+
         if (elements.selectAll) {
             state.handlers.selectAll = (event) => {
                 const shouldSelect = Boolean(event?.target?.checked);
@@ -788,6 +851,11 @@
         if (state.handlers.bulkDelete && elements.selectionDelete) {
             elements.selectionDelete.removeEventListener('click', state.handlers.bulkDelete);
             state.handlers.bulkDelete = null;
+        }
+
+        if (state.handlers.toggleVisibleSelection && elements.selectionSelectAll) {
+            elements.selectionSelectAll.removeEventListener('click', state.handlers.toggleVisibleSelection);
+            state.handlers.toggleVisibleSelection = null;
         }
 
         if (state.handlers.selectAll && elements.selectAll) {

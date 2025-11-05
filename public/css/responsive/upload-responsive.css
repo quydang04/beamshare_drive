@@ -1,0 +1,161 @@
+/* Responsive overrides for Upload flow */
+@media (max-width: 1200px) {
+    .upload-container {
+        padding: 0 24px;
+    }
+
+    .upload-features {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (max-width: 900px) {
+    .upload-wrapper {
+        flex-direction: column;
+        gap: 32px;
+    }
+
+    .upload-info {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .upload-illustration {
+        order: -1;
+        max-width: 360px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .upload-container {
+        padding: 0 16px;
+    }
+
+    .upload-header {
+        text-align: center;
+        gap: 14px;
+    }
+
+    .upload-header h1 {
+        font-size: clamp(1.75rem, 4vw, 2.5rem);
+    }
+
+    .upload-header p {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .upload-drop-zone {
+        padding: 40px 20px;
+    }
+
+    .cloud-icon {
+        font-size: 48px;
+    }
+
+    .upload-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .btn-upload-primary,
+    .btn-upload-secondary {
+        width: 100%;
+    }
+
+    .upload-features {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        margin-top: 40px;
+    }
+
+    .queue-wrapper {
+        padding: 24px;
+    }
+
+    .queue-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .queue-item .item-thumbnail,
+    .queue-item .file-info,
+    .queue-item .upload-progress {
+        width: 100%;
+    }
+
+    .queue-item .item-thumbnail {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 600px) {
+    .upload-drop-zone {
+        padding: 32px 18px;
+    }
+
+    .upload-drop-zone h3 {
+        font-size: 1.25rem;
+    }
+
+    .upload-drop-zone p {
+        font-size: 0.95rem;
+    }
+
+    .upload-info {
+        gap: 18px;
+    }
+
+    .upload-features {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .upload-progress {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .progress-bar {
+        width: 100%;
+    }
+
+    .progress-text {
+        align-self: flex-end;
+    }
+
+    .feature-card {
+        padding: 24px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .upload-header h1 {
+        font-size: 1.6rem;
+    }
+
+    .upload-drop-zone {
+        padding: 28px 16px;
+    }
+
+    .upload-drop-zone h3 {
+        font-size: 1.15rem;
+    }
+
+    .queue-wrapper {
+        padding: 20px 16px;
+    }
+
+    .feature-card {
+        padding: 22px 18px;
+    }
+
+    .upload-illustration {
+        max-width: 260px;
+    }
+}

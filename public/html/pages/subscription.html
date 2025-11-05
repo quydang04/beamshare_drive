@@ -5,20 +5,20 @@
             <div class="subscription-icon" aria-hidden="true">
                 <img src="/public/img/favicon.png" alt="" class="subscription-icon__image">
             </div>
-            <h1>BeamShare Subscription</h1>
-            <p>Chọn gói phù hợp để mở rộng dung lượng lưu trữ và trải nghiệm BeamShare Live tốt nhất.</p>
+            <h1 data-i18n="pages.subscription.title">BeamShare Subscription</h1>
+            <p data-i18n="pages.subscription.subtitle">Chọn gói phù hợp để mở rộng dung lượng lưu trữ và trải nghiệm BeamShare Live tốt nhất.</p>
         </div>
 
         <div class="pricing-cards" data-subscription="plans">
             <div class="pricing-card" data-plan="basic">
                 <div class="card-header">
-                    <div class="badge">Miễn phí</div>
-                    <h3>Gói Basic</h3>
-                    <p>Giải pháp tiết kiệm cho nhu cầu cơ bản.</p>
+                    <div class="badge" data-i18n="pages.subscription.plans.basic.badge">Miễn phí</div>
+                    <h3 data-i18n="pages.subscription.plans.basic.title">Gói Basic</h3>
+                    <p data-i18n="pages.subscription.plans.basic.description">Giải pháp tiết kiệm cho nhu cầu cơ bản.</p>
                 </div>
                 <div class="price">
                     <span class="price-amount" data-plan-price>0đ</span>
-                    <span class="price-period">/tháng</span>
+                    <span class="price-period" data-i18n="pages.subscription.pricePeriod">/tháng</span>
                 </div>
                 <div class="features">
                     <div class="feature">
@@ -31,21 +31,21 @@
                     </div>
                     <div class="feature">
                         <i class="fas fa-check"></i>
-                        <span>Chia sẻ file nhanh chóng qua liên kết bảo mật</span>
+                        <span data-i18n="pages.subscription.plans.basic.featureLink">Chia sẻ file nhanh chóng qua liên kết bảo mật</span>
                     </div>
                 </div>
-                <button class="btn-subscribe primary" data-action="switch-plan" data-target="basic">Sử dụng ngay</button>
+                <button class="btn-subscribe primary" data-action="switch-plan" data-target="basic" data-i18n="pages.subscription.plans.basic.cta">Sử dụng ngay</button>
             </div>
 
             <div class="pricing-card popular" data-plan="premium">
                 <div class="card-header">
-                    <div class="badge">BeamShare Live</div>
-                    <h3>Gói Premium</h3>
-                    <p>Dành cho nhóm và doanh nghiệp cần BeamShare không giới hạn.</p>
+                    <div class="badge" data-i18n="pages.subscription.plans.premium.badge">BeamShare Live</div>
+                    <h3 data-i18n="pages.subscription.plans.premium.title">Gói Premium</h3>
+                    <p data-i18n="pages.subscription.plans.premium.description">Dành cho nhóm và doanh nghiệp cần BeamShare không giới hạn.</p>
                 </div>
                 <div class="price">
                     <span class="price-amount" data-plan-price>50.000đ</span>
-                    <span class="price-period">/tháng</span>
+                    <span class="price-period" data-i18n="pages.subscription.pricePeriod">/tháng</span>
                 </div>
                 <div class="features">
                     <div class="feature">
@@ -58,25 +58,25 @@
                     </div>
                     <div class="feature">
                         <i class="fas fa-check"></i>
-                        <span>Nhiều thứ khác nữa đang chờ đợi bạn</span>
+                        <span data-i18n="pages.subscription.plans.premium.featureExtra">Nhiều thứ khác nữa đang chờ đợi bạn</span>
                     </div>
                 </div>
-                <button class="btn-subscribe" data-action="upgrade" data-target="premium">Nâng cấp qua VNPay</button>
-                <p class="feature-note">Thanh toán nhanh qua VNPay, hỗ trợ hầu hết ngân hàng nội địa.</p>
+                <button class="btn-subscribe" data-action="upgrade" data-target="premium" data-i18n="pages.subscription.plans.premium.cta">Nâng cấp qua VNPay</button>
+                <p class="feature-note" data-i18n="pages.subscription.plans.premium.note">Thanh toán nhanh qua VNPay, hỗ trợ hầu hết ngân hàng nội địa.</p>
             </div>
         </div>
 
         <div class="current-usage" data-subscription="usage">
             <div class="usage-header">
                 <img src="/public/img/favicon.png" alt="" class="usage-header__icon">
-                <span>Thông tin gói hiện tại</span>
+                <span data-i18n="pages.subscription.usage.title">Thông tin gói hiện tại</span>
             </div>
             <div class="usage-info">
-                <span data-current-plan>Đang cập nhật...</span>
+                <span data-current-plan data-i18n="pages.subscription.usage.loading">Đang cập nhật...</span>
                 <div class="usage-bar" aria-hidden="true">
                     <div class="usage-progress" data-usage-progress style="width: 0%"></div>
                 </div>
-                <span>Dung lượng đã sử dụng</span>
+                <span data-i18n="pages.subscription.usage.label">Dung lượng đã sử dụng</span>
                 <span class="usage-text" data-usage-text>0 / 0</span>
                 <span class="usage-text" data-beamshare-summary></span>
             </div>
@@ -84,33 +84,33 @@
 
         <section class="beamshare-matrix" data-subscription="beamshare-table">
             <div class="beamshare-header">
-                <h2>Giới hạn BeamShare Live</h2>
-                <p>So sánh nhanh số lượt gửi miễn phí theo trạng thái tài khoản và gói hiện tại.</p>
+                <h2 data-i18n="pages.subscription.matrix.title">Giới hạn BeamShare Live</h2>
+                <p data-i18n="pages.subscription.matrix.subtitle">So sánh nhanh số lượt gửi miễn phí theo trạng thái tài khoản và gói hiện tại.</p>
             </div>
             <div class="beamshare-table-wrapper">
                 <table class="beamshare-table">
                     <thead>
                         <tr>
-                            <th>Đối tượng</th>
-                            <th>Lượt gửi</th>
-                            <th>Dung lượng tối đa mỗi file</th>
+                            <th data-i18n="pages.subscription.matrix.headers.audience">Đối tượng</th>
+                            <th data-i18n="pages.subscription.matrix.headers.sends">Lượt gửi</th>
+                            <th data-i18n="pages.subscription.matrix.headers.filesize">Dung lượng tối đa mỗi file</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Thành viên Basic</td>
-                            <td data-beamshare-basic-sends>Không giới hạn</td>
-                            <td data-beamshare-basic-filesize>200 MB mỗi file</td>
+                            <td data-i18n="pages.subscription.matrix.rows.basic.audience">Thành viên Basic</td>
+                            <td data-beamshare-basic-sends data-i18n="pages.subscription.matrix.rows.basic.sends">Không giới hạn</td>
+                            <td data-beamshare-basic-filesize data-i18n="pages.subscription.matrix.rows.basic.filesize">200 MB mỗi file</td>
                         </tr>
                         <tr>
-                            <td>Thành viên Premium</td>
-                            <td data-beamshare-premium-sends>Không giới hạn</td>
-                            <td data-beamshare-premium-filesize>Không giới hạn</td>
+                            <td data-i18n="pages.subscription.matrix.rows.premium.audience">Thành viên Premium</td>
+                            <td data-beamshare-premium-sends data-i18n="pages.subscription.matrix.rows.premium.sends">Không giới hạn</td>
+                            <td data-beamshare-premium-filesize data-i18n="pages.subscription.matrix.rows.premium.filesize">Không giới hạn</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <p class="beamshare-note">* BeamShare Live hiện không giới hạn số lượt gửi cho người dùng đã đăng nhập. Gói Basic áp dụng giới hạn 200MB cho mỗi file được gửi.</p>
+            <p class="beamshare-note" data-i18n="pages.subscription.matrix.note">* BeamShare Live hiện không giới hạn số lượt gửi cho người dùng đã đăng nhập. Gói Basic áp dụng giới hạn 200MB cho mỗi file được gửi.</p>
         </section>
     </div>
 </div>

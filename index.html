@@ -8,34 +8,41 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="/public/img/favicon.png">
     <link rel="stylesheet" href="public/css/base.css">
+    <link rel="stylesheet" href="public/css/translate.css">
     <link rel="stylesheet" href="public/css/modal-toast.css">
     <link rel="stylesheet" href="public/css/pdf-preview.css">
     <link rel="stylesheet" href="public/css/file-icons.css">
-    <link rel="stylesheet" href="public/css/responsive.css">
+    <link rel="stylesheet" href="public/css/responsive/responsive.css">
     <link rel="stylesheet" href="public/css/pages/myfiles.css">
     <link rel="stylesheet" href="public/css/pages/myfiles-list.css">
     <link rel="stylesheet" href="public/css/pages/myfiles-components.css">
+    <link rel="stylesheet" href="public/css/responsive/myfiles-responsive.css">
     <link rel="stylesheet" href="public/css/pages/upload.css">
+    <link rel="stylesheet" href="public/css/responsive/upload-responsive.css">
     <link rel="stylesheet" href="public/css/pages/dashboard.css">
+    <link rel="stylesheet" href="public/css/responsive/dashboard-responsive.css">
     <link rel="stylesheet" href="public/css/pages/subscription.css">
+    <link rel="stylesheet" href="public/css/responsive/subscription-responsive.css">
     <link rel="stylesheet" href="public/css/pages/recycle-bin.css">
+    <link rel="stylesheet" href="public/css/responsive/recycle-bin-responsive.css">
     <link rel="stylesheet" href="public/pages/change/thongtin/css/style.css">
     <link rel="stylesheet" href="public/pages/change/matkhau/css/style.css">
+    <link rel="stylesheet" href="public/pages/info/css/info.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="header-left">
-            <button class="menu-toggle" id="sidebar-toggle" aria-label="Mở menu điều hướng">
+            <button class="menu-toggle" id="sidebar-toggle" aria-label="Mở menu điều hướng" data-i18n="header.menuToggle" data-i18n-attr="aria-label">
                 <i class="fas fa-bars"></i>
             </button>
             <img src="/public/img/favicon.png" alt="BeamShare" class="header-logo-icon">
-            <span class="logo">BeamShare</span>
+            <span class="logo" data-i18n="app.name">BeamShare</span>
         </div>
         <div class="header-center"></div>
         <div class="header-right">
             <div class="header-user-menu" id="header-user-menu-container">
-                <button class="user-menu-button" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="header-user-menu" aria-label="Mở menu người dùng">
+                <button class="user-menu-button" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="header-user-menu" aria-label="Mở menu người dùng" data-i18n="header.userMenu.open" data-i18n-attr="aria-label">
                     <i class="fas fa-bars" aria-hidden="true"></i>
                 </button>
                 <div class="user-menu-panel" id="header-user-menu" role="menu">
@@ -51,15 +58,26 @@
                     <div class="user-menu-actions">
                         <button class="user-menu-item" type="button" id="header-user-menu-profile" role="menuitem">
                             <i class="fas fa-user-edit" aria-hidden="true"></i>
-                            Thay đổi thông tin
+                            <span data-i18n="header.userMenu.profile">Thay đổi thông tin</span>
                         </button>
                         <button class="user-menu-item" type="button" id="header-user-menu-password" role="menuitem">
                             <i class="fas fa-key" aria-hidden="true"></i>
-                            Đổi mật khẩu
+                            <span data-i18n="header.userMenu.password">Đổi mật khẩu</span>
                         </button>
+                        <div class="user-menu-language" aria-label="Language selection" data-i18n="language.sectionLabel" data-i18n-attr="aria-label">
+                            <span class="user-menu-language__label" data-i18n="language.label">Ngôn ngữ</span>
+                            <div class="user-menu-language__options" role="group" aria-label="Language options" data-i18n="language.optionsLabel" data-i18n-attr="aria-label">
+                                <button class="language-option" type="button" data-language="vi" aria-pressed="false">
+                                    <span data-i18n="language.vietnamese">Tiếng Việt</span>
+                                </button>
+                                <button class="language-option" type="button" data-language="en" aria-pressed="false">
+                                    <span data-i18n="language.english">English</span>
+                                </button>
+                            </div>
+                        </div>
                         <button class="user-menu-item user-menu-item-danger" type="button" id="header-user-menu-logout" role="menuitem">
                             <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
-                            Đăng xuất
+                            <span data-i18n="header.userMenu.logout">Đăng xuất</span>
                         </button>
                     </div>
                 </div>
@@ -78,34 +96,38 @@
                 <div class="user-name" id="user-name">User</div>
                 <button class="logout-button" id="logout-button" type="button">
                     <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
-                    <span>Đăng xuất</span>
+                    <span data-i18n="sidebar.logout">Đăng xuất</span>
                 </button>
             </div>
             
             <nav class="nav-menu">
                 <a href="#" class="nav-item active" data-page="dashboard">
                     <i class="fas fa-th-large"></i>
-                    <span>Dashboard</span>
+                    <span data-i18n="nav.dashboard">Dashboard</span>
                 </a>
                 <a href="#" class="nav-item" data-page="upload">
                     <i class="fas fa-upload"></i>
-                    <span>Upload</span>
+                    <span data-i18n="nav.upload">Upload</span>
                 </a>
                 <a href="#" class="nav-item" data-page="myfiles">
                     <i class="fas fa-folder"></i>
-                    <span>My Files</span>
+                    <span data-i18n="nav.myFiles">My Files</span>
                 </a>
                 <a href="/recycle" class="nav-item" data-page="recycle-bin">
                     <i class="fas fa-trash"></i>
-                    <span>Recycle Bin</span>
+                    <span data-i18n="nav.recycleBin">Recycle Bin</span>
                 </a>
                 <a href="#" class="nav-item" data-page="subscription">
                     <i class="fas fa-credit-card"></i>
-                    <span>Subscription</span>
+                    <span data-i18n="nav.subscription">Subscription</span>
+                </a>
+                <a href="#" class="nav-item" data-page="info">
+                    <i class="fas fa-circle-info"></i>
+                    <span data-i18n="nav.info">Thông tin</span>
                 </a>
                 <a href="#" class="nav-item" data-page="beamshare-live">
                     <i class="fas fa-share-nodes"></i>
-                    <span>BeamShare Live</span>
+                    <span data-i18n="nav.beamshareLive">BeamShare Live</span>
                 </a>
             </nav>
         </aside>
@@ -117,34 +139,6 @@
         </main>
     </div>
 
-    <!-- Mobile Navigation -->
-    <nav class="mobile-nav" id="mobile-nav" aria-label="Điều hướng di động">
-        <a href="#" class="nav-item active" data-page="dashboard">
-            <i class="fas fa-th-large"></i>
-            <span>Dashboard</span>
-        </a>
-        <a href="#" class="nav-item" data-page="upload">
-            <i class="fas fa-upload"></i>
-            <span>Upload</span>
-        </a>
-        <a href="#" class="nav-item" data-page="myfiles">
-            <i class="fas fa-folder"></i>
-            <span>My Files</span>
-        </a>
-        <a href="/recycle" class="nav-item" data-page="recycle-bin">
-            <i class="fas fa-trash"></i>
-            <span>Recycle Bin</span>
-        </a>
-        <a href="#" class="nav-item" data-page="subscription">
-            <i class="fas fa-credit-card"></i>
-            <span>Subscription</span>
-        </a>
-        <a href="#" class="nav-item" data-page="beamshare-live">
-            <i class="fas fa-share-nodes"></i>
-            <span>BeamShare Live</span>
-        </a>
-    </nav>
-
     <!-- Scripts -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://unpkg.com/@vue-office/docx@latest/lib/index.umd.js"></script>
@@ -152,6 +146,7 @@
     <script src="https://unpkg.com/@vue-office/pdf@latest/lib/index.umd.js"></script>
 
     <script src="public/pages/sso/logout.js"></script>
+    <script src="public/js/translate.js"></script>
     <script src="public/js/base.js"></script>
     <script src="public/js/file-icons.js"></script>
     <script src="public/js/modal-system.js"></script>
@@ -169,6 +164,7 @@
     <script src="public/js/pages/recycle-bin.js"></script>
     <script src="public/pages/change/thongtin/js/main.js"></script>
     <script src="public/pages/change/matkhau/js/main.js"></script>
+    <script src="public/pages/info/js/main.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -254,6 +250,12 @@
                     init: 'initChangeMatkhau',
                     cleanup: 'cleanupChangeMatkhau',
                     path: '/change/matkhau'
+                },
+                info: {
+                    template: 'public/pages/info/index.html',
+                    init: 'initInfoPage',
+                    cleanup: 'cleanupInfoPage',
+                    path: '/info'
                 },
                 'beamshare-live': {
                     template: 'public/pages/beamshare/index.html',
@@ -346,6 +348,22 @@
                     const content = await response.text();
                     if (mainContent) {
                         mainContent.innerHTML = content;
+
+                        if (window.i18nReady) {
+                            try {
+                                await window.i18nReady;
+                            } catch (languageReadyError) {
+                                console.error('Language readiness failed:', languageReadyError);
+                            }
+                        }
+
+                        if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+                            try {
+                                window.i18n.applyTranslations(mainContent);
+                            } catch (languageApplyError) {
+                                console.error('Failed to apply translations for page', pageName, languageApplyError);
+                            }
+                        }
                     }
                     activePageName = pageName;
 

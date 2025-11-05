@@ -6,8 +6,10 @@
     <title>BeamShare Drive | Cảm ơn bạn!</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/public/pages/thank-you/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/public/css/base.css">
+    <link rel="stylesheet" href="/public/css/responsive/responsive.css">
+    <link rel="stylesheet" href="/public/pages/thank-you/css/thank-you.css">
 </head>
 <body>
     <canvas id="confetti-canvas" aria-hidden="true"></canvas>
@@ -16,24 +18,42 @@
         <span class="orb orb-2"></span>
         <span class="orb orb-3"></span>
     </div>
-    <main class="thankyou-wrapper">
-        <section class="thankyou-card" role="status">
-            <div class="card-header">
+    <main class="thankyou-page" role="main">
+        <section class="thankyou-card" role="status" aria-live="polite">
+            <header class="card-header">
                 <span class="badge">Thanh toán thành công</span>
-                <h1>Xin cảm ơn vì bạn đã tin tưởng sử dụng dịch vụ của BeamShare!</h1>
-                <p id="thankyou-message">Giao dịch của bạn đã được xác nhận. Bạn có thể trải nghiệm đầy đủ các tính năng Premium cho tài khoản của bạn.</p>
-            </div>
-            <div class="card-highlight" id="plan-highlight">
-                <div class="sparkle" aria-hidden="true"></div>
-                <span class="highlight-label">BeamShare Premium</span>
-                <p>Không giới hạn BeamShare Live, dung lượng mở rộng và nhiều thứ khác nữa.</p>
+                <h1>Cảm ơn bạn đã tin dùng BeamShare Drive</h1>
+                <p id="thankyou-message">Giao dịch của bạn đã được xác nhận. Bạn sẽ được kích hoạt toàn bộ tính năng nâng cao ngay lập tức.</p>
+            </header>
+            <div class="card-body">
+                <div class="summary-list">
+                    <div class="summary-item">
+                        <div class="summary-item-icon">1</div>
+                        <div class="summary-item-text">
+                            <strong>Quản lý file thông minh</strong>
+                            <span>Tập tin của bạn được đồng bộ an toàn giữa các thiết bị chỉ trong vài giây.</span>
+                        </div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-item-icon">2</div>
+                        <div class="summary-item-text">
+                            <strong>Hỗ trợ đội ngũ BeamShare</strong>
+                            <span>Luôn hỗ trợ 24/7 khi bạn cần giải đáp.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-highlight" id="plan-highlight">
+                    <span class="highlight-label">BeamShare Premium</span>
+                    <p>Tích hợp BeamShare Live, giới hạn dung lượng cao hơn và nhiều mở rộng cho doanh nghiệp.</p>
+                </div>
             </div>
             <div class="card-actions">
-                <a class="btn primary" href="/">Về trang chính</a>
+                <a class="btn btn-primary" href="/">Về trang chủ</a>
+                <a class="btn btn-outline" href="/beamshare">Mở BeamShare Live</a>
             </div>
-            <div class="card-footer">
-                <p>Nếu bạn cần hỗ trợ thêm, vui lòng liên hệ qua <a href="mailto:webmaster@quydang.name.vn">webmaster@quydang.name.vn</a>.</p>
-            </div>
+            <footer class="card-footer">
+                <p>Nếu bạn cần hỗ trợ thêm, vui lòng liên hệ <a href="mailto:webmaster@quydang.name.vn">webmaster@quydang.name.vn</a>.</p>
+            </footer>
         </section>
     </main>
     <script src="/public/pages/thank-you/js/thank-you.js" defer></script>

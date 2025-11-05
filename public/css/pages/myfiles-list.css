@@ -26,6 +26,8 @@
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
+    overflow: visible;
+    z-index: 0;
 }
 
 .file-item:hover {
@@ -174,20 +176,25 @@
 }
 
 .file-actions {
+    margin-left: auto;
+    position: relative;
     display: flex;
-    gap: 8px;
+    align-items: center;
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.2s ease;
 }
 
-.file-item:hover .file-actions {
+.file-item:hover .file-actions,
+.file-actions.is-open {
     opacity: 1;
+    pointer-events: auto;
 }
 
 .file-list.grid-view .file-actions {
+    margin-left: 0;
     justify-content: center;
     margin-top: 8px;
-    opacity: 1;
 }
 
 .file-item.is-selected {
@@ -195,6 +202,12 @@
     background: #123a7a;
     color: #f8fafc;
     box-shadow: 0 16px 40px -24px rgba(18, 58, 122, 0.7);
+    z-index: 5;
+}
+
+.file-item.is-menu-open {
+    z-index: 25;
+    box-shadow: 0 24px 46px -28px rgba(79, 70, 229, 0.35);
 }
 
 .file-item.is-selected .file-name,
@@ -236,73 +249,135 @@
     color: #f8fafc;
 }
 
-.file-item.is-selected .file-actions .action-btn {
+.file-item.is-selected .action-menu-trigger {
     background: rgba(15, 31, 58, 0.45);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.25);
     color: #f8fafc;
+    box-shadow: none;
 }
 
-.file-item.is-selected .file-actions .action-btn:hover {
-    background: rgba(255, 255, 255, 0.18);
-    color: #ffffff;
+.file-item.is-selected .file-actions.is-open .action-menu-trigger,
+.file-item.is-selected .action-menu-trigger:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #0f172a;
 }
 
 .file-list.grid-view .file-item.is-selected {
     border-color: #123a7a;
 }
 
-.action-btn {
-    background: white;
+.action-menu-trigger {
+    background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    width: 32px;
-    height: 32px;
-    display: flex;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: #718096;
+    color: #475569;
     transition: all 0.2s ease;
-    font-size: 12px;
+    box-shadow: 0 6px 18px -12px rgba(79, 70, 229, 0.45);
 }
 
-.action-btn:hover {
-    background: #667eea;
-    color: white;
-    border-color: #667eea;
-    transform: scale(1.1);
+.action-menu-trigger:hover,
+.file-actions.is-open .action-menu-trigger {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border-color: transparent;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px -14px rgba(79, 70, 229, 0.55);
 }
 
-.action-btn.share-toggle-btn.is-public {
-    background: #e6fffa;
-    border-color: #38b2ac;
-    color: #2c7a7b;
+.action-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 22px 48px -24px rgba(79, 70, 229, 0.4);
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    padding: 12px;
+    min-width: 220px;
+    display: grid;
+    gap: 8px;
+    z-index: 40;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.action-btn.share-toggle-btn.is-public:hover {
-    background: #38b2ac;
-    color: white;
-    border-color: #38b2ac;
+.file-actions.is-open .action-menu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    z-index: 60;
 }
 
-.action-btn.preview-btn:hover {
-    background: #667eea;
-    color: white;
+.action-menu-item {
+    background: rgba(248, 250, 252, 0.92);
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.action-btn.download-btn:hover {
-    background: #10b981;
-    color: white;
+.action-menu-item i {
+    font-size: 15px;
+    color: #4f46e5;
 }
 
-.action-btn.rename-btn:hover {
-    background: #f59e0b;
-    color: white;
+.action-menu-item span {
+    flex: 1;
+    text-align: left;
 }
 
-.action-btn.delete-btn:hover {
-    background: #ef4444;
-    color: white;
+.action-menu-item:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.12));
+    border-color: rgba(99, 102, 241, 0.2);
+    color: #1e293b;
+    transform: translateX(2px);
+    box-shadow: 0 10px 22px -18px rgba(79, 70, 229, 0.35);
+}
+
+.action-menu-item:hover i {
+    color: #4338ca;
+}
+
+.action-menu-item.share-manage-btn.is-public {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #065f46;
+}
+
+.action-menu-item.share-manage-btn.is-public i {
+    color: #047857;
+}
+
+.action-menu-item.delete-btn {
+    color: #b91c1c;
+}
+
+.action-menu-item.delete-btn i {
+    color: #dc2626;
+}
+
+.action-menu-item.delete-btn:hover {
+    background: rgba(248, 113, 113, 0.18);
+    border-color: rgba(239, 68, 68, 0.35);
+    color: #991b1b;
 }
 
 .myfiles-container.drag-over {

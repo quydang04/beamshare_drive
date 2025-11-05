@@ -1,6 +1,9 @@
 // Translation System
 // Language and translation management
 
+const LANGUAGE_STORAGE_KEY = 'beamshare:language';
+const LEGACY_LANGUAGE_KEYS = ['language'];
+
 // Current language setting
 let currentLanguage = 'vi';
 
@@ -328,6 +331,41 @@ const translations = {
     }
 };
 
+function persistLanguagePreference(language) {
+    try {
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+        LEGACY_LANGUAGE_KEYS.forEach((key) => {
+            localStorage.setItem(key, language);
+        });
+    } catch (error) {
+        console.warn('Không thể lưu tùy chọn ngôn ngữ:', error);
+    }
+}
+
+function resolveSavedLanguage() {
+    const storedPreference = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    if (storedPreference && translations[storedPreference]) {
+        return storedPreference;
+    }
+
+    for (const legacyKey of LEGACY_LANGUAGE_KEYS) {
+        const fallbackPreference = localStorage.getItem(legacyKey);
+        if (fallbackPreference && translations[fallbackPreference]) {
+            return fallbackPreference;
+        }
+    }
+
+    return null;
+}
+
+const savedLanguagePreference = resolveSavedLanguage();
+if (savedLanguagePreference) {
+    currentLanguage = savedLanguagePreference;
+    persistLanguagePreference(savedLanguagePreference);
+} else {
+    persistLanguagePreference(currentLanguage);
+}
+
 // Translation function
 function t(key, params = {}) {
     const translation = translations[currentLanguage]?.[key] || translations['en'][key] || key;
@@ -340,26 +378,42 @@ function t(key, params = {}) {
 
 // Language management functions
 function setLanguage(lang) {
-    if (translations[lang]) {
-        currentLanguage = lang;
-        localStorage.setItem('language', lang);
-        updateUILanguage();
-        updateLanguageSelection();
+    if (!translations[lang]) {
+        return;
+    }
+
+    currentLanguage = lang;
+    persistLanguagePreference(lang);
+    window.currentLanguage = currentLanguage;
+
+    updateUILanguage();
+    updateLanguageSelection();
+
+    if (typeof showNotification === 'function') {
         showNotification(t('languageChanged'), 'success');
-        document.getElementById('language-dialog').open = false;
+    }
+
+    const languageDialog = document.getElementById('language-dialog');
+    if (languageDialog) {
+        languageDialog.open = false;
     }
 }
 
 function loadSavedLanguage() {
-    const savedLang = localStorage.getItem('language');
+    const savedLang = resolveSavedLanguage();
     if (savedLang && translations[savedLang]) {
         currentLanguage = savedLang;
+        persistLanguagePreference(savedLang);
+        window.currentLanguage = currentLanguage;
         updateUILanguage();
         // Delay updating language selection until DOM is ready
         setTimeout(() => {
             updateLanguageSelection();
         }, 100);
+        return;
     }
+
+    persistLanguagePreference(currentLanguage);
 }
 
 function updateLanguageSelection() {

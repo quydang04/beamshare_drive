@@ -52,13 +52,14 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding: 14px 20px;
-    border-radius: 14px;
-    margin-bottom: 16px;
-    background: #0f1f3a;
-    color: #ffffff;
-    box-shadow: 0 18px 36px -26px rgba(15, 31, 58, 0.65);
+    gap: 18px;
+    padding: 18px 20px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    background: linear-gradient(145deg, rgba(248, 250, 255, 0.96), rgba(226, 232, 255, 0.94));
+    color: #1f2937;
+    border: 1px solid rgba(99, 102, 241, 0.22);
+    box-shadow: 0 24px 48px -30px rgba(99, 102, 241, 0.35);
 }
 
 .recycle-selection-bar[hidden] {
@@ -74,21 +75,22 @@
 .selection-count {
     font-weight: 600;
     font-size: 15px;
+    color: #1f2937;
 }
 
 .selection-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .selection-dismiss {
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    background: rgba(248, 113, 113, 0.18);
+    color: #b91c1c;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -97,7 +99,7 @@
 }
 
 .selection-dismiss:hover {
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(248, 113, 113, 0.26);
     transform: scale(1.05);
 }
 
@@ -105,11 +107,11 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 18px;
+    padding: 10px 20px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    background: rgba(255, 255, 255, 0.12);
-    color: #ffffff;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.16), rgba(129, 140, 248, 0.22));
+    color: #312e81;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -118,12 +120,13 @@
 
 .selection-action:hover:not(:disabled) {
     transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.24), rgba(129, 140, 248, 0.28));
 }
 
 .selection-action.primary {
     background: #2563eb;
     border-color: rgba(59, 130, 246, 0.8);
+    color: #ffffff;
 }
 
 .selection-action.danger {
@@ -176,7 +179,6 @@
 
 
 
-.recycle-loading,
 .recycle-empty {
     padding: 48px 24px;
     display: flex;
@@ -367,48 +369,3 @@
     border: 0;
 }
 
-@media (max-width: 768px) {
-    .recycle-info {
-        grid-template-columns: 1fr;
-    }
-
-    .recycle-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .recycle-search {
-        max-width: 100%;
-    }
-
-    .selection-left {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .selection-actions {
-        width: 100%;
-        justify-content: flex-end;
-        gap: 8px;
-    }
-
-    .selection-action {
-        flex: 1 1 140px;
-        justify-content: center;
-    }
-
-
-    .recycle-table th,
-    .recycle-table td {
-        padding: 12px 14px;
-    }
-
-    .recycle-actions {
-        flex-direction: column;
-    }
-
-    .recycle-action-btn {
-        justify-content: center;
-        width: 100%;
-    }
-}

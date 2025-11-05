@@ -1,9 +1,9 @@
 const express = require('express');
 const { IpnUnknownError } = require('vnpay');
-const { PLAN_DEFINITIONS, resolvePlan } = require('./constants/plans');
-const PaymentService = require('./services/payment-service');
-const { issueAuthCookie } = require('./middleware/auth-middleware');
-const User = require('./models/user');
+const { PLAN_DEFINITIONS, resolvePlan } = require('../constants/plans');
+const PaymentService = require('../services/payment-service');
+const { issueAuthCookie } = require('../middleware/auth-middleware');
+const User = require('../models/user');
 
 function formatBytes(bytes) {
     if (!bytes) {

@@ -4,16 +4,16 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 
-const { connectDatabase } = require('./modules/db');
+const { connectDatabase } = require('./modules/file-service/db');
 const FileMetadataManager = require('./modules/models/file-metadata.js');
-const UploadHandler = require('./modules/upload-handler.js');
-const ConflictHandler = require('./modules/conflict-handler.js');
-const ApiRoutes = require('./modules/api-routes.js');
-const AuthRoutes = require('./modules/auth-routes.js');
-const ShareRoutes = require('./modules/share-routes.js');
-const BeamshareRoutes = require('./modules/beamshare-routes.js');
-const SubscriptionRoutes = require('./modules/subscription-routes.js');
-const ShareWsServer = require('./modules/share-ws-server.js');
+const UploadHandler = require('./modules/file-service/upload-handler.js');
+const ConflictHandler = require('./modules/file-service/conflict-handler.js');
+const ApiRoutes = require('./modules/route/api-routes.js');
+const AuthRoutes = require('./modules/route/auth-routes.js');
+const ShareRoutes = require('./modules/route/share-routes.js');
+const BeamshareRoutes = require('./modules/route/beamshare-routes.js');
+const SubscriptionRoutes = require('./modules/route/subscription-routes.js');
+const ShareWsServer = require('./modules/file-service/share-ws-server.js');
 const authMiddleware = require('./modules/middleware/auth-middleware.js');
 
 const app = express();
@@ -124,6 +124,7 @@ app.get('/auth/register', (_req, res) => sendSsoPage(res, 'register'));
 app.get('/auth/forgot-password', (_req, res) => sendSsoPage(res, 'forgot-password'));
 app.get('/auth/reset-password', (_req, res) => sendSsoPage(res, 'reset-password'));
 app.get('/recycle', ensureAuthenticatedPage, sendIndex);
+app.get('/info', ensureAuthenticatedPage, sendIndex);
 app.get('/thank-you', ensureAuthenticatedPage, sendThankYouPage);
 
 // Protected SPA entry

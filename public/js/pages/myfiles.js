@@ -423,6 +423,7 @@ function updateShareButtonState(button, state) {
 
     const normalizedState = state === 'public' ? 'public' : 'private';
     const icon = button.querySelector('i');
+    const label = button.querySelector('span');
 
     button.setAttribute('data-share-state', normalizedState);
     if (normalizedState === 'public') {
@@ -431,11 +432,17 @@ function updateShareButtonState(button, state) {
         if (icon) {
             icon.className = 'fas fa-share-square';
         }
+        if (label) {
+            label.textContent = 'Quản lý chia sẻ';
+        }
     } else {
         button.classList.remove('is-public');
         button.title = 'Chia sẻ tệp';
         if (icon) {
             icon.className = 'fas fa-share-alt';
+        }
+        if (label) {
+            label.textContent = 'Chia sẻ tệp';
         }
     }
 }
@@ -1373,6 +1380,40 @@ function clearFileSelection(options = {}) {
     }
 }
 
+function selectAllVisibleFiles() {
+    const items = document.querySelectorAll('.file-item[data-file-id]');
+    if (!items.length) {
+        return;
+    }
+
+    const allVisibleSelected = Array.from(items).every((item) => {
+        const fileId = item.getAttribute('data-file-id');
+        return fileId ? selectedFileIds.has(fileId) : true;
+    });
+
+    let changed = false;
+    items.forEach((item) => {
+        const fileId = item.getAttribute('data-file-id');
+        if (!fileId) {
+            return;
+        }
+        if (allVisibleSelected) {
+            if (selectedFileIds.delete(fileId)) {
+                changed = true;
+            }
+        } else if (!selectedFileIds.has(fileId)) {
+            selectedFileIds.add(fileId);
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        syncSelectionDom();
+    } else {
+        updateBulkSelectionUI();
+    }
+}
+
 function syncSelectionDom() {
     const checkboxes = document.querySelectorAll('.file-select-checkbox');
     checkboxes.forEach(checkbox => {
@@ -1393,8 +1434,11 @@ function updateBulkSelectionUI() {
     const countEl = document.getElementById('file-selection-count');
     const deleteBtn = document.getElementById('file-selection-delete');
     const cancelBtn = document.getElementById('file-selection-cancel');
+    const selectAllBtn = document.getElementById('file-selection-select-all');
 
     const selectedCount = selectedFileIds.size;
+    const visibleCheckboxes = document.querySelectorAll('.file-select-checkbox');
+    const visibleSelectedCount = Array.from(visibleCheckboxes).filter((checkbox) => checkbox.checked).length;
 
     if (selectionBar) {
         if (selectedCount > 0) {
@@ -1415,6 +1459,30 @@ function updateBulkSelectionUI() {
     if (cancelBtn) {
         cancelBtn.disabled = selectedCount === 0;
     }
+
+    if (selectAllBtn) {
+        const totalVisible = visibleCheckboxes.length;
+        const icon = selectAllBtn.querySelector('i');
+        const label = selectAllBtn.querySelector('span');
+        const allVisibleSelected = totalVisible > 0 && visibleSelectedCount === totalVisible;
+        selectAllBtn.disabled = totalVisible === 0;
+
+        if (allVisibleSelected) {
+            if (icon) {
+                icon.className = 'fas fa-undo';
+            }
+            if (label) {
+                label.textContent = 'Bỏ chọn tất cả';
+            }
+        } else {
+            if (icon) {
+                icon.className = 'fas fa-check-double';
+            }
+            if (label) {
+                label.textContent = 'Chọn tất cả';
+            }
+        }
+    }
 }
 
 function setupBulkSelectionControls() {
@@ -1432,6 +1500,14 @@ function setupBulkSelectionControls() {
             handleBulkDeleteSelected();
         });
         deleteBtn.dataset.bulkBound = 'true';
+    }
+
+    const selectAllBtn = document.getElementById('file-selection-select-all');
+    if (selectAllBtn && !selectAllBtn.dataset.bulkBound) {
+        selectAllBtn.addEventListener('click', () => {
+            selectAllVisibleFiles();
+        });
+        selectAllBtn.dataset.bulkBound = 'true';
     }
 }
 
@@ -1756,6 +1832,13 @@ function createFileListHTML(files) {
                     ? `<i class="fas ${iconDescriptor.icon} ${iconDescriptor.tone}"></i>`
                     : '';
 
+                const shareButtonTitle = shareState === 'public'
+                    ? 'Đang công khai - quản lý chia sẻ'
+                    : 'Chia sẻ tệp';
+                const shareButtonIcon = shareState === 'public' ? 'fa-share-square' : 'fa-share-alt';
+                const actionsMenuId = `file-actions-${sanitizedIdSegment}-${index}`;
+                const menuLabel = escapeHtml(`Tùy chọn cho ${displayNameRaw}`);
+
                 return `
                 <div class="file-item${selectedClass}" data-file-id="${fileIdAttr}" data-file-name="${displayNameHtml}" data-share-state="${shareState}"${shareTokenAttr}>
                     <div class="file-select">
@@ -1773,27 +1856,40 @@ function createFileListHTML(files) {
                         </div>
                     </div>
                     <div class="file-actions">
-                        <button class="action-btn preview-btn" title="Xem trước" onclick="previewFile('${fileIdJs}', '${originalNameJs}', '${mimeTypeJs}')">
-                            <i class="fas fa-eye"></i>
+                        <button class="action-menu-trigger" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="${actionsMenuId}" title="${menuLabel}">
+                            <span class="sr-only">${menuLabel}</span>
+                            <i class="fas fa-ellipsis-h" aria-hidden="true"></i>
                         </button>
-                        <button class="action-btn details-btn" title="Xem chi tiết" onclick="viewFileDetails('${fileIdJs}')">
-                            <i class="fas fa-info-circle"></i>
-                        </button>
-                        <button class="action-btn download-btn" title="Tải xuống" onclick="downloadFile('${fileIdJs}', '${originalNameJs}')">
-                            <i class="fas fa-download"></i>
-                        </button>
-                        <button class="action-btn share-manage-btn${shareState === 'public' ? ' is-public' : ''}" title="${shareState === 'public' ? 'Đang công khai - quản lý chia sẻ' : 'Chia sẻ tệp'}" data-file-id="${fileIdAttr}" data-share-state="${shareState}">
-                            <i class="fas ${shareState === 'public' ? 'fa-share-square' : 'fa-share-alt'}"></i>
-                        </button>
-                        <button class="action-btn beamshare-btn" title="BeamShare Live" data-file-id="${fileIdAttr}" data-file-name="${displayNameHtml}">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                        <button class="action-btn rename-btn" title="Đổi tên" onclick="renameFile('${fileIdJs}', '${displayNameJs}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn delete-btn" title="Xóa" onclick="deleteFile('${fileIdJs}', '${displayNameJs}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <div class="action-menu" id="${actionsMenuId}" role="menu">
+                            <button class="action-btn action-menu-item preview-btn" role="menuitem" title="Xem trước" onclick="previewFile('${fileIdJs}', '${originalNameJs}', '${mimeTypeJs}')">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                                <span>Xem trước</span>
+                            </button>
+                            <button class="action-btn action-menu-item details-btn" role="menuitem" title="Xem chi tiết" onclick="viewFileDetails('${fileIdJs}')">
+                                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                                <span>Chi tiết tệp</span>
+                            </button>
+                            <button class="action-btn action-menu-item download-btn" role="menuitem" title="Tải xuống" onclick="downloadFile('${fileIdJs}', '${originalNameJs}')">
+                                <i class="fas fa-download" aria-hidden="true"></i>
+                                <span>Tải xuống</span>
+                            </button>
+                            <button class="action-btn action-menu-item share-manage-btn${shareState === 'public' ? ' is-public' : ''}" role="menuitem" title="${shareButtonTitle}" data-file-id="${fileIdAttr}" data-share-state="${shareState}">
+                                <i class="fas ${shareButtonIcon}" aria-hidden="true"></i>
+                                <span>${shareState === 'public' ? 'Quản lý chia sẻ' : 'Chia sẻ tệp'}</span>
+                            </button>
+                            <button class="action-btn action-menu-item beamshare-btn" role="menuitem" title="BeamShare Live" data-file-id="${fileIdAttr}" data-file-name="${displayNameHtml}">
+                                <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                <span>BeamShare Live</span>
+                            </button>
+                            <button class="action-btn action-menu-item rename-btn" role="menuitem" title="Đổi tên" onclick="renameFile('${fileIdJs}', '${displayNameJs}')">
+                                <i class="fas fa-edit" aria-hidden="true"></i>
+                                <span>Đổi tên</span>
+                            </button>
+                            <button class="action-btn action-menu-item delete-btn" role="menuitem" title="Xóa" onclick="deleteFile('${fileIdJs}', '${displayNameJs}')">
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                                <span>Xóa</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             `}).join('')}
@@ -1997,14 +2093,40 @@ function updateFileInsights(files = allFiles) {
     }
 }
 
+function closeFileActionMenus(exceptContainer) {
+    const openMenus = document.querySelectorAll('.file-actions.is-open');
+    openMenus.forEach((container) => {
+        if (exceptContainer && container === exceptContainer) {
+            return;
+        }
+        container.classList.remove('is-open');
+        const trigger = container.querySelector('.action-menu-trigger');
+        if (trigger) {
+            trigger.setAttribute('aria-expanded', 'false');
+        }
+        const parentItem = container.closest('.file-item');
+        if (parentItem) {
+            parentItem.classList.remove('is-menu-open');
+        }
+    });
+}
+
 // Add file interaction handlers
 function addFileInteractions() {
+    closeFileActionMenus();
+
     const fileItems = document.querySelectorAll('.file-item');
     const actionBtns = document.querySelectorAll('.action-btn');
 
-    fileItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            if (e.target.closest('.action-btn') || e.target.closest('.file-select') || e.target.classList.contains('file-select-checkbox')) {
+    fileItems.forEach((item) => {
+        item.addEventListener('click', function (event) {
+            if (
+                event.target.closest('.action-btn') ||
+                event.target.closest('.action-menu-trigger') ||
+                event.target.closest('.action-menu') ||
+                event.target.closest('.file-select') ||
+                event.target.classList.contains('file-select-checkbox')
+            ) {
                 return;
             }
 
@@ -2014,42 +2136,53 @@ function addFileInteractions() {
             }
         });
     });
-    
-    actionBtns.forEach(btn => {
+
+    actionBtns.forEach((btn) => {
         if (btn.classList.contains('share-manage-btn') || btn.classList.contains('beamshare-btn')) {
             return;
         }
 
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const action = this.title;
-            const fileName = this.closest('.file-item').getAttribute('data-file-name');
+        btn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            closeFileActionMenus();
+        });
+    });
 
-            switch(action) {
-                case 'Tải xuống':
-                    if (window.toastSystem) {
-                        window.toastSystem.success(`Đang tải xuống: ${fileName}`, {
-                            duration: 2000
-                        });
-                    }
-                    break;
-                case 'Chia sẻ':
-                    if (window.toastSystem) {
-                        window.toastSystem.success(`Đã tạo link chia sẻ cho: ${fileName}`, {
-                            duration: 3000
-                        });
-                    }
-                    break;
-                case 'Xóa':
-                    // Remove this case since delete is handled by the onclick attribute
-                    // This prevents the double-modal issue
-                    break;
+    const menuContainers = document.querySelectorAll('.file-actions');
+    menuContainers.forEach((container) => {
+        const trigger = container.querySelector('.action-menu-trigger');
+        const menuItems = container.querySelectorAll('.action-menu-item');
+
+        if (!trigger) {
+            return;
+        }
+
+        trigger.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const wasOpen = container.classList.contains('is-open');
+            closeFileActionMenus();
+            if (!wasOpen) {
+                container.classList.add('is-open');
+                trigger.setAttribute('aria-expanded', 'true');
+                const parentItem = container.closest('.file-item');
+                if (parentItem) {
+                    parentItem.classList.add('is-menu-open');
+                }
             }
+        });
+
+        menuItems.forEach((item) => {
+            item.addEventListener('click', (event) => {
+                event.stopPropagation();
+                closeFileActionMenus();
+            });
         });
     });
 
     const selectionInputs = document.querySelectorAll('.file-select-checkbox');
-    selectionInputs.forEach(input => {
+    selectionInputs.forEach((input) => {
         input.addEventListener('click', (event) => {
             event.stopPropagation();
         });
@@ -2078,13 +2211,14 @@ function addFileInteractions() {
     });
 
     const shareButtons = document.querySelectorAll('.share-manage-btn');
-    shareButtons.forEach(button => {
+    shareButtons.forEach((button) => {
         const initialState = button.getAttribute('data-share-state') || 'private';
         updateShareButtonState(button, initialState);
 
         button.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
+            closeFileActionMenus();
 
             const fileId = button.getAttribute('data-file-id');
             if (!fileId) {
@@ -2096,17 +2230,35 @@ function addFileInteractions() {
     });
 
     const beamshareButtons = document.querySelectorAll('.beamshare-btn');
-    beamshareButtons.forEach(button => {
+    beamshareButtons.forEach((button) => {
         button.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
+            closeFileActionMenus();
 
             const fileId = button.getAttribute('data-file-id');
             const fileName = button.getAttribute('data-file-name') || 'tệp đã chọn';
             openBeamShareWorkspace(fileId, fileName);
         });
     });
+
+    if (!window.__myFilesMenuOutsideHandlerBound) {
+        window.__myFilesMenuOutsideHandlerBound = true;
+
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.file-actions')) {
+                closeFileActionMenus();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeFileActionMenus();
+            }
+        });
+    }
 }
+
 
 // CRUD Operations
 
@@ -3059,3 +3211,4 @@ document.addEventListener('DOMContentLoaded', function() {
         window.initMyFiles();
     }
 });
+

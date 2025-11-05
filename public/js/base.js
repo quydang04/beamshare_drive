@@ -1,10 +1,84 @@
 // Base JavaScript - Common functionality and navigation
-document.addEventListener('DOMContentLoaded', function() {
+
+document.addEventListener('DOMContentLoaded', async function() {
+    if (window.i18nReady) {
+        try {
+            await window.i18nReady;
+        } catch (error) {
+            console.error('Language readiness failed:', error);
+        }
+    } else if (window.i18n && typeof window.i18n.init === 'function') {
+        try {
+            await window.i18n.init();
+            if (typeof window.i18n.applyTranslations === 'function') {
+                window.i18n.applyTranslations(document);
+            }
+        } catch (error) {
+            console.error('Language initialisation failed:', error);
+        }
+    }
+
+    const translate = window.i18n && typeof window.i18n.t === 'function'
+        ? window.i18n.t
+        : ((value) => (value == null ? '' : String(value)));
+    const assignTranslation = window.i18n && typeof window.i18n.assignTranslation === 'function' ? window.i18n.assignTranslation : (() => {});
+    const updateTranslationParams = window.i18n && typeof window.i18n.updateTranslationParams === 'function' ? window.i18n.updateTranslationParams : (() => {});
+    const formatDate = window.i18n && typeof window.i18n.formatDate === 'function'
+        ? window.i18n.formatDate
+        : ((value) => {
+            const date = value instanceof Date ? value : new Date(value);
+            return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString();
+        });
+    const formatDateTime = window.i18n && typeof window.i18n.formatDateTime === 'function'
+        ? window.i18n.formatDateTime
+        : ((value) => {
+            const date = value instanceof Date ? value : new Date(value);
+            return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
+        });
+    const formatRelativeTime = window.i18n && typeof window.i18n.formatRelativeTime === 'function'
+        ? window.i18n.formatRelativeTime
+        : (() => '');
+
+    const languageButtons = Array.from(document.querySelectorAll('.language-option[data-language]'));
+
+    function setActiveLanguageButton(language) {
+        languageButtons.forEach((button) => {
+            const buttonLanguage = button.getAttribute('data-language');
+            const isActive = buttonLanguage === language;
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+    }
+
+    languageButtons.forEach((button) => {
+        button.addEventListener('click', async () => {
+            const targetLanguage = button.getAttribute('data-language');
+            if (!targetLanguage || targetLanguage === window.i18n.getLanguage()) {
+                return;
+            }
+
+            try {
+                button.disabled = true;
+                await window.i18n.setLanguage(targetLanguage);
+                setActiveLanguageButton(targetLanguage);
+            } catch (error) {
+                console.error('Không thể chuyển đổi ngôn ngữ:', error);
+            } finally {
+                button.disabled = false;
+            }
+        });
+    });
+
+    setActiveLanguageButton(window.i18n.getLanguage());
+
+    document.addEventListener('language:changed', (event) => {
+        const newLanguage = event?.detail?.language || window.i18n.getLanguage();
+        setActiveLanguageButton(newLanguage);
+    });
     const navItems = document.querySelectorAll('.nav-item');
     const pages = document.querySelectorAll('.page');
     const logoutButton = document.getElementById('logout-button');
     const logoutLabel = logoutButton ? logoutButton.querySelector('span') : null;
-    const defaultLogoutText = logoutLabel ? logoutLabel.textContent : '';
     const canUseDynamicRouter = () => typeof window.loadPage === 'function';
 
     let currentUserProfile = null;
@@ -71,12 +145,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const upper = (initials || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-        return upper || 'U';
+        return upper || (translate('common.userFallbackInitials') || 'U');
     }
 
     function deriveUserDisplay(user) {
-        const fallbackName = 'User';
-        const fallbackInitials = 'U';
+        const fallbackName = translate('common.userFallbackName');
+        const fallbackInitials = translate('common.userFallbackInitials') || 'U';
 
         if (!user) {
             return {
@@ -151,11 +225,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function applyUserInfoToDom(user) {
-    const display = deriveUserDisplay(user);
-    const displayName = display.displayName || 'User';
-    const initials = display.initials || display.initial || 'U';
-    const color = display.color || avatarPalette[0];
-    const email = display.email || null;
+        const display = deriveUserDisplay(user);
+        const displayName = display.displayName || translate('common.userFallbackName');
+        const initials = display.initials || display.initial || (translate('common.userFallbackInitials') || 'U');
+        const color = display.color || avatarPalette[0];
+        const email = display.email || null;
 
         const sidebarInitialEl = document.getElementById('user-initial');
         const sidebarAvatarEl = document.getElementById('sidebar-user-avatar');
@@ -202,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (headerMenuButton) {
-            headerMenuButton.setAttribute('aria-label', `Mở menu người dùng cho ${displayName}`);
+            assignTranslation(headerMenuButton, 'header.userMenu.openFor', { name: displayName }, { attr: 'aria-label' });
         }
 
         if (dashboardInitialEl) {
@@ -215,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (dashboardNameEl) {
-            dashboardNameEl.textContent = `Xin chào, ${displayName}`;
+            updateTranslationParams(dashboardNameEl, { name: displayName });
         }
 
         const profileUpdatedEvent = new CustomEvent('userprofile:updated', {
@@ -295,9 +369,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (labelElement) {
-            labelElement.textContent = 'Đang đăng xuất...';
+            assignTranslation(labelElement, 'auth.logout.inProgress');
         } else if (origin === 'menu' && window.toastSystem) {
-            window.toastSystem.info('Đang đăng xuất...', { duration: 2000 });
+            window.toastSystem.info(translate('auth.logout.inProgress'), { duration: 2000 });
         }
 
         try {
@@ -316,10 +390,10 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Đăng xuất thất bại:', error);
             if (window.toastSystem) {
-                window.toastSystem.error('Không thể đăng xuất. Vui lòng thử lại.', { duration: 3200 });
+                window.toastSystem.error(translate('auth.logout.failed'), { duration: 3200 });
             }
             if (labelElement) {
-                labelElement.textContent = defaultLogoutText;
+                assignTranslation(labelElement, 'sidebar.logout');
             }
             if (triggerButton) {
                 triggerButton.disabled = false;
@@ -340,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     origin,
                     triggerButton,
                     labelElement,
-                    defaultLabelText: defaultLogoutText,
+                    defaultLabelText: translate('sidebar.logout'),
                     toastSystem: window.toastSystem,
                     onSuccess: () => {
                         currentUserProfile = null;

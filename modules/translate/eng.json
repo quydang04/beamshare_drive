@@ -1,0 +1,358 @@
+{
+  "app": {
+    "name": "BeamShare"
+  },
+  "header": {
+    "menuToggle": "Open navigation menu",
+    "userMenu": {
+      "open": "Open user menu",
+      "openFor": "Open user menu for {{name}}",
+      "profile": "Update profile",
+      "password": "Change password",
+      "logout": "Sign out"
+    }
+  },
+  "language": {
+    "sectionLabel": "Language preferences",
+    "label": "Language",
+    "optionsLabel": "Language options",
+    "vietnamese": "Vietnamese",
+    "english": "English"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "upload": "Upload",
+    "myFiles": "My Files",
+    "recycleBin": "Recycle Bin",
+    "subscription": "Subscription",
+    "info": "About",
+    "beamshareLive": "BeamShare Live"
+  },
+  "sidebar": {
+    "logout": "Sign out"
+  },
+  "common": {
+    "userFallbackName": "User",
+    "userFallbackInitials": "U"
+  },
+  "auth": {
+    "logout": {
+      "inProgress": "Signing you out...",
+      "failed": "Unable to sign out. Please try again."
+    }
+  },
+  "pages": {
+    "dashboard": {
+      "header": {
+        "title": "Dashboard",
+        "subtitle": "Monitor and manage your storage activity",
+        "greeting": "Welcome back, {{name}}",
+        "uploadButton": "Upload new files"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "files": "Files",
+        "analytics": "Analytics"
+      },
+      "stats": {
+        "totalFiles": "Total files",
+        "storageUsed": "Storage used",
+        "recentFiles": "Files added (7 days)",
+        "topType": "Most common type"
+      },
+      "storage": {
+        "title": "Storage status",
+        "subtitle": "Track how much space you are using",
+        "quota": "Maximum capacity {{quota}}",
+        "used": "Currently using {{value}}",
+        "noData": "No storage data available yet"
+      },
+      "quickActions": {
+        "title": "Quick actions",
+        "subtitle": "Jump straight to the actions you perform most",
+        "upload": "Upload files",
+        "myFiles": "View my files",
+        "refresh": "Refresh data"
+      },
+      "recent": {
+        "title": "Recent files",
+        "viewAll": "View all",
+        "empty": "No files have been uploaded yet"
+      },
+      "files": {
+        "title": "Largest files",
+        "subtitle": "See which files are taking up the most storage",
+        "headers": {
+          "name": "File name",
+          "size": "Size",
+          "date": "Uploaded"
+        },
+        "empty": "No file data is available right now"
+      },
+      "analytics": {
+        "title": "Quick analytics",
+        "subtitle": "Understand your storage trends at a glance",
+        "typeDistribution": "File type distribution",
+        "typeCount": "{{count}} types",
+        "typeEmpty": "Not enough data to analyse",
+        "sizeTitle": "Size metrics",
+        "lastUpdated": "Not updated",
+        "averageSize": "Average file size",
+        "maxSize": "Largest file",
+        "minSize": "Smallest file"
+      }
+    },
+    "myfiles": {
+      "title": "My Files",
+      "fileCount": "{{count}} files",
+      "viewMode": {
+        "groupLabel": "Display mode",
+        "list": "Show as list",
+        "grid": "Show as grid"
+      },
+      "refresh": "Refresh list",
+      "upload": "Upload",
+      "filter": {
+        "searchPlaceholder": "Search by file name or type...",
+        "sortLabel": "Sort by:",
+        "sortAria": "Sort files",
+        "sort": {
+          "dateDesc": "Uploaded (newest)",
+          "dateAsc": "Uploaded (oldest)",
+          "nameAsc": "Name (A-Z)",
+          "nameDesc": "Name (Z-A)",
+          "sizeDesc": "Size (largest)",
+          "sizeAsc": "Size (smallest)"
+        }
+      },
+      "selection": {
+        "cancel": "Cancel selection",
+        "count": "{{count}} selected",
+        "selectAll": "Select all",
+        "delete": "Delete"
+      },
+      "insights": {
+        "total": "Total files",
+        "storage": "Storage used",
+        "shared": "Shared",
+        "updating": "Updating..."
+      },
+      "empty": {
+        "title": "No files yet",
+        "description": "Your library is empty. Upload your first file to get started.",
+        "cta": "Upload files"
+      }
+    },
+    "upload": {
+      "title": "Upload Files",
+      "subtitle": "Share your files securely and instantly",
+      "dropZone": {
+        "label": "File upload area",
+        "title": "Drag & drop files here",
+        "description": "or <span class=\"highlight\">choose files from your computer</span>"
+      },
+      "info": {
+        "maxFiles": "Up to 5 files",
+        "maxSize": "2GB per file",
+        "security": "Enterprise-grade security"
+      },
+      "selectButton": "Select Files"
+    },
+    "recycle": {
+      "title": "Recycle Bin",
+      "description": "Deleted files stay here for 30 days before being permanently removed.",
+      "refresh": "Refresh bin",
+      "infoAria": "Recycle bin information",
+      "info": {
+        "retentionTitle": "Retention period",
+        "retentionDescription": "Items are permanently removed after 30 days.",
+        "totalTitle": "Items in bin",
+        "totalCount": "{{count}} items"
+      },
+      "tableAria": "Files currently in the recycle bin",
+      "searchPlaceholder": "Search by file name...",
+      "selection": {
+        "cancel": "Cancel selection",
+        "count": "{{count}} selected",
+        "selectAll": "Select all",
+        "restore": "Restore",
+        "delete": "Delete forever"
+      },
+      "empty": "The recycle bin is empty. Deleted files will appear here.",
+      "table": {
+        "selectAllLabel": "Select all",
+        "selectAllAria": "Select every file currently in the recycle bin",
+        "headers": {
+          "name": "File name",
+          "size": "Size",
+          "deletedAt": "Deleted",
+          "remaining": "Time remaining",
+          "actions": "Actions"
+        }
+      }
+    },
+    "subscription": {
+      "title": "BeamShare Subscription",
+      "subtitle": "Pick the plan that unlocks more space and the best BeamShare Live experience.",
+      "plans": {
+        "basic": {
+          "badge": "Free",
+          "title": "Basic Plan",
+          "description": "Essential features for everyday use.",
+          "featureLink": "Share securely through protected download links",
+          "cta": "Start for free"
+        },
+        "premium": {
+          "badge": "BeamShare Live",
+          "title": "Premium Plan",
+          "description": "Ideal for teams and businesses that need unlimited BeamShare.",
+          "featureExtra": "And much more waiting for you",
+          "cta": "Upgrade with VNPay",
+          "note": "Pay instantly with VNPay. Most local banks are supported."
+        }
+      },
+      "pricePeriod": "/month",
+      "usage": {
+        "title": "Current plan",
+        "loading": "Updating...",
+        "label": "Storage used"
+      },
+      "matrix": {
+        "title": "BeamShare Live limits",
+        "subtitle": "Compare monthly free sends by account status and active plan.",
+        "headers": {
+          "audience": "Audience",
+          "sends": "Sends",
+          "filesize": "Max file size"
+        },
+        "rows": {
+          "basic": {
+            "audience": "Basic members",
+            "sends": "Unlimited",
+            "filesize": "200 MB per file"
+          },
+          "premium": {
+            "audience": "Premium members",
+            "sends": "Unlimited",
+            "filesize": "Unlimited"
+          }
+        },
+        "note": "* BeamShare Live has no send limits for signed-in users. Basic plans keep a 200MB per file cap."
+      },
+      "runtime": {
+        "storageLabel": "Storage capacity {{amount}}",
+        "storageUpdating": "Storage information is updating",
+        "beamshareSummary": "BeamShare Live: {{label}}",
+        "beamshareSummaryRemaining": "BeamShare Live: {{label}}, {{remaining}}",
+        "priceFree": "Free",
+        "labels": {
+          "beamshareBasic": "Unlimited sends, up to 200MB per file",
+          "beamsharePremium": "Unlimited",
+          "beamshareUnlimited": "Unlimited",
+          "beamsharePerFile": "{{value}} per file"
+        },
+        "cta": {
+          "premiumCurrent": "Already on Premium",
+          "premiumUpgrade": "Upgrade now",
+          "premiumLogin": "Sign in to upgrade",
+          "basicCurrent": "Currently active",
+          "basicSwitch": "Switch to Basic",
+          "basicLogin": "Sign in to use",
+          "switching": "Switching..."
+        },
+        "messages": {
+          "loadError": "Unable to load subscription data.",
+          "loginRequired": "Please sign in to view plan information.",
+          "beamshareLoginRequired": "BeamShare Live requires sign-in.",
+          "currentPlan": "Current plan: {{plan}}",
+          "beamshareRemaining": "{{count}} sends remaining in the current window",
+          "toastLoading": "Loading plan information. Please try again shortly.",
+          "toastCurrentPremium": "You are already on the Premium plan.",
+          "toastCurrentBasic": "You are already on the Basic plan.",
+          "toastSwitchUnsupported": "Switching to this plan is not supported yet.",
+          "toastSwitchSuccess": "Switched back to the Basic plan.",
+          "toastSwitchError": "Unable to change plan.",
+          "toastPaymentInit": "Initialising VNPay...",
+          "toastPaymentMissing": "Payment link was not returned.",
+          "toastPaymentError": "Unable to start the payment process.",
+          "toastPaymentSuccess": "Payment successful.",
+          "toastPaymentFailure": "Payment failed."
+        },
+        "dialogs": {
+          "downgradeTitle": "Confirm switch to Basic",
+          "downgradeMessage": "<p>You are about to move from Premium back to Basic.</p><p>You will lose Premium perks such as higher storage and unlimited BeamShare limits.</p><p>Do you want to continue?</p>",
+          "downgradeConfirm": "Switch to Basic",
+          "downgradeCancel": "Cancel",
+          "downgradePrompt": "You are about to switch from Premium to Basic and will lose Premium benefits. Do you want to continue?"
+        }
+      }
+    },
+    "info": {
+      "title": "Project & system information",
+      "subtitle": "A quick overview of the BeamShare file sharing platform.",
+      "meta": {
+        "versionLabel": "Version",
+        "statusLabel": "Status",
+        "statusValue": "RC iteration 2"
+      },
+      "section": {
+        "intro": {
+          "title": "What is BeamShare?",
+          "description": "BeamShare is a web app for managing, storing, and sharing files, built with Node.js, Express, and WebSocket. Upload, preview documents, share through secure links, or transfer instantly with BeamShare Live.",
+          "highlights": {
+            "uploadTitle": "Upload & manage",
+            "uploadDescription": "Supports drag & drop, preview, and centralised metadata management.",
+            "shareTitle": "Secure sharing",
+            "shareDescription": "Create download links or leverage BeamShare Live via WebSocket.",
+            "monitorTitle": "Monitor usage",
+            "monitorDescription": "Visual dashboard highlighting storage usage and popular file types."
+          }
+        },
+        "contact": {
+          "title": "Contact",
+          "description": "BeamShare is developed for learning purposes. Share feedback or questions through the channels below:"
+        }
+      }
+    },
+    "changeProfile": {
+      "title": "Account details",
+      "subtitle": "Update your display name to keep greetings and avatars in sync across pages.",
+      "back": "Back to Dashboard",
+      "section": {
+        "title": "Personal information",
+        "description": "Make sure your display name represents you correctly."
+      },
+      "summary": {
+        "email": "Sign-in email",
+        "currentName": "Current display name"
+      },
+      "form": {
+        "label": "New display name",
+        "placeholder": "Enter a display name",
+        "hint": "Used for avatar initials and greetings across the site.",
+        "cancel": "Cancel",
+        "submit": "Save changes"
+      }
+    },
+    "changePassword": {
+      "title": "Change password",
+      "subtitle": "Strengthen your account with a new password.",
+      "back": "Back to Dashboard",
+      "section": {
+        "title": "Security update",
+        "description": "Use at least 6 characters and pick something different from your current password."
+      },
+      "tips": {
+        "strongPassword": "Mix upper/lowercase letters, numbers, or symbols for a stronger password.",
+        "uniquePassword": "Avoid reusing passwords from other services."
+      },
+      "form": {
+        "current": "Current password",
+        "new": "New password",
+        "confirm": "Confirm new password",
+        "cancel": "Cancel",
+        "submit": "Change password"
+      }
+    }
+  }
+}

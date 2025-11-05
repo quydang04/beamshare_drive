@@ -2,8 +2,8 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
-const FileUtils = require('./file-utils');
-const createRecycleApi = require('./recycle-api');
+const FileUtils = require('../utils/file-utils');
+const createRecycleApi = require('../file-service/recycle-api');
 const fsp = fs.promises;
 
 class ApiRoutes {
@@ -13,7 +13,7 @@ class ApiRoutes {
         this.uploadHandler = uploadHandler;
         this.conflictHandler = conflictHandler;
         this.authMiddleware = authMiddleware;
-        this.uploadsRoot = path.join(__dirname, '..', 'uploads');
+        this.uploadsRoot = path.join(__dirname, '..', '..', 'uploads');
         this.recycleRetentionDays = 30;
         this.recycleRetentionMs = this.recycleRetentionDays * 24 * 60 * 60 * 1000;
         this.setupRoutes();

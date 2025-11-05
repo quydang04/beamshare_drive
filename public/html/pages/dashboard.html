@@ -6,29 +6,29 @@
                 <span id="dashboard-user-initial">U</span>
             </div>
             <div class="user-info-dashboard-text">
-                <h1>Dashboard</h1>
-                <p>Quản lý và theo dõi trạng thái lưu trữ của bạn</p>
-                <span class="user-dashboard-name" id="dashboard-user-name">Xin chào, User</span>
+                <h1 data-i18n="pages.dashboard.header.title">Dashboard</h1>
+                <p data-i18n="pages.dashboard.header.subtitle">Quản lý và theo dõi trạng thái lưu trữ của bạn</p>
+                <span class="user-dashboard-name" id="dashboard-user-name" data-i18n="pages.dashboard.header.greeting" data-i18n-options='{"name":"User"}'>Xin chào, User</span>
             </div>
         </div>
         <button class="btn-upload-new" type="button">
             <i class="fas fa-upload"></i>
-            Tải lên tệp mới
+            <span data-i18n="pages.dashboard.header.uploadButton">Tải lên tệp mới</span>
         </button>
     </div>
 
     <div class="dashboard-tabs">
         <button class="tab-btn active" type="button" data-tab="overview">
             <i class="fas fa-chart-line"></i>
-            Tổng quan
+            <span data-i18n="pages.dashboard.tabs.overview">Tổng quan</span>
         </button>
         <button class="tab-btn" type="button" data-tab="files">
             <i class="fas fa-folder"></i>
-            Tệp của tôi
+            <span data-i18n="pages.dashboard.tabs.files">Tệp của tôi</span>
         </button>
         <button class="tab-btn" type="button" data-tab="analytics">
             <i class="fas fa-clock"></i>
-            Phân tích
+            <span data-i18n="pages.dashboard.tabs.analytics">Phân tích</span>
         </button>
     </div>
 
@@ -40,7 +40,7 @@
                         <i class="fas fa-folder-open"></i>
                     </div>
                     <div class="stat-info">
-                        <span class="stat-label">Tổng số tệp</span>
+                        <span class="stat-label" data-i18n="pages.dashboard.stats.totalFiles">Tổng số tệp</span>
                         <span class="stat-value" data-stat="total-files">0</span>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
                         <i class="fas fa-hdd"></i>
                     </div>
                     <div class="stat-info">
-                        <span class="stat-label">Dung lượng đã dùng</span>
+                        <span class="stat-label" data-i18n="pages.dashboard.stats.storageUsed">Dung lượng đã dùng</span>
                         <span class="stat-value" data-stat="storage-used">0 MB</span>
                     </div>
                 </div>
@@ -58,7 +58,7 @@
                         <i class="fas fa-sparkles"></i>
                     </div>
                     <div class="stat-info">
-                        <span class="stat-label">Tệp mới (7 ngày)</span>
+                        <span class="stat-label" data-i18n="pages.dashboard.stats.recentFiles">Tệp mới (7 ngày)</span>
                         <span class="stat-value" data-stat="recent-count">0</span>
                     </div>
                 </div>
@@ -67,7 +67,7 @@
                         <i class="fas fa-layer-group"></i>
                     </div>
                     <div class="stat-info">
-                        <span class="stat-label">Loại phổ biến</span>
+                        <span class="stat-label" data-i18n="pages.dashboard.stats.topType">Loại phổ biến</span>
                         <span class="stat-value" data-stat="top-type">-</span>
                     </div>
                 </div>
@@ -77,37 +77,37 @@
                 <div class="storage-card">
                     <div class="storage-header">
                         <div>
-                            <h2>Trạng thái lưu trữ</h2>
-                            <p>Giám sát mức sử dụng không gian của bạn</p>
+                            <h2 data-i18n="pages.dashboard.storage.title">Trạng thái lưu trữ</h2>
+                            <p data-i18n="pages.dashboard.storage.subtitle">Giám sát mức sử dụng không gian của bạn</p>
                         </div>
-                        <span class="storage-quota" data-storage="quota">Dung lượng tối đa 10 GB</span>
+                        <span class="storage-quota" data-storage="quota" data-i18n="pages.dashboard.storage.quota" data-i18n-options='{"quota":"10 GB"}'>Dung lượng tối đa 10 GB</span>
                     </div>
                     <div class="storage-progress">
                         <div class="storage-progress-bar" data-storage="progress"></div>
                     </div>
                     <div class="storage-progress-meta">
-                        <span data-storage="used">Đang dùng 0 MB</span>
+                        <span data-storage="used" data-i18n="pages.dashboard.storage.used" data-i18n-options='{"value":"0 MB"}'>Đang dùng 0 MB</span>
                         <span data-storage="percent">0%</span>
                     </div>
                     <ul class="storage-details" data-storage="details">
-                        <li>Chưa có dữ liệu để hiển thị</li>
+                        <li data-i18n="pages.dashboard.storage.noData">Chưa có dữ liệu để hiển thị</li>
                     </ul>
                 </div>
                 <div class="quick-actions">
-                    <h3>Hành động nhanh</h3>
-                    <p>Thực hiện thao tác nhanh chóng với tệp của bạn</p>
+                    <h3 data-i18n="pages.dashboard.quickActions.title">Hành động nhanh</h3>
+                    <p data-i18n="pages.dashboard.quickActions.subtitle">Thực hiện thao tác nhanh chóng với tệp của bạn</p>
                     <div class="quick-actions-grid">
                         <button type="button" class="quick-action" data-action="upload">
                             <i class="fas fa-cloud-upload-alt"></i>
-                            Tải tệp lên
+                            <span data-i18n="pages.dashboard.quickActions.upload">Tải tệp lên</span>
                         </button>
                         <button type="button" class="quick-action" data-action="myfiles">
                             <i class="fas fa-folder-open"></i>
-                            Xem tệp của tôi
+                            <span data-i18n="pages.dashboard.quickActions.myFiles">Xem tệp của tôi</span>
                         </button>
                         <button type="button" class="quick-action" data-action="refresh">
                             <i class="fas fa-sync"></i>
-                            Làm mới dữ liệu
+                            <span data-i18n="pages.dashboard.quickActions.refresh">Làm mới dữ liệu</span>
                         </button>
                     </div>
                 </div>
@@ -115,31 +115,31 @@
 
             <div class="recent-files">
                 <div class="section-header">
-                    <h2>Tệp gần đây</h2>
-                    <a href="#" class="view-all" data-action="view-all">Xem tất cả</a>
+                    <h2 data-i18n="pages.dashboard.recent.title">Tệp gần đây</h2>
+                    <a href="#" class="view-all" data-action="view-all" data-i18n="pages.dashboard.recent.viewAll">Xem tất cả</a>
                 </div>
                 <ul class="recent-files-list" data-list="recent-files"></ul>
                 <div class="empty-state" data-empty="recent">
                     <div class="empty-icon">
                         <i class="fas fa-file-alt"></i>
                     </div>
-                    <p>Chưa có tệp nào được tải lên</p>
+                    <p data-i18n="pages.dashboard.recent.empty">Chưa có tệp nào được tải lên</p>
                 </div>
             </div>
         </section>
 
         <section class="tab-panel" data-tab-panel="files">
             <div class="panel-header">
-                <h2>Top tệp kích thước lớn</h2>
-                <p>Xem nhanh các tệp chiếm nhiều dung lượng nhất</p>
+                <h2 data-i18n="pages.dashboard.files.title">Top tệp kích thước lớn</h2>
+                <p data-i18n="pages.dashboard.files.subtitle">Xem nhanh các tệp chiếm nhiều dung lượng nhất</p>
             </div>
             <div class="table-wrapper">
                 <table class="file-table">
                     <thead>
                         <tr>
-                            <th>Tên tệp</th>
-                            <th>Dung lượng</th>
-                            <th>Ngày tải lên</th>
+                            <th data-i18n="pages.dashboard.files.headers.name">Tên tệp</th>
+                            <th data-i18n="pages.dashboard.files.headers.size">Dung lượng</th>
+                            <th data-i18n="pages.dashboard.files.headers.date">Ngày tải lên</th>
                         </tr>
                     </thead>
                     <tbody data-list="top-files"></tbody>
@@ -148,46 +148,46 @@
                     <div class="empty-icon">
                         <i class="fas fa-box-open"></i>
                     </div>
-                    <p>Hiện chưa có dữ liệu để hiển thị</p>
+                    <p data-i18n="pages.dashboard.files.empty">Hiện chưa có dữ liệu để hiển thị</p>
                 </div>
             </div>
         </section>
 
         <section class="tab-panel" data-tab-panel="analytics">
             <div class="panel-header">
-                <h2>Phân tích nhanh</h2>
-                <p>Nắm bắt xu hướng lưu trữ của bạn</p>
+                <h2 data-i18n="pages.dashboard.analytics.title">Phân tích nhanh</h2>
+                <p data-i18n="pages.dashboard.analytics.subtitle">Nắm bắt xu hướng lưu trữ của bạn</p>
             </div>
             <div class="analytics-grid">
                 <div class="analytics-card">
                     <div class="analytics-header">
-                        <h3>Phân bổ loại tệp</h3>
-                        <span class="analytics-caption" data-stat="type-count">0 loại</span>
+                        <h3 data-i18n="pages.dashboard.analytics.typeDistribution">Phân bổ loại tệp</h3>
+                        <span class="analytics-caption" data-stat="type-count" data-i18n="pages.dashboard.analytics.typeCount" data-i18n-options='{"count":"0"}'>0 loại</span>
                     </div>
                     <div class="type-distribution" data-list="type-summary"></div>
                     <div class="empty-state" data-empty="type-summary">
                         <div class="empty-icon">
                             <i class="fas fa-chart-pie"></i>
                         </div>
-                        <p>Chưa đủ dữ liệu để phân tích</p>
+                        <p data-i18n="pages.dashboard.analytics.typeEmpty">Chưa đủ dữ liệu để phân tích</p>
                     </div>
                 </div>
                 <div class="analytics-card">
                     <div class="analytics-header">
-                        <h3>Chỉ số dung lượng</h3>
-                        <span class="analytics-caption" data-stat="last-updated">Chưa cập nhật</span>
+                        <h3 data-i18n="pages.dashboard.analytics.sizeTitle">Chỉ số dung lượng</h3>
+                        <span class="analytics-caption" data-stat="last-updated" data-i18n="pages.dashboard.analytics.lastUpdated">Chưa cập nhật</span>
                     </div>
                     <ul class="size-summary" data-list="size-summary">
                         <li>
-                            <span>Dung lượng trung bình</span>
+                            <span data-i18n="pages.dashboard.analytics.averageSize">Dung lượng trung bình</span>
                             <strong data-size="average">0 MB</strong>
                         </li>
                         <li>
-                            <span>Tệp lớn nhất</span>
+                            <span data-i18n="pages.dashboard.analytics.maxSize">Tệp lớn nhất</span>
                             <strong data-size="max">0 MB</strong>
                         </li>
                         <li>
-                            <span>Tệp nhỏ nhất</span>
+                            <span data-i18n="pages.dashboard.analytics.minSize">Tệp nhỏ nhất</span>
                             <strong data-size="min">0 MB</strong>
                         </li>
                     </ul>

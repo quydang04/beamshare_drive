@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const FileUtils = require('./file-utils');
+const FileUtils = require('../utils/file-utils');
 
 function normalizeInputId(value) {
     if (value === undefined || value === null) {
