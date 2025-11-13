@@ -263,6 +263,29 @@ class FileUtils {
         
         return `${nameWithoutExt}_${timestamp}_${random}${ext}`;
     }
+
+    // Normalize MIME type for preview/download responses
+    static normalizePreviewMimeType(mimeType, extension) {
+        const ext = typeof extension === 'string' ? extension.toLowerCase() : '';
+        const lowerMime = typeof mimeType === 'string' ? mimeType.toLowerCase() : '';
+
+        // Force canonical type for common containers that browsers expect
+        if (ext === '.m4a' || lowerMime === 'audio/x-m4a') {
+            return 'audio/mp4';
+        }
+
+        if (!mimeType || mimeType === 'application/octet-stream') {
+            if (ext) {
+                const inferred = mime.lookup(ext);
+                if (inferred) {
+                    return inferred;
+                }
+            }
+            return 'application/octet-stream';
+        }
+
+        return mimeType;
+    }
 }
 
 module.exports = FileUtils;

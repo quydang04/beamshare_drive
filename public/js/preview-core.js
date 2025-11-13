@@ -5,6 +5,7 @@
 
     const DISCLAIMER_TEXT = 'Xem trước có thể khác với file gốc, vui lòng tải về để xem chính xác.';
     const PDF_WORKER_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const AUDIO_EXTENSIONS = new Set(['.mp3', '.m4a', '.aac', '.wav', '.flac', '.ogg', '.oga', '.opus', '.aiff', '.wma']);
 
     function render(container, metadata = {}, options = {}) {
         if (!container) {
@@ -47,7 +48,7 @@
             return;
         }
 
-        if (metadata.isAudio) {
+        if (shouldRenderAudio(metadata, extension, mimeType)) {
             renderAudioPreview(context);
             return;
         }
@@ -150,9 +151,16 @@
         const audio = document.createElement('audio');
         audio.className = 'media-element';
         audio.preload = 'metadata';
-        audio.crossOrigin = 'anonymous';
         audio.src = context.previewUrl;
-        audio.load();
+
+        const audioMimeType = resolveAudioMimeType(context.metadata);
+        if (audioMimeType) {
+            const source = document.createElement('source');
+            source.src = context.previewUrl;
+            source.type = audioMimeType;
+            audio.appendChild(source);
+        }
+
         card.appendChild(audio);
 
         const hero = document.createElement('div');
@@ -191,6 +199,9 @@
             autoHideControls: false,
             isVideo: false
         });
+
+        // Begin loading after listeners are attached so duration/metadata events are captured
+        audio.load();
 
         if (window.jsmediatags) {
             loadAudioTags(context.previewUrl)
@@ -773,6 +784,54 @@
             return `data:${picture.format};base64,${base64}`;
         } catch (_error) {
             return null;
+        }
+    }
+
+    function shouldRenderAudio(metadata = {}, extension = '', mimeType = '') {
+        if (metadata && metadata.isAudio) {
+            return true;
+        }
+
+        if (typeof mimeType === 'string' && mimeType.startsWith('audio/')) {
+            return true;
+        }
+
+        if (extension && AUDIO_EXTENSIONS.has(extension)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function resolveAudioMimeType(metadata = {}) {
+        const mimeType = typeof metadata.mimeType === 'string' ? metadata.mimeType.toLowerCase() : '';
+        const extension = typeof metadata.extension === 'string'
+            ? (metadata.extension.startsWith('.') ? metadata.extension.toLowerCase() : `.${metadata.extension.toLowerCase()}`)
+            : '';
+
+        if (mimeType === 'audio/mp4' || mimeType === 'audio/x-m4a' || mimeType === 'audio/m4a' || mimeType === 'audio/mp4a-latm') {
+            return 'audio/mp4';
+        }
+        if (mimeType) {
+            return mimeType;
+        }
+
+        switch (extension) {
+            case '.m4a':
+                return 'audio/mp4';
+            case '.mp3':
+                return 'audio/mpeg';
+            case '.wav':
+                return 'audio/wav';
+            case '.flac':
+                return 'audio/flac';
+            case '.ogg':
+            case '.oga':
+                return 'audio/ogg';
+            case '.aac':
+                return 'audio/aac';
+            default:
+                return '';
         }
     }
 

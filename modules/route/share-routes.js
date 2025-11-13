@@ -15,7 +15,7 @@ class ShareRoutes {
     }
 
     setupRoutes() {
-    this.router.get('/:fileId/metadata', this.authMiddleware.optionalAuth, this.ensureAccess.bind(this), this.sendMetadata.bind(this));
+        this.router.get('/:fileId/metadata', this.authMiddleware.optionalAuth, this.ensureAccess.bind(this), this.sendMetadata.bind(this));
         this.router.get('/:fileId/preview', this.authMiddleware.optionalAuth, this.ensureAccess.bind(this), this.previewFile.bind(this));
         this.router.get('/:fileId/download', this.authMiddleware.optionalAuth, this.ensureAccess.bind(this), this.downloadFile.bind(this));
     }
@@ -93,6 +93,10 @@ class ShareRoutes {
 
             const stats = req.shareFileStats || FileUtils.getFileStats(filePath);
             const typeInfo = FileUtils.getFileTypeInfo(metadata.originalName);
+            const normalizedMimeType = FileUtils.normalizePreviewMimeType(
+                metadata.mimeType || typeInfo.mimeType,
+                typeInfo.extension
+            );
             const thumbnail = typeInfo.isImage ? FileUtils.generateThumbnail(filePath, metadata.mimeType || typeInfo.mimeType) : null;
 
             const payload = {
@@ -101,7 +105,7 @@ class ShareRoutes {
                 originalName: metadata.originalName,
                 size: stats?.size ?? metadata.size,
                 formattedSize: FileUtils.formatFileSize(stats?.size ?? metadata.size ?? 0),
-                mimeType: metadata.mimeType || typeInfo.mimeType,
+                mimeType: normalizedMimeType,
                 uploadDate: metadata.uploadDate,
                 lastModified: metadata.lastModified,
                 visibility: metadata.visibility,
@@ -136,10 +140,69 @@ class ShareRoutes {
             }
 
             res.setHeader('Access-Control-Allow-Origin', '*');
+            const stats = req.shareFileStats || FileUtils.getFileStats(filePath);
+            const fileSize = stats?.size || 0;
+            const typeInfo = FileUtils.getFileTypeInfo(metadata.originalName);
+            const resolvedMimeType = FileUtils.normalizePreviewMimeType(
+                metadata.mimeType || typeInfo.mimeType || mime.lookup(metadata.originalName) || 'application/octet-stream',
+                typeInfo.extension
+            );
+
             res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-            res.setHeader('Content-Type', metadata.mimeType || mime.lookup(metadata.originalName) || 'application/octet-stream');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Range');
+            res.setHeader('Access-Control-Expose-Headers', 'Accept-Ranges, Content-Length, Content-Range');
+            res.setHeader('Accept-Ranges', 'bytes');
+            res.setHeader('Content-Type', resolvedMimeType);
             res.setHeader('Cache-Control', 'public, max-age=3600');
+
+            const rangeHeader = req.headers.range;
+            if (rangeHeader && fileSize > 0) {
+                const rangePrefix = 'bytes=';
+                if (rangeHeader.startsWith(rangePrefix)) {
+                    const [rawStart, rawEnd] = rangeHeader.slice(rangePrefix.length).split('-');
+                    let start;
+                    let end;
+
+                    if (rawStart === '') {
+                        const suffixLength = Number.parseInt(rawEnd, 10);
+                        if (Number.isFinite(suffixLength) && suffixLength > 0) {
+                            start = Math.max(fileSize - suffixLength, 0);
+                            end = fileSize - 1;
+                        }
+                    } else {
+                        start = Number.parseInt(rawStart, 10);
+                        if (Number.isNaN(start) || start < 0) {
+                            start = 0;
+                        }
+
+                        if (rawEnd === '') {
+                            end = fileSize - 1;
+                        } else {
+                            end = Number.parseInt(rawEnd, 10);
+                            if (Number.isNaN(end) || end < start) {
+                                end = fileSize - 1;
+                            }
+                        }
+                    }
+
+                    if (typeof start === 'number' && typeof end === 'number') {
+                        start = Math.min(start, fileSize - 1);
+                        end = Math.min(Math.max(end, start), fileSize - 1);
+                        const chunkSize = end - start + 1;
+
+                        res.status(206);
+                        res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
+                        res.setHeader('Content-Length', chunkSize);
+
+                        fs.createReadStream(filePath, { start, end }).pipe(res);
+                        return;
+                    }
+                }
+            }
+
+            if (fileSize > 0) {
+                res.setHeader('Content-Length', fileSize);
+            }
 
             return fs.createReadStream(filePath).pipe(res);
         } catch (error) {
@@ -162,7 +225,12 @@ class ShareRoutes {
             if (stats?.size) {
                 res.setHeader('Content-Length', stats.size);
             }
-            res.setHeader('Content-Type', metadata.mimeType || mime.lookup(metadata.originalName) || 'application/octet-stream');
+            const typeInfo = FileUtils.getFileTypeInfo(metadata.originalName);
+            const downloadMimeType = FileUtils.normalizePreviewMimeType(
+                metadata.mimeType || typeInfo.mimeType || mime.lookup(metadata.originalName) || 'application/octet-stream',
+                typeInfo.extension
+            );
+            res.setHeader('Content-Type', downloadMimeType);
 
             return fs.createReadStream(filePath).pipe(res);
         } catch (error) {

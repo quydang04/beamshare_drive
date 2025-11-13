@@ -407,11 +407,16 @@ class ApiRoutes {
             }
 
             const stats = FileUtils.getFileStats(filePath);
+            const typeInfo = FileUtils.getFileTypeInfo(metadata.originalName);
+            const downloadMimeType = FileUtils.normalizePreviewMimeType(
+                metadata.mimeType || typeInfo.mimeType || mime.lookup(metadata.originalName) || 'application/octet-stream',
+                typeInfo.extension
+            );
             res.setHeader('Content-Disposition', `attachment; filename="${metadata.originalName}"`);
             if (stats?.size) {
                 res.setHeader('Content-Length', stats.size);
             }
-            res.setHeader('Content-Type', metadata.mimeType || mime.lookup(metadata.originalName) || 'application/octet-stream');
+            res.setHeader('Content-Type', downloadMimeType);
 
             fs.createReadStream(filePath).pipe(res);
         } catch (error) {
@@ -439,7 +444,11 @@ class ApiRoutes {
 
             const stats = FileUtils.getFileStats(filePath);
             const fileSize = stats?.size || 0;
-            const mimeType = metadata.mimeType || mime.lookup(metadata.originalName) || 'application/octet-stream';
+            const typeInfo = FileUtils.getFileTypeInfo(metadata.originalName);
+            const mimeType = FileUtils.normalizePreviewMimeType(
+                metadata.mimeType || typeInfo.mimeType || mime.lookup(metadata.originalName) || 'application/octet-stream',
+                typeInfo.extension
+            );
 
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -725,6 +734,10 @@ class ApiRoutes {
 
         const stats = FileUtils.getFileStats(filePath);
         const typeInfo = FileUtils.getFileTypeInfo(metadata.originalName);
+        const normalizedMimeType = FileUtils.normalizePreviewMimeType(
+            metadata.mimeType || typeInfo.mimeType,
+            typeInfo.extension
+        );
 
         return {
             id: metadata.internalName,
@@ -732,7 +745,7 @@ class ApiRoutes {
             originalName: metadata.originalName,
             displayName: metadata.displayName,
             size: stats?.size ?? metadata.size,
-            type: metadata.mimeType || typeInfo.mimeType,
+            type: normalizedMimeType,
             uploadDate: metadata.uploadDate,
             modifiedDate: stats?.mtime ?? metadata.lastModified,
             extension: typeInfo.extension,
@@ -761,7 +774,11 @@ class ApiRoutes {
 
         const stats = FileUtils.getFileStats(filePath);
         const typeInfo = FileUtils.getFileTypeInfo(metadata.originalName);
-        const thumbnail = typeInfo.isImage ? FileUtils.generateThumbnail(filePath, metadata.mimeType || typeInfo.mimeType) : null;
+        const normalizedMimeType = FileUtils.normalizePreviewMimeType(
+            metadata.mimeType || typeInfo.mimeType,
+            typeInfo.extension
+        );
+        const thumbnail = typeInfo.isImage ? FileUtils.generateThumbnail(filePath, normalizedMimeType || typeInfo.mimeType) : null;
 
         return {
             displayName: metadata.displayName,
@@ -769,7 +786,7 @@ class ApiRoutes {
             originalName: metadata.originalName,
             size: stats?.size ?? metadata.size,
             formattedSize: FileUtils.formatFileSize(stats?.size ?? metadata.size ?? 0),
-            mimeType: metadata.mimeType || typeInfo.mimeType,
+            mimeType: normalizedMimeType,
             uploadDate: metadata.uploadDate,
             lastModified: stats?.mtime ?? metadata.lastModified,
             version: metadata.version,
