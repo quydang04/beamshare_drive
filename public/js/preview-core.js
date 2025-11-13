@@ -5,7 +5,6 @@
 
     const DISCLAIMER_TEXT = 'Xem trước có thể khác với file gốc, vui lòng tải về để xem chính xác.';
     const PDF_WORKER_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    const AUDIO_EXTENSIONS = new Set(['.mp3', '.m4a', '.aac', '.wav', '.flac', '.ogg', '.oga', '.opus', '.aiff', '.wma']);
 
     function render(container, metadata = {}, options = {}) {
         if (!container) {
@@ -48,7 +47,7 @@
             return;
         }
 
-        if (shouldRenderAudio(metadata, extension, mimeType)) {
+        if (metadata.isAudio) {
             renderAudioPreview(context);
             return;
         }
@@ -148,20 +147,28 @@
         const card = document.createElement('div');
         card.className = 'media-card media-card--audio';
 
-        const audio = document.createElement('audio');
-        audio.className = 'media-element';
-        audio.preload = 'metadata';
-        audio.src = context.previewUrl;
+        const playbackNote = buildAudioPlaybackNote(context.metadata);
+        const disablePlayback = Boolean(playbackNote);
 
-        const audioMimeType = resolveAudioMimeType(context.metadata);
-        if (audioMimeType) {
-            const source = document.createElement('source');
-            source.src = context.previewUrl;
-            source.type = audioMimeType;
-            audio.appendChild(source);
+        let audio = null;
+        let controlsBundle = null;
+
+        if (!disablePlayback) {
+            audio = document.createElement('audio');
+            audio.className = 'media-element';
+            audio.preload = 'metadata';
+            audio.src = context.previewUrl;
+
+            const audioMimeType = resolveAudioMimeType(context.metadata);
+            if (audioMimeType) {
+                const source = document.createElement('source');
+                source.src = context.previewUrl;
+                source.type = audioMimeType;
+                audio.appendChild(source);
+            }
+
+            card.appendChild(audio);
         }
-
-        card.appendChild(audio);
 
         const hero = document.createElement('div');
         hero.className = 'audio-hero';
@@ -188,20 +195,28 @@
         hero.appendChild(info);
         card.appendChild(hero);
 
-        const controlsBundle = buildMediaControls({
-            playLabel: 'Phát hoặc tạm dừng nhạc',
-            showFullscreen: false
-        });
-        card.appendChild(controlsBundle.controls);
+        if (playbackNote) {
+            card.appendChild(playbackNote);
+        }
+
+        if (!disablePlayback) {
+            controlsBundle = buildMediaControls({
+                playLabel: 'Phát hoặc tạm dừng nhạc',
+                showFullscreen: false
+            });
+            card.appendChild(controlsBundle.controls);
+        }
         context.container.appendChild(card);
 
-        initMediaControls(audio, card, controlsBundle, {
-            autoHideControls: false,
-            isVideo: false
-        });
+        if (!disablePlayback && audio && controlsBundle) {
+            initMediaControls(audio, card, controlsBundle, {
+                autoHideControls: false,
+                isVideo: false
+            });
 
-        // Begin loading after listeners are attached so duration/metadata events are captured
-        audio.load();
+            // Begin loading after listeners are attached so duration/metadata events are captured
+            audio.load();
+        }
 
         if (window.jsmediatags) {
             loadAudioTags(context.previewUrl)
@@ -787,29 +802,13 @@
         }
     }
 
-    function shouldRenderAudio(metadata = {}, extension = '', mimeType = '') {
-        if (metadata && metadata.isAudio) {
-            return true;
-        }
-
-        if (typeof mimeType === 'string' && mimeType.startsWith('audio/')) {
-            return true;
-        }
-
-        if (extension && AUDIO_EXTENSIONS.has(extension)) {
-            return true;
-        }
-
-        return false;
-    }
-
     function resolveAudioMimeType(metadata = {}) {
         const mimeType = typeof metadata.mimeType === 'string' ? metadata.mimeType.toLowerCase() : '';
         const extension = typeof metadata.extension === 'string'
             ? (metadata.extension.startsWith('.') ? metadata.extension.toLowerCase() : `.${metadata.extension.toLowerCase()}`)
             : '';
 
-        if (mimeType === 'audio/mp4' || mimeType === 'audio/x-m4a' || mimeType === 'audio/m4a' || mimeType === 'audio/mp4a-latm') {
+        if (mimeType === 'audio/x-m4a') {
             return 'audio/mp4';
         }
         if (mimeType) {
@@ -833,6 +832,22 @@
             default:
                 return '';
         }
+    }
+
+    function buildAudioPlaybackNote(metadata = {}) {
+        const rawExtension = typeof metadata.extension === 'string' ? metadata.extension.toLowerCase() : '';
+        const extension = rawExtension
+            ? (rawExtension.startsWith('.') ? rawExtension : `.${rawExtension}`)
+            : '';
+
+        if (extension !== '.m4a') {
+            return null;
+        }
+
+        const note = document.createElement('p');
+        note.className = 'audio-playback-note';
+        note.textContent = 'Không thể phát tệp âm thanh này trong trình duyệt của bạn. Vui lòng tải xuống để nghe đầy đủ.';
+        return note;
     }
 
     window.BeamPreview = {
