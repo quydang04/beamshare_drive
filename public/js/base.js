@@ -781,16 +781,43 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
+    async function confirmLogout() {
+        const title = translate('auth.logout.confirmTitle');
+        const message = translate('auth.logout.confirmMessage');
+        const yesText = translate('auth.logout.confirmYes');
+        const noText = translate('auth.logout.confirmNo');
+
+        if (window.modalSystem?.confirm) {
+            return window.modalSystem.confirm({
+                title,
+                message,
+                confirmText: yesText,
+                cancelText: noText,
+                confirmClass: 'btn-danger'
+            });
+        }
+
+        return window.confirm(message);
+    }
+
+    async function handleLogout(origin = 'sidebar') {
+        const confirmed = await confirmLogout();
+        if (!confirmed) {
+            return;
+        }
+        await performLogout(origin);
+    }
+
     if (headerMenuLogoutButton) {
         headerMenuLogoutButton.addEventListener('click', async () => {
             closeUserMenu();
-            await performLogout('menu');
+            await handleLogout('menu');
         });
     }
 
     if (logoutButton) {
         logoutButton.addEventListener('click', async () => {
-            await performLogout('sidebar');
+            await handleLogout('sidebar');
         });
     }
 

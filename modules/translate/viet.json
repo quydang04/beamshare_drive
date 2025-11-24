@@ -31,6 +31,11 @@
   "sidebar": {
     "logout": "Đăng xuất"
   },
+  "theme": {
+    "light": "Giao diện sáng",
+    "dark": "Giao diện tối",
+    "system": "Theo hệ thống"
+  },
   "common": {
     "userFallbackName": "User",
     "userFallbackInitials": "U"
@@ -38,7 +43,11 @@
   "auth": {
     "logout": {
       "inProgress": "Đang đăng xuất...",
-      "failed": "Không thể đăng xuất. Vui lòng thử lại."
+      "failed": "Không thể đăng xuất. Vui lòng thử lại.",
+      "confirmTitle": "Đăng xuất",
+      "confirmMessage": "Bạn có chắc chắn muốn đăng xuất khỏi BeamShare?",
+      "confirmYes": "Đăng xuất",
+      "confirmNo": "Hủy"
     }
   },
   "pages": {
@@ -205,7 +214,7 @@
         "premium": {
           "badge": "BeamShare Live",
           "title": "Gói Premium",
-          "description": "Dành cho nhóm và doanh nghiệp cần BeamShare không giới hạn.",
+          "description": "Dành cho người dùng có nhu cầu cao hơn.",
           "featureExtra": "Nhiều thứ khác nữa đang chờ đợi bạn",
           "cta": "Nâng cấp qua VNPay",
           "note": "Thanh toán nhanh qua VNPay, hỗ trợ hầu hết ngân hàng nội địa."
@@ -291,19 +300,17 @@
       "title": "Thông tin dự án & hệ thống",
       "subtitle": "Tổng quan về nền tảng lưu trữ và chia sẻ tệp BeamShare.",
       "meta": {
-        "versionLabel": "Phiên bản",
-        "statusLabel": "Trạng thái",
-        "statusValue": "Giai đoạn RC lần thứ 3"
+        "versionLabel": "Phiên bản"
       },
       "section": {
         "intro": {
           "title": "BeamShare là gì?",
-          "description": "BeamShare là web app quản lý, lưu trữ và chia sẻ tệp được xây dựng với Node.js, Express và WebSocket. Hệ thống cho phép người dùng tải file, xem trước tài liệu, chia sẻ thông qua link hoặc truyền realtime bằng BeamShare Live.",
+          "description": "BeamShare là web app quản lý, lưu trữ và chia sẻ tệp. Hệ thống cho phép người dùng tải file, xem trước tài liệu, chia sẻ thông qua link hoặc truyền realtime bằng BeamShare Live.",
           "highlights": {
             "uploadTitle": "Upload & quản lý",
             "uploadDescription": "Hỗ trợ kéo thả, xem trước và sắp xếp tệp với metadata được lưu trữ tập trung.",
             "shareTitle": "Chia sẻ an toàn",
-            "shareDescription": "Tạo liên kết tải xuống hoặc sử dụng BeamShare Live qua WebSocket.",
+            "shareDescription": "Tạo liên kết tải xuống hoặc sử dụng BeamShare Live để truyền file một cách nhanh chóng và tiện lợi.",
             "monitorTitle": "Theo dõi dung lượng",
             "monitorDescription": "Dashboard trực quan thể hiện dung lượng đã sử dụng, loại tệp phổ biến."
           }

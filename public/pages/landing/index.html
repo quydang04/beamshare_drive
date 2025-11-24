@@ -4,363 +4,352 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>BeamShare Drive | Hệ thống lưu trữ & chia sẻ file</title>
-    <meta name="description" content="Dự án quản lý và chia sẻ file - Môn Lập trình mạng">
+    <title>BeamShare Drive | Lưu trữ & Chia sẻ File Tốc độ cao</title>
+    <meta name="description" content="Lưu trữ an toàn, chia sẻ nhanh chóng với BeamShare Drive. Hỗ trợ truyền file P2P thời gian thực.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/landing/css/styles.css">
     <link rel="icon" type="image/png" href="/public/img/favicon.png">
 </head>
 <body>
-    <header class="site-header" data-observe>
-        <nav class="nav">
-            <a href="#" class="nav__brand" aria-label="BeamShare Drive">
-                <span class="nav__logo" aria-hidden="true">
-                    <img src="/public/img/favicon.png" alt="" class="nav__logo-image">
-                </span>
-                <span class="nav__name">BeamShare Drive</span>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <header class="site-header">
+        <div class="container header-container">
+            <a href="#" class="brand">
+                <img src="/public/img/favicon.png" alt="BeamShare Logo" class="brand-logo-img">
+                <span class="brand-name">BeamShare</span>
             </a>
-            <button class="nav__toggle" id="navToggle" aria-expanded="false" aria-controls="primaryNav">
-                <span class="nav__toggle-line"></span>
-                <span class="nav__toggle-line"></span>
-                <span class="nav__toggle-line"></span>
+
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
             </button>
-            <div class="nav__links" id="primaryNav">
-                <a href="#features">Tính năng</a>
-                <a href="#beamshareLive">BeamShare Live</a>
-                <a href="#testimonials">Đặc điểm</a>
-                <a href="#pricing">Dự án</a>
-                <a href="#faq">FAQ</a>
-            </div>
-            <div class="nav__actions">
-                <a class="btn btn--ghost" href="/auth/login">Đăng nhập</a>
-                <a class="btn btn--beamshare" href="/beamshare">BeamShare Live</a>
-                <a class="btn btn--primary" href="/auth/register">Dùng thử miễn phí</a>
-                <button class="theme-toggle" id="themeToggle" aria-label="Chuyển giao diện">
-                    <span class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true">☀️</span>
-                    <span class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true">🌙</span>
-                </button>
-            </div>
-        </nav>
-        <div class="hero" data-observe>
-            <div class="hero__content">
-                <p class="hero__eyebrow">Dự án học tập · Lập trình mạng</p>
-                <h1 class="hero__title">BeamShare Drive - Lưu trữ, quản lý và chia sẻ file tức thì</h1>
-                <p class="hero__description">Một ứng dụng web cho phép upload, quản lý file và chia sẻ tài liệu. Ngoài ra, BeamShare Live giúp bạn truyền file realtime giữa các thiết bị thông qua WebRTC/WebSocket chỉ với một cú nhấp chuột.</p>
-                <div class="hero__cta">
-                    <a class="btn btn--primary btn--xl" href="/auth/register">Tạo tài khoản</a>
-                    <a class="btn btn--outline btn--xl" href="#features">Xem tính năng</a>
-                    <a class="btn btn--beamshare btn--xl" href="/beamshare">Trải nghiệm BeamShare Live</a>
+
+            <nav class="nav-menu" id="navMenu">
+                <ul class="nav-list">
+                    <li><a href="#features" class="nav-link">Tính năng</a></li>
+                    <li><a href="#beamshare-live" class="nav-link">BeamShare Live</a></li>
+                    <li><a href="#pricing" class="nav-link">Bảng giá</a></li>
+                    <li><a href="#faq" class="nav-link">FAQ</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <button class="theme-btn" id="themeToggle" aria-label="Chuyển đổi giao diện">
+                        <i class="fa-solid fa-sun sun-icon"></i>
+                        <i class="fa-solid fa-moon moon-icon"></i>
+                    </button>
+                    <a href="/auth/login" class="btn btn-text">Đăng nhập</a>
+                    <a href="/auth/register" class="btn btn-primary">Đăng ký ngay</a>
                 </div>
-                <div class="hero__stats">
-                    <div class="stat" data-observe>
-                        <span class="stat__value">Upload</span>
-                        <span class="stat__label">Kéo thả hoặc chọn file</span>
-                    </div>
-                    <div class="stat" data-observe>
-                        <span class="stat__value">Quản lý</span>
-                        <span class="stat__label">Xem danh sách file đã tải</span>
-                    </div>
-                    <div class="stat" data-observe>
-                        <span class="stat__value">Chia sẻ</span>
-                        <span class="stat__label">Tạo link hoặc dùng WebSocket</span>
-                    </div>
-                </div>
-            </div>
-            <div class="hero__media" aria-hidden="true">
-                <div class="hero__card" data-observe>
-                    <h3>Tính năng chính</h3>
-                    <ul>
-                        <li>✓ Upload file từ trình duyệt (drag & drop)</li>
-                        <li>✓ Xử lý trùng tên file tự động</li>
-                        <li>✓ Xem trước file Office/PDF trên web</li>
-                        <li>✓ Chia sẻ file qua link hoặc WebSocket</li>
-                    </ul>
-                </div>
-                <div class="hero__meter" data-observe>
-                    <span class="hero__meter-label">Quản lý dung lượng</span>
-                    <div class="hero__meter-bar">
-                        <span role="presentation" style="width: 45%"></span>
-                    </div>
-                    <p class="hero__meter-value">Theo dõi dung lượng đã sử dụng trong Dashboard</p>
-                </div>
-            </div>
+            </nav>
         </div>
     </header>
 
     <main>
-        <section class="beamshare-live" id="beamshareLive">
-            <div class="beamshare-live__content" data-observe>
-                <p class="section-heading__eyebrow">Chia sẻ realtime</p>
-                <h2>BeamShare Live - Gửi file trực tiếp giữa các thiết bị</h2>
-                <p>BeamShare Live kết nối trình duyệt của bạn với thiết bị nhận thông qua WebRTC để truyền file nhanh, không cần tải lại trang hay phụ thuộc vào bộ nhớ trung gian. Tất cả được bảo vệ bằng mã hóa end-to-end tự động.</p>
-                <ul class="beamshare-live__list">
-                    <li><strong>Kết nối tức thì:</strong> Tạo phòng, nhận mã ghép nối và bắt đầu chuyển ngay.</li>
-                    <li><strong>Theo dõi tiến trình:</strong> Hiển thị trạng thái gửi/nhận theo thời gian thực cho từng người tham gia.</li>
-                    <li><strong>Đa thiết bị:</strong> Hoạt động trên desktop, laptop và thiết bị di động có trình duyệt hiện đại.</li>
-                </ul>
-                <div class="beamshare-live__actions">
-                    <a class="btn btn--beamshare btn--xl" href="/beamshare">Mở BeamShare Live</a>
-                    <a class="btn btn--outline btn--xl" href="/pages/beamshare/index.html" target="_blank" rel="noopener">Xem giao diện demo</a>
-                </div>
-            </div>
-            <div class="beamshare-live__media" data-observe aria-hidden="true">
-                <div class="live-card">
-                    <span class="live-card__badge">Realtime</span>
-                    <h3>Tạo phòng và kết nối</h3>
-                    <p>Chỉ cần gửi mã phòng hoặc quét QR để thiết bị khác tham gia.</p>
-                    <div class="live-card__steps">
-                        <span>1. Tạo phòng</span>
-                        <span>2. Chọn file</span>
-                        <span>3. Gửi trực tiếp</span>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container hero-container">
+                <div class="hero-content" data-aos="fade-up">
+                    <div class="badge">🚀 Dự án Lập trình mạng</div>
+                    <h1 class="hero-title">Lưu trữ thông minh <br> <span class="text-gradient">Chia sẻ tức thì</span></h1>
+                    <p class="hero-desc">
+                        Trải nghiệm tốc độ truyền tải vượt trội với công nghệ WebRTC. 
+                        Lưu trữ an toàn, quản lý dễ dàng và chia sẻ không giới hạn.
+                    </p>
+                    <div class="hero-btns">
+                        <a href="/auth/register" class="btn btn-primary btn-lg">
+                            Bắt đầu miễn phí <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                        <a href="/beamshare" class="btn btn-secondary btn-lg">
+                            <i class="fa-solid fa-bolt"></i> Thử BeamShare Live
+                        </a>
                     </div>
-                </div>
-                <div class="live-highlight">
-                    <strong>Chế độ BeamShare Live</strong>
-                    <p>Không cần tải lại trang, hỗ trợ nhiều tệp cùng lúc với thông báo tiến trình rõ ràng.</p>
-                    <a class="live-highlight__link" href="/beamshare">Dùng ngay ></a>
-                </div>
-            </div>
-        </section>
-
-        <section class="feature-grid" id="features">
-            <header class="section-heading" data-observe>
-                <p class="section-heading__eyebrow">Tính năng đã thực hiện</p>
-                <h2>Các chức năng trong BeamShare Drive</h2>
-                <p>Dự án bao gồm 4 module chính: Dashboard (trang chủ), Upload (tải file), My Files (quản lý file) và Subscription (theo dõi dung lượng). Mỗi module được xây dựng với HTML, CSS và JavaScript thuần.</p>
-            </header>
-            <div class="feature-grid__items">
-                <article class="feature-card" data-observe>
-                    <div class="feature-card__icon" aria-hidden="true">⚡</div>
-                    <h3>Upload file</h3>
-                    <p>Hỗ trợ kéo thả file vào vùng upload hoặc chọn file từ máy tính. Hiển thị thanh tiến trình khi đang tải.</p>
-                    <ul>
-                        <li>Hỗ trợ nhiều file cùng lúc</li>
-                        <li>Xử lý conflict khi trùng tên</li>
-                        <li>Lưu metadata vào file JSON</li>
-                    </ul>
-                </article>
-                <article class="feature-card" data-observe>
-                    <div class="feature-card__icon" aria-hidden="true">📂</div>
-                    <h3>Quản lý file (My Files)</h3>
-                    <p>Hiển thị danh sách file đã upload, cho phép tìm kiếm, sắp xếp và xóa file.</p>
-                    <ul>
-                        <li>Hiển thị dạng danh sách hoặc thẻ</li>
-                        <li>Sắp xếp theo tên, kích thước, ngày</li>
-                        <li>Xóa file và cập nhật metadata</li>
-                    </ul>
-                </article>
-                <article class="feature-card" data-observe>
-                    <div class="feature-card__icon" aria-hidden="true">📄</div>
-                    <h3>Xem trước file</h3>
-                    <p>Tích hợp Office Web Viewer để xem file Word, Excel, PowerPoint và PDF trực tiếp trên trình duyệt.</p>
-                    <ul>
-                        <li>Hỗ trợ .docx, .xlsx, .pptx</li>
-                        <li>Xem PDF không cần plugin</li>
-                        <li>Không cần tải về máy</li>
-                    </ul>
-                </article>
-                <article class="feature-card" data-observe>
-                    <div class="feature-card__icon" aria-hidden="true">🔄</div>
-                    <h3>Chia sẻ file</h3>
-                    <p>Tạo link chia sẻ file hoặc sử dụng tính năng BeamShare Live qua WebSocket để truyền file trực tiếp.</p>
-                    <ul>
-                        <li>Tạo link public để chia sẻ</li>
-                        <li>WebSocket để chia sẻ realtime</li>
-                    </ul>
-                </article>
-            </div>
-        </section>
-
-        <section class="testimonials" id="testimonials">
-            <header class="section-heading" data-observe>
-                <p class="section-heading__eyebrow">Đặc điểm nổi bật</p>
-                <h2>Những điểm đặc biệt của dự án</h2>
-            </header>
-            <div class="testimonials__list">
-                <article class="testimonial" data-observe>
-                    <p class="testimonial__quote">"Giao diện đơn giản, dễ sử dụng. Hỗ trợ upload nhiều file cùng lúc với drag & drop. Xử lý trùng tên file tự động để tránh ghi đè dữ liệu."</p>
-                    <div class="testimonial__author">
-                        <div class="avatar" aria-hidden="true">UI</div>
-                        <div>
-                            <h3>Upload Interface</h3>
-                            <p>Trang tải file lên hệ thống</p>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-num">5GB+</span>
+                            <span class="stat-label">Lưu trữ miễn phí</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item">
+                            <span class="stat-num">Nhanh chóng</span>
+                            <span class="stat-label">Chia sẻ tức thì</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item">
+                            <span class="stat-num">Dễ dàng</span>
+                            <span class="stat-label">Quản lý tập trung</span>
                         </div>
                     </div>
-                </article>
-                <article class="testimonial" data-observe>
-                    <p class="testimonial__quote">"Quản lý file với khả năng tìm kiếm, sắp xếp theo nhiều tiêu chí. Hiển thị dạng danh sách hoặc thẻ. Cho phép xem trước và xóa file trực tiếp."</p>
-                    <div class="testimonial__author">
-                        <div class="avatar" aria-hidden="true">MF</div>
-                        <div>
-                            <h3>My Files Manager</h3>
-                            <p>Trang quản lý file đã upload</p>
+                </div>
+                <div class="hero-visual" data-aos="fade-left">
+                    <div class="visual-card glass-card dashboard-preview">
+                        <div class="window-header">
+                            <div class="dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                            <div class="address-bar">
+                                <i class="fa-solid fa-lock"></i> beamshare.quydang.name.vn/dashboard
+                            </div>
+                        </div>
+                        <div class="window-body">
+                            <div class="preview-sidebar">
+                                <div class="preview-brand">
+                                    <div class="preview-logo-icon"></div>
+                                </div>
+                                <ul class="preview-menu">
+                                    <li class="active"><i class="fa-solid fa-hard-drive"></i> <span>My Files</span></li>
+                                    <li><i class="fa-solid fa-clock"></i> <span>Recent</span></li>
+                                    <li><i class="fa-solid fa-share-nodes"></i> <span>Shared</span></li>
+                                    <li><i class="fa-solid fa-trash"></i> <span>Trash</span></li>
+                                </ul>
+                            </div>
+                            <div class="preview-main">
+                                <div class="preview-topbar">
+                                    <div class="preview-search">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                        <span>Search...</span>
+                                    </div>
+                                    <div class="preview-actions">
+                                        <div class="preview-btn"><i class="fa-solid fa-bell"></i></div>
+                                        <div class="preview-avatar">U</div>
+                                    </div>
+                                </div>
+                                <div class="preview-content">
+                                    <div class="preview-section-header">
+                                        <h3>Recent Files</h3>
+                                        <span class="view-all">View All</span>
+                                    </div>
+                                    <div class="preview-files-grid">
+                                        <div class="preview-file-card">
+                                            <div class="preview-file-icon pdf">
+                                                <i class="fa-solid fa-file-pdf"></i>
+                                            </div>
+                                            <div class="preview-file-details">
+                                                <div class="name">Tai_lieu_hoc_tap.pdf</div>
+                                                <div class="meta">2.5 MB • Just now</div>
+                                            </div>
+                                        </div>
+                                        <div class="preview-file-card">
+                                            <div class="preview-file-icon image">
+                                                <i class="fa-solid fa-image"></i>
+                                            </div>
+                                            <div class="preview-file-details">
+                                                <div class="name">Ky_yeu_2025.jpg</div>
+                                                <div class="meta">4.8 MB • 5m ago</div>
+                                            </div>
+                                        </div>
+                                        <div class="preview-file-card">
+                                            <div class="preview-file-icon folder">
+                                                <i class="fa-solid fa-folder"></i>
+                                            </div>
+                                            <div class="preview-file-details">
+                                                <div class="name">Project Docs</div>
+                                                <div class="meta">12 items</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="preview-upload-zone">
+                                        <div class="upload-icon-circle">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                                        </div>
+                                        <div class="upload-text">
+                                            <span class="primary-text">Click to upload</span>
+                                            <span class="secondary-text">or drag and drop</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </article>
-                <article class="testimonial" data-observe>
-                    <p class="testimonial__quote">"Chia sẻ file qua WebSocket để truyền trực tiếp giữa các thiết bị. Hỗ trợ cả chia sẻ qua link public."</p>
-                    <div class="testimonial__author">
-                        <div class="avatar" aria-hidden="true">BS</div>
-                        <div>
-                            <h3>BeamShare Live</h3>
-                            <p>Tính năng chia sẻ realtime</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="container">
+                <div class="section-header text-center">
+                    <h2 class="section-title">Tính năng nổi bật</h2>
+                    <p class="section-subtitle">Mọi thứ bạn cần để quản lý dữ liệu hiệu quả</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card glass-card">
+                        <div class="feature-icon icon-blue">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <h3>Lưu trữ Đám mây</h3>
+                        <p>Không gian lưu trữ an toàn, truy cập mọi lúc mọi nơi. Tự động đồng bộ hóa dữ liệu của bạn.</p>
+                    </div>
+                    <div class="feature-card glass-card">
+                        <div class="feature-icon icon-purple">
+                            <i class="fa-solid fa-share-nodes"></i>
+                        </div>
+                        <h3>Chia sẻ Linh hoạt</h3>
+                        <p>Tạo liên kết chia sẻ công khai hoặc riêng tư. Kiểm soát quyền truy cập file dễ dàng.</p>
+                    </div>
+                    <div class="feature-card glass-card">
+                        <div class="feature-icon icon-green">
+                            <i class="fa-solid fa-recycle"></i>
+                        </div>
+                        <h3>Thùng rác Thông minh</h3>
+                        <p>Khôi phục file đã xóa trong vòng 30 ngày. Không lo mất dữ liệu quan trọng do nhầm lẫn.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BeamShare Live Section -->
+        <section id="beamshare-live" class="beamshare-live">
+            <div class="container live-container">
+                <div class="live-content">
+                    <div class="badge badge-live">✨ Tính năng độc quyền</div>
+                    <h2 class="section-title">BeamShare Live</h2>
+                    <p class="live-desc">
+                        Chia sẻ file trực tiếp giữa các thiết bị một cách nhanh chóng. 
+                        Trải nghiệm sự tiện lợi khi truyền tải dữ liệu.
+                    </p>
+                    <ul class="live-features">
+                        <li><i class="fa-solid fa-bolt"></i> <span>Tốc độ cao</span></li>
+                        <li><i class="fa-solid fa-mobile-screen"></i> <span>Hỗ trợ đa nền tảng</span></li>
+                        <li><i class="fa-solid fa-check"></i> <span>Đơn giản & Dễ dùng</span></li>
+                    </ul>
+                    <a href="/beamshare" class="btn btn-primary">Trải nghiệm ngay</a>
+                </div>
+                <div class="live-visual">
+                    <div class="connection-anim">
+                        <div class="device device-1"><i class="fa-solid fa-laptop"></i></div>
+                        <div class="connection-line">
+                            <div class="packet"></div>
+                            <div class="packet"></div>
+                            <div class="packet"></div>
+                        </div>
+                        <div class="device device-2"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="pricing">
+            <div class="container">
+                <div class="section-header text-center">
+                    <h2 class="section-title">Bảng giá đơn giản</h2>
+                    <p class="section-subtitle">Chọn gói phù hợp với nhu cầu của bạn</p>
+                </div>
+                <div class="pricing-grid">
+                    <!-- Basic Plan -->
+                    <div class="pricing-card glass-card">
+                        <div class="plan-header">
+                            <h3>Cơ bản</h3>
+                            <div class="price">0đ<span>/tháng</span></div>
+                            <p>Dành cho người dùng cá nhân</p>
+                        </div>
+                        <ul class="plan-features">
+                            <li><i class="fa-solid fa-check"></i> <strong>5GB</strong> Lưu trữ</li>
+                            <li><i class="fa-solid fa-check"></i> BeamShare: Tối đa <strong>200MB/file</strong></li>
+                            <li><i class="fa-solid fa-check"></i> Gửi file không giới hạn số lượng</li>
+                        </ul>
+                        <a href="/auth/register" class="btn btn-outline full-width">Đăng ký miễn phí</a>
+                    </div>
+
+                    <!-- Premium Plan -->
+                    <div class="pricing-card glass-card popular">
+                        <div class="popular-badge">Khuyên dùng</div>
+                        <div class="plan-header">
+                            <h3>Premium</h3>
+                            <div class="price">50.000đ<span>/tháng</span></div>
+                            <p>Dành cho người dùng chuyên nghiệp</p>
+                        </div>
+                        <ul class="plan-features">
+                            <li><i class="fa-solid fa-check"></i> <strong>15GB</strong> Lưu trữ</li>
+                            <li><i class="fa-solid fa-check"></i> BeamShare: <strong>Không giới hạn</strong> dung lượng</li>
+                            <li><i class="fa-solid fa-check"></i> Hỗ trợ ưu tiên</li>
+                        </ul>
+                        <a href="/auth/register?plan=premium" class="btn btn-primary full-width">Nâng cấp ngay</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section id="faq" class="faq">
+            <div class="container">
+                <div class="section-header text-center">
+                    <h2 class="section-title">Câu hỏi thường gặp</h2>
+                </div>
+                <div class="faq-list">
+                    <div class="faq-item glass-card">
+                        <button class="faq-question">
+                            BeamShare Drive có miễn phí không?
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Có! Chúng tôi cung cấp gói Cơ bản miễn phí trọn đời với 5GB dung lượng lưu trữ và các tính năng chia sẻ cơ bản.</p>
                         </div>
                     </div>
-                </article>
-            </div>
-        </section>
-
-        <section class="pricing" id="pricing">
-            <header class="section-heading" data-observe>
-                <p class="section-heading__eyebrow">Dự án học tập</p>
-                <h2>Mục đích và phạm vi dự án</h2>
-            </header>
-            <div class="pricing__columns">
-                <article class="pricing-card" data-observe>
-                    <div class="pricing-card__badge">Mục tiêu</div>
-                    <h3>Học tập</h3>
-                    <p>Dự án được thực hiện cho môn Lập trình mạng.</p>
-                    <ul>
-                        <li>Xây dựng ứng dụng web fullstack</li>
-                        <li>Làm việc với Node.js và Express</li>
-                        <li>Tích hợp WebSocket cho realtime</li>
-                    </ul>
-                    <a class="btn btn--ghost" href="/auth/register">Dùng thử</a>
-                </article>
-                <article class="pricing-card pricing-card--featured" data-observe>
-                    <div class="pricing-card__badge">Tính năng</div>
-                    <h3>Core Features</h3>
-                    <p>Các chức năng chính đã được triển khai trong dự án.</p>
-                    <ul>
-                        <li>Upload & Download file</li>
-                        <li>Quản lý file metadata với JSON</li>
-                        <li>Preview file Office/PDF</li>
-                    </ul>
-                    <a class="btn btn--primary" href="#features">Xem chi tiết</a>
-                </article>
-                <article class="pricing-card" data-observe>
-                    <div class="pricing-card__badge">Công nghệ</div>
-                    <h3>Tech Stack</h3>
-                    <p>Các công nghệ và thư viện được sử dụng.</p>
-                    <ul>
-                        <li>Backend: Node.js + Express + Multer</li>
-                        <li>Frontend: HTML/CSS/JavaScript</li>
-                        <li>Realtime: WebSocket (ws library)</li>
-                    </ul>
-                    <a class="btn btn--outline" href="#features">Công nghệ</a>
-                </article>
-            </div>
-        </section>
-
-        <section class="faq" id="faq">
-            <header class="section-heading" data-observe>
-                <p class="section-heading__eyebrow">Câu hỏi về dự án</p>
-                <h2>Các câu hỏi thường gặp</h2>
-            </header>
-            <div class="faq__list">
-                <article class="faq-item" data-observe>
-                    <button class="faq-item__trigger" aria-expanded="false">
-                        Làm sao upload file lên hệ thống?
-                        <span class="faq-item__icon" aria-hidden="true">+</span>
-                    </button>
-                    <div class="faq-item__content">
-                        <p>Truy cập trang Upload, kéo thả file vào vùng drop zone hoặc click để chọn file từ máy tính. Hệ thống sẽ tự động upload và lưu metadata.</p>
+                    <div class="faq-item glass-card">
+                        <button class="faq-question">
+                            BeamShare Live hoạt động như thế nào?
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>BeamShare Live giúp bạn kết nối và chia sẻ file trực tiếp giữa các thiết bị một cách nhanh chóng và thuận tiện nhất.</p>
+                        </div>
                     </div>
-                </article>
-                <article class="faq-item" data-observe>
-                    <button class="faq-item__trigger" aria-expanded="false">
-                        File nào có thể xem trước trên trình duyệt?
-                        <span class="faq-item__icon" aria-hidden="true">+</span>
-                    </button>
-                    <div class="faq-item__content">
-                        <p>Hỗ trợ xem trước file Word (.docx), Excel (.xlsx), PowerPoint (.pptx) và PDF thông qua Office Web Viewer API.</p>
-                    </div>
-                </article>
-                <article class="faq-item" data-observe>
-                    <button class="faq-item__trigger" aria-expanded="false">
-                        BeamShare Live hoạt động như thế nào?
-                        <span class="faq-item__icon" aria-hidden="true">+</span>
-                    </button>
-                    <div class="faq-item__content">
-                        <p>BeamShare Live sử dụng WebSocket để kết nối trực tiếp giữa các thiết bị, cho phép chia sẻ file trực tiếp giữa thiết bị, không cần qua server.</p>
-                    </div>
-                </article>
-                <article class="faq-item" data-observe>
-                    <button class="faq-item__trigger" aria-expanded="false">
-                        File metadata được lưu ở đâu?
-                        <span class="faq-item__icon" aria-hidden="true">+</span>
-                    </button>
-                    <div class="faq-item__content">
-                        <p>Thông tin về file (tên, kích thước, ngày upload, người upload) được lưu trong file JSON (file-metadata.json) để dễ dàng quản lý và truy xuất.</p>
-                    </div>
-                </article>
-            </div>
-        </section>
-
-        <section class="cta" data-observe>
-            <div class="cta__content">
-                <p class="cta__eyebrow">Dùng thử ngay</p>
-                <h2>Trải nghiệm BeamShare Drive</h2>
-                <p>Đăng ký tài khoản để sử dụng các tính năng upload, quản lý file và chia sẻ. Hoàn toàn miễn phí cho mục đích học tập.</p>
-                <div class="cta__actions">
-                    <a class="btn btn--primary btn--xl" href="/auth/register">Đăng ký tài khoản</a>
-                    <a class="btn btn--ghost btn--xl" href="/beamshare">BeamShare Live</a>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer class="site-footer" data-observe>
-        <div class="site-footer__grid">
-            <div>
-                <a href="#" class="nav__brand" aria-label="BeamShare Drive">
-                    <span class="nav__logo" aria-hidden="true">
-                        <img src="/public/img/favicon.png" alt="" class="nav__logo-image">
-                    </span>
-                    <span class="nav__name">BeamShare Drive</span>
-                </a>
-                <p class="site-footer__description">Dự án quản lý và chia sẻ file - Môn Lập trình mạng. Xây dựng với Node.js, Express và WebSocket.</p>
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="#" class="brand">
+                        <img src="/public/img/favicon.png" alt="BeamShare Logo" class="brand-logo-img">
+                        <span class="brand-name">BeamShare</span>
+                    </a>
+                    <p>Giải pháp lưu trữ và chia sẻ file hiện đại, nhanh chóng.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Sản phẩm</h4>
+                    <ul>
+                        <li><a href="#features">Tính năng</a></li>
+                        <li><a href="#pricing">Bảng giá</a></li>
+                        <li><a href="/beamshare">BeamShare Live</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Hỗ trợ</h4>
+                    <ul>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#">Liên hệ</a></li>
+                        <li><a href="#">Điều khoản</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Kết nối</h4>
+                    <div class="social-icons">
+                        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#"><i class="fa-brands fa-github"></i></a>
+                        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                    </div>
+                </div>
             </div>
-            <div>
-                <h3>Sản phẩm</h3>
-                <ul>
-                    <li><a href="#features">Tính năng</a></li>
-                    <li><a href="#workflow">Quy trình triển khai</a></li>
-                    <li><a href="#pricing">Mục đích dự án</a></li>
-                    <li><a href="/beamshare">BeamShare Live</a></li>
-                </ul>
-            </div>
-            <div>
-                <h3>Tài nguyên</h3>
-                <ul>
-                    <li><a href="#faq">Câu hỏi thường gặp</a></li>
-                    <li><a href="https://github.com">GitHub Repository</a></li>
-                    <li><a href="/auth/login">Đăng nhập</a></li>
-                    <li><a href="/auth/register">Đăng ký</a></li>
-                </ul>
-            </div>
-            <div>
-                <h3>Kết nối</h3>
-                <ul>
-                    <li><a href="https://www.facebook.com" target="_blank" rel="noopener">Facebook</a></li>
-                    <li><a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn</a></li>
-                    <li><a href="https://github.com" target="_blank" rel="noopener">GitHub</a></li>
-                    <li><a href="mailto:hello@beamshare.com">Liên hệ</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="site-footer__meta">
-            <p>© <span id="currentYear"></span> BeamShare Drive. Dự án học tập - Lập trình mạng.</p>
-            <div class="site-footer__links">
-                <a href="#">Điều khoản</a>
-                <a href="#">Bảo mật</a>
-                <a href="#">Cookie</a>
+            <div class="footer-bottom">
+                <p>&copy; 2025 BeamShare Drive. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
-    <script type="module" src="/assets/landing/js/main.js"></script>
+    <script src="/assets/landing/js/main.js"></script>
 </body>
 </html>

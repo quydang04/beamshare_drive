@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="public/pages/change/thongtin/css/style.css">
     <link rel="stylesheet" href="public/pages/change/matkhau/css/style.css">
     <link rel="stylesheet" href="public/pages/info/css/info.css">
+    <link rel="stylesheet" href="public/css/theme.css">
 </head>
 <body>
     <!-- Header -->
@@ -41,6 +42,27 @@
         </div>
         <div class="header-center"></div>
         <div class="header-right">
+            <div class="theme-toggle-wrapper">
+                <button class="theme-toggle" id="theme-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Chuyển giao diện">
+                    <i class="fas fa-sun theme-toggle__icon" aria-hidden="true"></i>
+                    <span class="theme-toggle__label" id="theme-toggle-text">Sáng</span>
+                    <i class="fas fa-caret-down theme-toggle__caret" aria-hidden="true"></i>
+                </button>
+                <div class="theme-menu" role="menu">
+                    <button class="theme-option" type="button" data-theme-option="light" role="menuitemradio" aria-checked="false">
+                        <i class="fas fa-sun"></i>
+                        <span>Sáng</span>
+                    </button>
+                    <button class="theme-option" type="button" data-theme-option="dark" role="menuitemradio" aria-checked="false">
+                        <i class="fas fa-moon"></i>
+                        <span>Tối</span>
+                    </button>
+                    <button class="theme-option" type="button" data-theme-option="system" role="menuitemradio" aria-checked="false">
+                        <i class="fas fa-desktop"></i>
+                        <span>Hệ thống</span>
+                    </button>
+                </div>
+            </div>
             <div class="header-user-menu" id="header-user-menu-container">
                 <button class="user-menu-button" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="header-user-menu" aria-label="Mở menu người dùng" data-i18n="header.userMenu.open" data-i18n-attr="aria-label">
                     <i class="fas fa-bars" aria-hidden="true"></i>
@@ -146,6 +168,7 @@
     <script src="https://unpkg.com/@vue-office/pdf@latest/lib/index.umd.js"></script>
 
     <script src="public/pages/sso/logout.js"></script>
+    <script src="public/js/theme.js"></script>
     <script src="public/js/translate.js"></script>
     <script src="public/js/base.js"></script>
     <script src="public/js/file-icons.js"></script>

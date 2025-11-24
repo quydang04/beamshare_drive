@@ -139,25 +139,46 @@
 
 .info-contact {
     display: grid;
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
 }
 
 .info-contact__item {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 10px;
-    color: var(--info-accent);
-    padding: 10px 14px;
-    border-radius: 12px;
-    background: rgba(79, 70, 229, 0.08);
-    border: 1px solid rgba(79, 70, 229, 0.18);
+    gap: 16px;
+    padding: 20px;
+    background: var(--info-card-bg);
+    border: 1px solid var(--info-border);
+    border-radius: 16px;
     text-decoration: none;
+    color: var(--info-text);
     font-weight: 500;
-    transition: background 0.2s ease, color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
-.info-contact__item:hover,
-.info-contact__item:focus {
+.info-contact__item i {
+    font-size: 20px;
+    color: var(--info-accent);
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--info-accent-soft);
+    border-radius: 12px;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.info-contact__item:hover {
+    transform: translateY(-2px);
+    border-color: var(--info-accent);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+}
+
+.info-contact__item:hover i {
     background: var(--info-accent);
     color: #fff;
 }

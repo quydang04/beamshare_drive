@@ -100,6 +100,42 @@
         return true;
     }
 
+    function getPricePeriodText() {
+        return runtime('pricePeriod', {}, '/tháng');
+    }
+
+    function updatePricePeriodVisibility(card, show) {
+        if (!card) {
+            return;
+        }
+        const period = card.querySelector('.price-period');
+        if (!period) {
+            return;
+        }
+        period.textContent = show ? getPricePeriodText() : '';
+    }
+
+    function localizeBeamshareLabel(label) {
+        if (typeof label !== 'string') {
+            return label;
+        }
+
+        const trimmed = label.trim();
+        if (!trimmed) {
+            return trimmed;
+        }
+
+        const normalized = trimmed.toLowerCase();
+        if (normalized === 'unlimited') {
+            return runtime('labels.beamshareUnlimited', {}, 'Unlimited');
+        }
+        if (normalized === 'unlimited sends, up to 200mb per file') {
+            return runtime('labels.beamshareBasic', {}, 'Unlimited sends, up to 200MB per file');
+        }
+
+        return trimmed;
+    }
+
     function formatPlanStorageLabel(amount) {
         return runtime('storageLabel', { amount }, (params) => {
             const value = params.amount || amount || '';
@@ -116,12 +152,14 @@
     }
 
     function formatBeamshareSummary(planId, limitLabel) {
-        const label = shouldUseProvidedLabel(limitLabel) ? limitLabel : getDefaultBeamshareLabelValue(planId);
+        const rawLabel = shouldUseProvidedLabel(limitLabel) ? limitLabel : getDefaultBeamshareLabelValue(planId);
+        const label = localizeBeamshareLabel(rawLabel);
         return runtime('beamshareSummary', { label }, (params) => `BeamShare Live: ${params.label}`);
     }
 
     function formatBeamshareSummaryWithRemaining(planId, limitLabel, remaining) {
-        const label = shouldUseProvidedLabel(limitLabel) ? limitLabel : getDefaultBeamshareLabelValue(planId);
+        const rawLabel = shouldUseProvidedLabel(limitLabel) ? limitLabel : getDefaultBeamshareLabelValue(planId);
+        const label = localizeBeamshareLabel(rawLabel);
         const remainingText = runtime('messages.beamshareRemaining', { count: remaining }, (params) => `${params.count} sends remaining in the current window`);
         return runtime('beamshareSummaryRemaining', { label, remaining: remainingText }, (params) => `BeamShare Live: ${params.label}, ${params.remaining}`);
     }
@@ -208,6 +246,7 @@
             if (beamshareEl) {
                 beamshareEl.textContent = formatBeamshareSummary(planId, null);
             }
+            updatePricePeriodVisibility(card, planId !== 'basic');
         });
     }
 
@@ -292,6 +331,7 @@
                 cta.disabled = isCurrent;
                 cta.textContent = getPlanCtaLabel(planId, isCurrent, Boolean(overview.authenticated));
             }
+            updatePricePeriodVisibility(card, planId !== 'basic');
         });
     }
 
@@ -323,6 +363,9 @@
 
         const normalizedPlan = normalizePlanId(overview.currentPlan);
         const planDefaults = getPlanDefaults(normalizedPlan);
+        const planDetail = Array.isArray(overview.plans)
+            ? overview.plans.find((item) => normalizePlanId(item?.id) === normalizedPlan)
+            : null;
 
         if (planLabel) {
             const displayName = getPlanDisplayName(normalizedPlan);
@@ -345,7 +388,7 @@
         }
 
         if (beamshareSummary) {
-            const limitLabel = overview.beamshare?.limit?.limitLabel || null;
+            const limitLabel = planDetail?.beamshare?.limitLabel || overview.beamshare?.limit?.limitLabel || null;
             const remaining = Number.isFinite(overview.beamshare?.remaining) ? overview.beamshare.remaining : null;
 
             if (Number.isFinite(remaining)) {

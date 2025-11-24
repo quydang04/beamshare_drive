@@ -31,6 +31,11 @@
   "sidebar": {
     "logout": "Sign out"
   },
+  "theme": {
+    "light": "Light theme",
+    "dark": "Dark theme",
+    "system": "System default"
+  },
   "common": {
     "userFallbackName": "User",
     "userFallbackInitials": "U"
@@ -38,7 +43,11 @@
   "auth": {
     "logout": {
       "inProgress": "Signing you out...",
-      "failed": "Unable to sign out. Please try again."
+      "failed": "Unable to sign out. Please try again.",
+      "confirmTitle": "Sign out",
+      "confirmMessage": "Are you sure you want to sign out of BeamShare?",
+      "confirmYes": "Sign out",
+      "confirmNo": "Cancel"
     }
   },
   "pages": {
@@ -291,19 +300,17 @@
       "title": "Project & system information",
       "subtitle": "A quick overview of the BeamShare file sharing platform.",
       "meta": {
-        "versionLabel": "Version",
-        "statusLabel": "Status",
-        "statusValue": "RC3"
+        "versionLabel": "Version"
       },
       "section": {
         "intro": {
           "title": "What is BeamShare?",
-          "description": "BeamShare is a web app for managing, storing, and sharing files, built with Node.js, Express, and WebSocket. Upload, preview documents, share through secure links, or transfer instantly with BeamShare Live.",
+          "description": "BeamShare is a web app for managing, storing, and sharing files. Upload, preview documents, share through secure links, or transfer instantly with BeamShare Live.",
           "highlights": {
             "uploadTitle": "Upload & manage",
             "uploadDescription": "Supports drag & drop, preview, and centralised metadata management.",
             "shareTitle": "Secure sharing",
-            "shareDescription": "Create download links or leverage BeamShare Live via WebSocket.",
+            "shareDescription": "Create download links or leverage BeamShare Live to transfer files quickly and conveniently.",
             "monitorTitle": "Monitor usage",
             "monitorDescription": "Visual dashboard highlighting storage usage and popular file types."
           }

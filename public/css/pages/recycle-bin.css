@@ -188,6 +188,11 @@
     color: #6b7280;
 }
 
+.recycle-empty[hidden],
+.recycle-table-wrapper[hidden] {
+    display: none !important;
+}
+
 .recycle-empty i {
     font-size: 40px;
     color: #059669;

@@ -33,6 +33,7 @@ const PLAN_STORAGE_LIMITS = {
     }
 };
 let myFilesProfileListenerAttached = false;
+let myFilesLanguageHandlerAttached = false;
 
 function normalizePlanId(planId) {
     return (planId || 'basic').toString().trim().toLowerCase();
@@ -963,6 +964,10 @@ window.initMyFiles = function() {
     // Initialize UI
     initializeUI();
     attachMyFilesProfileListener();
+    if (!myFilesLanguageHandlerAttached) {
+        document.addEventListener('language:changed', handleMyFilesLanguageChange);
+        myFilesLanguageHandlerAttached = true;
+    }
     
     // Load existing files from server
     loadFiles();
@@ -1431,7 +1436,6 @@ function syncSelectionDom() {
 
 function updateBulkSelectionUI() {
     const selectionBar = document.getElementById('file-selection-bar');
-    const countEl = document.getElementById('file-selection-count');
     const deleteBtn = document.getElementById('file-selection-delete');
     const cancelBtn = document.getElementById('file-selection-cancel');
     const selectAllBtn = document.getElementById('file-selection-select-all');
@@ -1448,9 +1452,7 @@ function updateBulkSelectionUI() {
         }
     }
 
-    if (countEl) {
-        countEl.textContent = selectedCount.toString();
-    }
+    renderMyFilesSelectionCount(selectedCount);
 
     if (deleteBtn) {
         deleteBtn.disabled = selectedCount === 0;
@@ -1483,6 +1485,38 @@ function updateBulkSelectionUI() {
             }
         }
     }
+}
+
+function renderMyFilesSelectionCount(count) {
+    const wrapper = document.getElementById('file-selection-count-wrapper')
+        || document.querySelector('#file-selection-bar .selection-count');
+    if (!wrapper) {
+        return;
+    }
+
+    const token = '__COUNT__';
+    const translator = window.i18n && typeof window.i18n.t === 'function' ? window.i18n.t : null;
+    const template = translator
+        ? translator('pages.myfiles.selection.count', { count: token })
+        : `${token} mục đã chọn`;
+    const [prefix = '', suffix = ''] = template.split(token);
+
+    const numberEl = wrapper.querySelector('#file-selection-count') || document.createElement('span');
+    numberEl.id = 'file-selection-count';
+    numberEl.textContent = count.toString();
+
+    wrapper.innerHTML = '';
+    if (prefix) {
+        wrapper.append(document.createTextNode(prefix));
+    }
+    wrapper.append(numberEl);
+    if (suffix) {
+        wrapper.append(document.createTextNode(suffix));
+    }
+}
+
+function handleMyFilesLanguageChange() {
+    renderMyFilesSelectionCount(selectedFileIds.size);
 }
 
 function setupBulkSelectionControls() {
@@ -3175,6 +3209,10 @@ window.cleanupMyFiles = function() {
     }
 
     detachMyFilesProfileListener();
+    if (myFilesLanguageHandlerAttached) {
+        document.removeEventListener('language:changed', handleMyFilesLanguageChange);
+        myFilesLanguageHandlerAttached = false;
+    }
 
     if (typeof window.closePreviewModal === 'function') {
         try {
@@ -3198,10 +3236,7 @@ window.cleanupMyFiles = function() {
         deleteBtn.disabled = true;
         deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Xóa bỏ';
     }
-    const countEl = document.getElementById('file-selection-count');
-    if (countEl) {
-        countEl.textContent = '0';
-    }
+    renderMyFilesSelectionCount(0);
 };
 
 // Auto-initialize if page is already loaded
