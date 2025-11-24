@@ -35,7 +35,7 @@ function resolveEnv(keys, fallback = '') {
 }
 
 function getBaseUrl() {
-    const configured = resolveEnv(['APP_URL', 'APP_BASE_URL', 'FRONTEND_URL', 'PUBLIC_APP_URL']);
+    const configured = sanitizeEnvValue(process.env.APP_URL);
     if (configured) {
         return configured.replace(/\/+$/, '');
     }

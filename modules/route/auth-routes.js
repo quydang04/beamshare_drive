@@ -25,11 +25,9 @@ class AuthRoutes {
     }
 
     getAppBaseUrl() {
-        const configured = process.env.APP_URL
-            || process.env.APP_BASE_URL
-            || process.env.FRONTEND_URL
-            || process.env.PUBLIC_APP_URL
-            || '';
+        const configured = typeof process.env.APP_URL === 'string'
+            ? process.env.APP_URL.trim()
+            : '';
 
         if (configured) {
             return configured.replace(/\/+$/, '');
