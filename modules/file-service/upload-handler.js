@@ -18,7 +18,7 @@ class UploadHandler {
                     return cb(new Error('Unauthorized upload request'));
                 }
 
-                const uploadRoot = path.join(__dirname, '..', 'uploads');
+                const uploadRoot = path.join(__dirname, '..', '..', 'uploads');
                 if (!fs.existsSync(uploadRoot)) {
                     fs.mkdirSync(uploadRoot, { recursive: true });
                 }

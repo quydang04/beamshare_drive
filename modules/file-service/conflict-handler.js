@@ -5,7 +5,7 @@ const mime = require('mime-types');
 class ConflictHandler {
     constructor(fileMetadata) {
         this.fileMetadata = fileMetadata;
-        this.uploadsRoot = path.join(__dirname, '..', 'uploads');
+        this.uploadsRoot = path.join(__dirname, '..', '..', 'uploads');
     }
 
     async checkFileConflict(userId, displayName, newFileSize = null, newFileType = null) {
@@ -176,7 +176,7 @@ class ConflictHandler {
     // Enhanced backup system with detailed metadata
     async createBackupFile(userId, internalFilename, displayName = null) {
         try {
-            const backupDir = path.join(__dirname, '..', 'uploads', '.backups');
+            const backupDir = path.join(this.uploadsRoot, '.backups');
             if (!fs.existsSync(backupDir)) {
                 fs.mkdirSync(backupDir, { recursive: true });
             }
@@ -184,7 +184,7 @@ class ConflictHandler {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             const metadata = await this.fileMetadata.getFileMetadataByInternal(internalFilename);
             const storagePath = metadata ? metadata.storagePath : path.join(userId, internalFilename);
-            const filePath = path.join(__dirname, '..', 'uploads', storagePath);
+            const filePath = path.join(this.uploadsRoot, storagePath);
 
             const stats = fs.existsSync(filePath) ? fs.statSync(filePath) : null;
             if (!stats) {

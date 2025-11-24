@@ -667,14 +667,18 @@ class ApiRoutes {
         const desiredName = this.resolveDesiredStorageName(file, displayName);
         const finalName = await this.generateAvailableStorageName(userId, desiredName, file.filename);
 
-        if (finalName !== file.filename) {
-            const currentPath = file.path;
-            const targetPath = path.join(this.uploadsRoot, userId, finalName);
+        const targetDir = path.join(this.uploadsRoot, userId);
+        await fsp.mkdir(targetDir, { recursive: true });
+
+        const currentPath = file.path;
+        const targetPath = path.join(targetDir, finalName);
+
+        if (path.normalize(currentPath) !== path.normalize(targetPath)) {
             await fsp.rename(currentPath, targetPath);
             file.path = targetPath;
-            file.filename = finalName;
         }
 
+        file.filename = finalName;
         return finalName;
     }
 
