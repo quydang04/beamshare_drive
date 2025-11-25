@@ -1401,4 +1401,177 @@
     }
 }
 
+/* ============================================
+   Payment Failed Modal Styles
+   ============================================ */
+.payment-failed-modal {
+    text-align: center;
+    padding: 8px 0;
+}
+
+.payment-failed-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc2626;
+    animation: paymentFailedPulse 2s ease-in-out infinite;
+}
+
+@keyframes paymentFailedPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 12px rgba(220, 38, 38, 0);
+    }
+}
+
+.payment-failed-content {
+    text-align: center;
+}
+
+.payment-failed-message {
+    font-size: 15px;
+    color: #374151;
+    margin-bottom: 20px !important;
+    line-height: 1.6;
+}
+
+.payment-failed-details {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.payment-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.payment-detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.detail-value {
+    font-size: 14px;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.detail-value.status-failed {
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.payment-failed-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px !important;
+    color: #92400e !important;
+    text-align: left;
+    line-height: 1.5;
+}
+
+.payment-failed-hint svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #d97706;
+}
+
+/* Dark theme support */
+html[data-theme="dark"] .payment-failed-modal .payment-failed-icon {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(220, 38, 38, 0.25) 100%);
+}
+
+html[data-theme="dark"] .payment-failed-modal .payment-failed-message {
+    color: #e5e7eb;
+}
+
+html[data-theme="dark"] .payment-failed-modal .payment-failed-details {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+html[data-theme="dark"] .payment-failed-modal .payment-detail-item {
+    border-color: #374151;
+}
+
+html[data-theme="dark"] .payment-failed-modal .detail-label {
+    color: #9ca3af;
+}
+
+html[data-theme="dark"] .payment-failed-modal .detail-value {
+    color: #f3f4f6;
+}
+
+html[data-theme="dark"] .payment-failed-modal .detail-value.status-failed {
+    background: rgba(220, 38, 38, 0.2);
+    color: #fca5a5;
+}
+
+html[data-theme="dark"] .payment-failed-modal .payment-failed-hint {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #fcd34d !important;
+}
+
+html[data-theme="dark"] .payment-failed-modal .payment-failed-hint svg {
+    color: #fbbf24;
+}
+
+/* Responsive for payment failed modal */
+@media (max-width: 480px) {
+    .payment-failed-icon {
+        width: 64px;
+        height: 64px;
+    }
+
+    .payment-failed-icon svg {
+        width: 36px;
+        height: 36px;
+    }
+
+    .payment-failed-details {
+        padding: 12px;
+    }
+
+    .payment-detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        padding: 8px 0;
+    }
+
+    .payment-failed-hint {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+}
+
+
 

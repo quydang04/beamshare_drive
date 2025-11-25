@@ -1,0 +1,146 @@
+/**
+ * My Files - Empty State & Content Area
+ * Empty state, no results, files content container
+ */
+
+/* Files Content */
+.files-content {
+    min-height: 200px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    margin-bottom: 20px;
+    display: none; /* Hide when empty */
+}
+
+.files-content.has-files {
+    display: block;
+}
+
+.no-results {
+    padding: 48px 20px;
+    text-align: center;
+    color: #4a5568;
+}
+
+.no-results i {
+    font-size: 32px;
+    color: #667eea;
+    margin-bottom: 12px;
+}
+
+.no-results h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.no-results p {
+    font-size: 14px;
+    color: #718096;
+    max-width: 360px;
+    margin: 0 auto;
+}
+
+/* Compact Empty State */
+.empty-state {
+    text-align: center;
+    padding: 50px 30px;
+}
+
+.empty-icon {
+    width: 104px;
+    height: 104px;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.18);
+    margin-bottom: 32px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 18px 46px -38px rgba(79, 70, 229, 0.65);
+}
+
+.empty-icon__image {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    opacity: 0.85;
+}
+
+.empty-state h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 16px;
+}
+
+.empty-state p {
+    font-size: 16px;
+    color: #718096;
+    margin-bottom: 40px;
+    max-width: 450px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+}
+
+.empty-actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.quick-tips {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    opacity: 0.8;
+}
+
+.tip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #718096;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 20px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.tip i {
+    color: #667eea;
+    font-size: 16px;
+}
+
+/* Support messages / helpers */
+.myfiles-helper {
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    border: 1px dashed rgba(102, 126, 234, 0.45);
+    border-radius: 14px;
+    background: rgba(102, 126, 234, 0.08);
+    color: #4c51bf;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.myfiles-helper i {
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+.myfiles-helper strong {
+    display: block;
+    margin-bottom: 4px;
+}

@@ -43,9 +43,6 @@ class UploadHandler {
 
         this.upload = multer({ 
             storage: storage,
-            limits: {
-                fileSize: 2 * 1024 * 1024 * 1024 // 2GB limit
-            },
             fileFilter: function (req, file, cb) {
                 // Accept all file types for now
                 cb(null, true);
@@ -55,7 +52,6 @@ class UploadHandler {
 
     // Enhanced file validation function
     validateUploadedFile(file) {
-        const maxSize = 2 * 1024 * 1024 * 1024; // 2GB
         const allowedTypes = [
             // Images
             'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp', 'image/svg+xml',
@@ -73,14 +69,6 @@ class UploadHandler {
             // Code files
             'text/javascript', 'text/css', 'text/html', 'application/json', 'text/xml'
         ];
-
-        // Check file size
-        if (file.size > maxSize) {
-            return {
-                valid: false,
-                error: `File "${file.originalname}" exceeds maximum size of 2GB`
-            };
-        }
 
         // Check file type (optional - can be disabled for more flexibility)
         if (process.env.STRICT_FILE_VALIDATION === 'true' && !allowedTypes.includes(file.mimetype)) {

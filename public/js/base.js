@@ -189,6 +189,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
+        // Dispatch event to close other menus (like theme menu)
+        document.dispatchEvent(new CustomEvent('menu:opened', { detail: { menuId: 'user-menu' } }));
+
         headerMenuPanel.classList.add('is-visible');
         headerMenuContainer.classList.add('is-open');
         headerMenuButton.setAttribute('aria-expanded', 'true');
@@ -211,6 +214,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         headerMenuButton.setAttribute('aria-expanded', 'false');
         isUserMenuOpen = false;
     }
+
+    // Close user menu when other menus open (like theme menu)
+    document.addEventListener('menu:opened', (event) => {
+        if (event.detail?.menuId !== 'user-menu') {
+            closeUserMenu();
+        }
+    });
 
     function toggleUserMenu() {
         if (!headerMenuPanel || !headerMenuButton) {
@@ -843,6 +853,96 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Initialize with default page (Dashboard)
     updateUserInfo('dashboard');
+
+    // Check for payment status from URL params (when redirected from payment gateway)
+    checkPaymentStatus();
+
+    function checkPaymentStatus() {
+        const params = new URLSearchParams(window.location.search);
+        const paymentStatus = params.get('paymentStatus');
+        const message = params.get('message');
+        const plan = params.get('plan');
+
+        if (paymentStatus === 'failed') {
+            // Clean URL without reloading
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+
+            // Show payment failed modal
+            showPaymentFailedModal(message, plan);
+        }
+    }
+
+    function showPaymentFailedModal(message, plan) {
+        const modalContent = `
+            <div class="payment-failed-modal">
+                <div class="payment-failed-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                </div>
+                <div class="payment-failed-content">
+                    <p class="payment-failed-message">${escapeHtml(message) || 'Giao dịch đã bị hủy hoặc không thành công.'}</p>
+                    <div class="payment-failed-details">
+                        <div class="payment-detail-item">
+                            <span class="detail-label">Trạng thái</span>
+                            <span class="detail-value status-failed">Không thành công</span>
+                        </div>
+                        ${plan ? `
+                        <div class="payment-detail-item">
+                            <span class="detail-label">Gói đăng ký</span>
+                            <span class="detail-value">${escapeHtml(plan.charAt(0).toUpperCase() + plan.slice(1))}</span>
+                        </div>
+                        ` : ''}
+                        <div class="payment-detail-item">
+                            <span class="detail-label">Thời gian</span>
+                            <span class="detail-value">${new Date().toLocaleString('vi-VN')}</span>
+                        </div>
+                    </div>
+                    <p class="payment-failed-hint">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        Nếu bạn đã bị trừ tiền nhưng giao dịch không thành công, vui lòng liên hệ hỗ trợ.
+                    </p>
+                </div>
+            </div>
+        `;
+
+        if (window.modalSystem) {
+            window.modalSystem.createModal({
+                title: 'Thanh toán không thành công',
+                content: modalContent,
+                buttons: [
+                    {
+                        text: 'Liên hệ hỗ trợ',
+                        className: 'btn-secondary',
+                        onclick: () => {
+                            window.location.href = 'mailto:webmaster@quydang.name.vn?subject=Hỗ trợ thanh toán BeamShare';
+                        }
+                    },
+                    {
+                        text: 'Thử lại',
+                        className: 'btn-primary',
+                        onclick: () => {
+                            window.modalSystem.closeModal();
+                            // Navigate to subscription page
+                            if (typeof window.loadPage === 'function') {
+                                window.loadPage('subscription');
+                            } else {
+                                const navItem = document.querySelector('[data-page="subscription"]');
+                                if (navItem) navItem.click();
+                            }
+                        }
+                    }
+                ]
+            });
+        }
+    }
     
     // Global functions
     window.updateUserInfo = updateUserInfo;

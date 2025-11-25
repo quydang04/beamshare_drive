@@ -18,9 +18,6 @@ function setupUpload() {
     const fileInput = document.getElementById('fileInput');
     const uploadButtons = document.querySelectorAll('.btn-upload-primary');
     const dropZone = document.querySelector('.upload-drop-zone');
-
-    const MAX_BATCH_FILES = 5;
-    const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024 * 1024; // 2GB
     
     console.log('Elements found:', {
         fileInput: !!fileInput,
@@ -37,10 +34,7 @@ function setupUpload() {
     fileInput.addEventListener('change', function(e) {
         console.log('File input changed:', e.target.files.length, 'files');
         if (e.target.files.length > 0) {
-            handleFiles(e.target.files, {
-                maxFiles: MAX_BATCH_FILES,
-                maxFileSize: MAX_FILE_SIZE_BYTES
-            });
+            handleFiles(e.target.files);
         }
     });
     
@@ -68,10 +62,7 @@ function setupUpload() {
             e.preventDefault();
             this.classList.remove('drag-over');
             console.log('Files dropped:', e.dataTransfer.files.length);
-            handleFiles(e.dataTransfer.files, {
-                maxFiles: MAX_BATCH_FILES,
-                maxFileSize: MAX_FILE_SIZE_BYTES
-            });
+            handleFiles(e.dataTransfer.files);
         });
         
         // Also allow clicking drop zone
@@ -106,6 +97,212 @@ function handleUploadClick(e) {
 
 // Handle files (upload or drag/drop)
 let isUploading = false;
+let cachedStorageInfo = null;
+let lastStorageFetch = 0;
+const STORAGE_CACHE_DURATION = 30000; // 30 seconds cache
+
+// Fetch storage info from subscription API
+async function fetchStorageInfo() {
+    const now = Date.now();
+    if (cachedStorageInfo && (now - lastStorageFetch) < STORAGE_CACHE_DURATION) {
+        return cachedStorageInfo;
+    }
+    
+    try {
+        const response = await fetch('/api/subscription/overview');
+        if (!response.ok) throw new Error('Failed to fetch storage info');
+        const data = await response.json();
+        cachedStorageInfo = {
+            usedBytes: data.storage?.totalBytes || 0,
+            limitBytes: data.storage?.limitBytes || 0,
+            percent: data.storage?.percent || 0,
+            plan: data.currentPlan || 'basic'
+        };
+        lastStorageFetch = now;
+        return cachedStorageInfo;
+    } catch (error) {
+        console.error('Error fetching storage info:', error);
+        return null;
+    }
+}
+
+// Format bytes to human readable
+function formatStorageSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Show storage warning modal
+function showStorageWarningModal(type, details = {}) {
+    const modal = document.createElement('div');
+    modal.className = 'storage-warning-modal';
+    modal.id = 'storage-warning-modal';
+    
+    let title, message, actions;
+    
+    if (type === 'exceeded') {
+        // File size exceeds available storage
+        title = '⚠️ Không đủ dung lượng lưu trữ';
+        if (details.plan === 'basic') {
+            message = `
+                <p>File <strong>"${details.fileName}"</strong> có dung lượng <strong>${details.fileSize}</strong> vượt quá dung lượng trống còn lại (<strong>${details.availableSpace}</strong>).</p>
+                <p class="storage-info">Dung lượng hiện tại: <strong>${details.usedSpace}</strong> / <strong>${details.totalSpace}</strong> (${details.usagePercent}%)</p>
+                <p class="suggestion">💡 Nâng cấp lên gói <strong>Premium</strong> để có <strong>15GB</strong> dung lượng lưu trữ!</p>
+            `;
+            actions = `
+                <button class="btn-upgrade" onclick="closeStorageModal(); window.loadPage('subscription');">
+                    <i class="fas fa-crown"></i> Nâng cấp Premium
+                </button>
+                <button class="btn-secondary" onclick="closeStorageModal();">
+                    Để sau
+                </button>
+            `;
+        } else {
+            message = `
+                <p>File <strong>"${details.fileName}"</strong> có dung lượng <strong>${details.fileSize}</strong> vượt quá dung lượng trống còn lại (<strong>${details.availableSpace}</strong>).</p>
+                <p class="storage-info">Dung lượng hiện tại: <strong>${details.usedSpace}</strong> / <strong>${details.totalSpace}</strong> (${details.usagePercent}%)</p>
+                <p class="suggestion">💡 Hãy xóa các file không cần thiết để giải phóng dung lượng.</p>
+            `;
+            actions = `
+                <button class="btn-primary" onclick="closeStorageModal(); window.loadPage('myfiles');">
+                    <i class="fas fa-folder"></i> Quản lý file
+                </button>
+                <button class="btn-danger" onclick="closeStorageModal(); window.loadPage('recycle-bin');">
+                    <i class="fas fa-trash"></i> Thùng rác
+                </button>
+                <button class="btn-secondary" onclick="closeStorageModal();">
+                    Đóng
+                </button>
+            `;
+        }
+    } else if (type === 'nearly-full') {
+        // Storage is almost full (>= 90%)
+        title = '📦 Dung lượng sắp đầy';
+        if (details.plan === 'basic') {
+            message = `
+                <p>Dung lượng lưu trữ của bạn đã sử dụng <strong>${details.usagePercent}%</strong>.</p>
+                <p class="storage-info">Đã dùng: <strong>${details.usedSpace}</strong> / <strong>${details.totalSpace}</strong></p>
+                <p>Còn trống: <strong>${details.availableSpace}</strong></p>
+                <p class="suggestion">💡 Nâng cấp lên gói <strong>Premium</strong> để có thêm dung lượng lưu trữ!</p>
+            `;
+            actions = `
+                <button class="btn-upgrade" onclick="closeStorageModal(); window.loadPage('subscription');">
+                    <i class="fas fa-crown"></i> Nâng cấp Premium
+                </button>
+                <button class="btn-secondary" onclick="closeStorageModal();">
+                    Tiếp tục upload
+                </button>
+            `;
+        } else {
+            message = `
+                <p>Dung lượng lưu trữ của bạn đã sử dụng <strong>${details.usagePercent}%</strong>.</p>
+                <p class="storage-info">Đã dùng: <strong>${details.usedSpace}</strong> / <strong>${details.totalSpace}</strong></p>
+                <p>Còn trống: <strong>${details.availableSpace}</strong></p>
+                <p class="suggestion">💡 Hãy xóa các file không cần thiết để giải phóng dung lượng.</p>
+            `;
+            actions = `
+                <button class="btn-primary" onclick="closeStorageModal(); window.loadPage('myfiles');">
+                    <i class="fas fa-folder"></i> Quản lý file
+                </button>
+                <button class="btn-secondary" onclick="closeStorageModal();">
+                    Tiếp tục upload
+                </button>
+            `;
+        }
+    }
+    
+    modal.innerHTML = `
+        <div class="storage-modal-backdrop" onclick="closeStorageModal();"></div>
+        <div class="storage-modal-content">
+            <div class="storage-modal-header">
+                <h3>${title}</h3>
+                <button class="storage-modal-close" onclick="closeStorageModal();">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="storage-modal-body">
+                ${message}
+            </div>
+            <div class="storage-modal-actions">
+                ${actions}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    requestAnimationFrame(() => modal.classList.add('is-visible'));
+}
+
+// Close storage warning modal
+window.closeStorageModal = function() {
+    const modal = document.getElementById('storage-warning-modal');
+    if (modal) {
+        modal.classList.remove('is-visible');
+        setTimeout(() => modal.remove(), 300);
+    }
+};
+
+// Check storage before upload
+async function checkStorageBeforeUpload(files) {
+    const storageInfo = await fetchStorageInfo();
+    if (!storageInfo) {
+        // Can't fetch storage info, proceed with upload
+        return { canUpload: true, files: files };
+    }
+    
+    const { usedBytes, limitBytes, percent, plan } = storageInfo;
+    const availableBytes = limitBytes - usedBytes;
+    const totalUploadSize = files.reduce((sum, file) => sum + file.size, 0);
+    
+    // Check if any single file exceeds available space
+    for (const file of files) {
+        if (file.size > availableBytes) {
+            showStorageWarningModal('exceeded', {
+                fileName: file.name,
+                fileSize: formatStorageSize(file.size),
+                availableSpace: formatStorageSize(availableBytes),
+                usedSpace: formatStorageSize(usedBytes),
+                totalSpace: formatStorageSize(limitBytes),
+                usagePercent: Math.round(percent),
+                plan: plan
+            });
+            return { canUpload: false, reason: 'exceeded' };
+        }
+    }
+    
+    // Check if total upload exceeds available space
+    if (totalUploadSize > availableBytes) {
+        showStorageWarningModal('exceeded', {
+            fileName: files.length > 1 ? `${files.length} files` : files[0].name,
+            fileSize: formatStorageSize(totalUploadSize),
+            availableSpace: formatStorageSize(availableBytes),
+            usedSpace: formatStorageSize(usedBytes),
+            totalSpace: formatStorageSize(limitBytes),
+            usagePercent: Math.round(percent),
+            plan: plan
+        });
+        return { canUpload: false, reason: 'exceeded' };
+    }
+    
+    // Check if storage is nearly full (>= 90%)
+    if (percent >= 90) {
+        showStorageWarningModal('nearly-full', {
+            availableSpace: formatStorageSize(availableBytes),
+            usedSpace: formatStorageSize(usedBytes),
+            totalSpace: formatStorageSize(limitBytes),
+            usagePercent: Math.round(percent),
+            plan: plan
+        });
+        // Allow upload but show warning
+        return { canUpload: true, files: files, warned: true };
+    }
+    
+    return { canUpload: true, files: files };
+}
+
 async function handleFiles(fileList, options = {}) {
     console.log('Handling files:', fileList.length);
 
@@ -114,8 +311,6 @@ async function handleFiles(fileList, options = {}) {
         return;
     }
 
-    const maxFiles = options.maxFiles || 5;
-    const maxFileSize = options.maxFileSize || (2 * 1024 * 1024 * 1024);
     const files = Array.from(fileList || []);
 
     if (!files.length) {
@@ -123,14 +318,9 @@ async function handleFiles(fileList, options = {}) {
         return;
     }
 
-    if (files.length > maxFiles) {
-        showMessage(`Chỉ có thể tải lên tối đa ${maxFiles} file cùng lúc!`, 'error');
-        return;
-    }
-
-    const oversizeFile = files.find(file => file.size > maxFileSize);
-    if (oversizeFile) {
-        showMessage(`File "${oversizeFile.name}" vượt quá kích thước tối đa 2GB!`, 'error');
+    // Check storage quota before proceeding
+    const storageCheck = await checkStorageBeforeUpload(files);
+    if (!storageCheck.canUpload) {
         return;
     }
 

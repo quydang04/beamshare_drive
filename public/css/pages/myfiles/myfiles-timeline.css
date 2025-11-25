@@ -1,0 +1,418 @@
+/**
+ * MyFiles - Timeline & Access Cards Styles
+ * Separated from myfiles-components.css for better maintainability
+ */
+
+/* ===== FILE ACCESS CARD ===== */
+.file-access-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.06);
+}
+
+.file-access-card h5 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.file-access-card h5 i {
+    color: #6366f1;
+}
+
+/* Access List */
+.access-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.access-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.access-item .access-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.access-item .access-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.access-item .access-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.access-item .access-info .name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.access-item .access-info .email {
+    font-size: 11px;
+    color: #6b7280;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.access-item .access-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #4338ca;
+    text-transform: uppercase;
+}
+
+.access-item .access-badge.owner {
+    background: rgba(16, 185, 129, 0.15);
+    color: #047857;
+}
+
+.access-item .access-badge.editor {
+    background: rgba(59, 130, 246, 0.15);
+    color: #1d4ed8;
+}
+
+.access-item .access-badge.viewer {
+    background: rgba(107, 114, 128, 0.15);
+    color: #4b5563;
+}
+
+/* ===== FILE TIMELINE ===== */
+.file-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    padding-left: 20px;
+}
+
+.file-timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: linear-gradient(180deg, #6366f1 0%, #a5b4fc 50%, #e2e8f0 100%);
+    border-radius: 1px;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 0;
+    position: relative;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -14px;
+    top: 16px;
+    width: 10px;
+    height: 10px;
+    background: #6366f1;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    z-index: 1;
+}
+
+.timeline-item:first-child::before {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    width: 12px;
+    height: 12px;
+    left: -15px;
+    top: 15px;
+}
+
+.timeline-item:last-child::before {
+    background: #e2e8f0;
+    box-shadow: none;
+}
+
+.timeline-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: rgba(99, 102, 241, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6366f1;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.timeline-item:first-child .timeline-icon {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+}
+
+.timeline-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.timeline-content .action {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 4px 0;
+}
+
+.timeline-content .time {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.timeline-content .user {
+    font-size: 12px;
+    color: #4b5563;
+    margin-top: 4px;
+}
+
+/* ===== FILE VERSION HISTORY ===== */
+.version-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.version-history-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.version-history-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.version-history-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.version-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.version-item:hover {
+    background: #f0f4ff;
+    border-color: #c7d2fe;
+}
+
+.version-item.current {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border-color: #a5b4fc;
+}
+
+.version-item .version-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.version-item.current .version-number {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+}
+
+.version-item .version-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.version-item .version-info .version-date {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.version-item .version-info .version-size {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.version-item .version-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.version-item .version-actions button {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(99, 102, 241, 0.1);
+    border: none;
+    border-radius: 6px;
+    color: #6366f1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+}
+
+.version-item .version-actions button:hover {
+    background: rgba(99, 102, 241, 0.2);
+    transform: scale(1.1);
+}
+
+/* ===== FILE ACTIVITY LOG ===== */
+.activity-log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.activity-item:hover {
+    background: #f8fafc;
+}
+
+.activity-item .activity-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.activity-item .activity-icon.view {
+    background: rgba(59, 130, 246, 0.15);
+    color: #2563eb;
+}
+
+.activity-item .activity-icon.download {
+    background: rgba(16, 185, 129, 0.15);
+    color: #059669;
+}
+
+.activity-item .activity-icon.edit {
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+}
+
+.activity-item .activity-icon.share {
+    background: rgba(139, 92, 246, 0.15);
+    color: #7c3aed;
+}
+
+.activity-item .activity-icon.delete {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+}
+
+.activity-item .activity-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-item .activity-info .activity-text {
+    font-size: 13px;
+    color: #1f2937;
+}
+
+.activity-item .activity-info .activity-text strong {
+    font-weight: 600;
+}
+
+.activity-item .activity-info .activity-time {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-timeline,
+.empty-access-list,
+.empty-version-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    text-align: center;
+    color: #6b7280;
+}
+
+.empty-timeline i,
+.empty-access-list i,
+.empty-version-list i {
+    font-size: 36px;
+    color: #d1d5db;
+    margin-bottom: 12px;
+}
+
+.empty-timeline p,
+.empty-access-list p,
+.empty-version-list p {
+    font-size: 13px;
+    margin: 0;
+}

@@ -63,7 +63,7 @@ class UnifiedUploadSystem {
                         <h3>Kéo thả tệp vào đây</h3>
                         <p>hoặc <button class="btn-link" id="browseBtn">chọn tệp từ máy tính</button></p>
                         <div class="supported-formats">
-                            <small>Hỗ trợ: Hình ảnh, Tài liệu, Video, Audio, Archives (Tối đa 2GB/tệp)</small>
+                            <small>Hỗ trợ: Hình ảnh, Tài liệu, Video, Audio, Archives</small>
                         </div>
                     </div>
                     <input type="file" id="fileInput" multiple accept="*/*" style="display: none;">
@@ -179,12 +179,6 @@ class UnifiedUploadSystem {
 
     // Validate file
     validateFile(file) {
-        const maxSize = 2 * 1024 * 1024 * 1024; // 2GB
-        
-        if (file.size > maxSize) {
-            return { valid: false, error: 'Tệp quá lớn (tối đa 2GB)' };
-        }
-
         if (file.name.length > 255) {
             return { valid: false, error: 'Tên tệp quá dài (tối đa 255 ký tự)' };
         }

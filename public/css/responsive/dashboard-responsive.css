@@ -1,4 +1,6 @@
 /* Responsive overrides for Dashboard */
+
+/* Large screens */
 @media (max-width: 1280px) {
     .storage-overview {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -10,6 +12,7 @@
     }
 }
 
+/* Medium-large screens */
 @media (max-width: 1024px) {
     #dashboard-page .page-header {
         flex-direction: column;
@@ -20,7 +23,7 @@
     .btn-upload-new {
         align-self: stretch;
         justify-content: center;
-        padding: 12px 18px;
+        padding: 14px 20px;
         font-size: 15px;
     }
 
@@ -39,40 +42,56 @@
     }
 }
 
+/* Tablet screens */
 @media (max-width: 820px) {
+    #dashboard-page {
+        gap: 20px;
+    }
+
     #dashboard-page .page-header {
         align-items: stretch;
         gap: 16px;
     }
 
     .user-info-dashboard {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+        flex-direction: row;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .user-avatar-dashboard {
+        width: 52px;
+        height: 52px;
+        font-size: 20px;
     }
 
     .dashboard-tabs {
         display: flex;
-        gap: 10px;
-        margin-bottom: 18px;
+        gap: 8px;
+        margin-bottom: 16px;
         background: rgba(99, 102, 241, 0.06);
-        border-radius: 16px;
-        padding: 10px;
+        border-radius: 14px;
+        padding: 8px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
     }
 
-    .dashboard-tabs {
-        overflow-x: auto;
-        padding-bottom: 12px;
-        scrollbar-width: thin;
+    .dashboard-tabs::-webkit-scrollbar {
+        display: none;
     }
 
     .dashboard-tabs button {
         white-space: nowrap;
         flex: 0 0 auto;
+        padding: 10px 16px;
+        font-size: 14px;
     }
 
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
     }
 
     .overview-card,
@@ -92,24 +111,64 @@
         align-items: flex-start;
         gap: 4px;
     }
+
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
 }
 
+/* Mobile screens */
 @media (max-width: 600px) {
+    #dashboard-page {
+        gap: 16px;
+    }
+
     #dashboard-page .page-header {
         gap: 14px;
+        padding: 0;
+    }
+
+    #dashboard-page .page-header h1 {
+        font-size: 1.4rem;
+    }
+
+    #dashboard-page .page-header p {
+        font-size: 13px;
     }
 
     .btn-upload-new {
         width: 100%;
+        padding: 14px 18px;
+        border-radius: 12px;
+    }
+
+    .user-info-dashboard {
+        flex-wrap: wrap;
+    }
+
+    .user-avatar-dashboard {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+
+    .user-dashboard-name {
+        font-size: 14px;
     }
 
     .dashboard-tabs {
-        padding: 12px;
+        padding: 6px;
+        border-radius: 12px;
+        margin-bottom: 14px;
     }
 
     .dashboard-tabs button {
         flex: 1;
-        min-width: max(120px, 30vw);
+        min-width: max(100px, 28vw);
+        padding: 10px 12px;
+        font-size: 13px;
+        border-radius: 10px;
     }
 
     .quick-actions-grid {
@@ -118,18 +177,52 @@
     }
 
     .dashboard-content {
-        padding: 20px 16px;
+        padding: 16px 14px;
     }
 
     .overview-card {
-        padding: 18px;
+        padding: 16px;
+        border-radius: 14px;
     }
 
     .storage-overview {
-        gap: 16px;
+        gap: 14px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
     }
 
     .recent-file-name {
         white-space: normal;
+        word-break: break-word;
+    }
+
+    .recent-file-item {
+        padding: 14px;
+        border-radius: 12px;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 400px) {
+    #dashboard-page .page-header h1 {
+        font-size: 1.25rem;
+    }
+
+    .dashboard-tabs button {
+        min-width: 90px;
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .overview-card {
+        padding: 14px;
+    }
+
+    .btn-upload-new {
+        padding: 12px 16px;
+        font-size: 14px;
     }
 }

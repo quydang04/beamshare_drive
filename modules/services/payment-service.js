@@ -104,7 +104,7 @@ class PaymentService {
         }
 
         const currency = plan.currency || 'VND';
-        const orderInfo = `BeamShare ${plan.title} - ${user.email}`;
+        const orderInfo = `beamshare.quydang.name.vn - Goi ${plan.title} - ${user.email}`;
 
         const payment = await Payment.create({
             userId: user.userId,

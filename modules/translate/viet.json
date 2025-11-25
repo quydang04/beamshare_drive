@@ -161,9 +161,7 @@
         "description": "hoặc <span class=\"highlight\">chọn tệp từ máy tính</span>"
       },
       "info": {
-        "maxFiles": "Tối đa 5 tệp",
-        "maxSize": "2GB mỗi tệp",
-        "security": "Bảo mật cao"
+        "maxFiles": "Không giới hạn số lượng"
       },
       "selectButton": "Chọn Tệp"
     },

@@ -82,11 +82,30 @@
 
     function renderImagePreview(context) {
         const disclaimer = maybeAppendDisclaimer(context.container, context.options);
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = 'image-preview-wrapper';
+        
         const img = document.createElement('img');
+        img.className = 'image-preview-element';
         img.alt = context.metadata.displayName || context.metadata.originalName || 'Xem trước hình ảnh';
         img.src = context.previewUrl;
         img.loading = 'lazy';
-        context.container.appendChild(img);
+        
+        // Add click to view full size
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', () => {
+            if (img.classList.contains('image-fullsize')) {
+                img.classList.remove('image-fullsize');
+                img.style.cursor = 'zoom-in';
+            } else {
+                img.classList.add('image-fullsize');
+                img.style.cursor = 'zoom-out';
+            }
+        });
+        
+        wrapper.appendChild(img);
+        context.container.appendChild(wrapper);
         return disclaimer;
     }
 

@@ -1,0 +1,268 @@
+/**
+ * Upload Page - Storage Warning Modal
+ * Modal for storage limit warnings
+ */
+
+/* ===== Storage Warning Modal ===== */
+.storage-warning-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.storage-warning-modal.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.storage-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.storage-modal-content {
+    position: relative;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    max-width: 480px;
+    width: calc(100% - 40px);
+    max-height: calc(100vh - 80px);
+    overflow: hidden;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.storage-warning-modal.is-visible .storage-modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.storage-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.storage-modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #92400e;
+}
+
+.storage-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(146, 64, 14, 0.1);
+    color: #92400e;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.storage-modal-close:hover {
+    background: rgba(146, 64, 14, 0.2);
+}
+
+.storage-modal-body {
+    padding: 24px;
+}
+
+.storage-modal-body p {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+    color: #374151;
+    line-height: 1.6;
+}
+
+.storage-modal-body p:last-child {
+    margin-bottom: 0;
+}
+
+.storage-modal-body .storage-info {
+    padding: 12px 16px;
+    background: #f3f4f6;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: #4b5563;
+}
+
+.storage-modal-body .suggestion {
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-radius: 10px;
+    color: #1e40af;
+    font-weight: 500;
+}
+
+.storage-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 20px 24px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.storage-modal-actions button {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.storage-modal-actions button:hover {
+    transform: translateY(-1px);
+}
+
+.storage-modal-actions button:active {
+    transform: scale(0.98);
+}
+
+.storage-modal-actions .btn-upgrade {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+
+.storage-modal-actions .btn-upgrade:hover {
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+}
+
+.storage-modal-actions .btn-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+}
+
+.storage-modal-actions .btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+}
+
+.storage-modal-actions .btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+
+.storage-modal-actions .btn-danger:hover {
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45);
+}
+
+.storage-modal-actions .btn-secondary {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.storage-modal-actions .btn-secondary:hover {
+    background: #d1d5db;
+}
+
+/* Dark Theme Support */
+html[data-theme="dark"] .storage-modal-content {
+    background: #1f2937;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="dark"] .storage-modal-header {
+    background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+    border-color: #374151;
+}
+
+html[data-theme="dark"] .storage-modal-header h3 {
+    color: #fef3c7;
+}
+
+html[data-theme="dark"] .storage-modal-close {
+    background: rgba(254, 243, 199, 0.1);
+    color: #fef3c7;
+}
+
+html[data-theme="dark"] .storage-modal-close:hover {
+    background: rgba(254, 243, 199, 0.2);
+}
+
+html[data-theme="dark"] .storage-modal-body p {
+    color: #d1d5db;
+}
+
+html[data-theme="dark"] .storage-modal-body .storage-info {
+    background: #374151;
+    color: #9ca3af;
+}
+
+html[data-theme="dark"] .storage-modal-body .suggestion {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    color: #bfdbfe;
+}
+
+html[data-theme="dark"] .storage-modal-actions {
+    background: #111827;
+    border-color: #374151;
+}
+
+html[data-theme="dark"] .storage-modal-actions .btn-secondary {
+    background: #374151;
+    color: #d1d5db;
+}
+
+html[data-theme="dark"] .storage-modal-actions .btn-secondary:hover {
+    background: #4b5563;
+}
+
+/* Responsive */
+@media (max-width: 520px) {
+    .storage-modal-content {
+        border-radius: 16px;
+    }
+    
+    .storage-modal-header {
+        padding: 16px 20px;
+    }
+    
+    .storage-modal-header h3 {
+        font-size: 1rem;
+    }
+    
+    .storage-modal-body {
+        padding: 20px;
+    }
+    
+    .storage-modal-body p {
+        font-size: 0.9rem;
+    }
+    
+    .storage-modal-actions {
+        padding: 16px 20px;
+        flex-direction: column;
+    }
+    
+    .storage-modal-actions button {
+        width: 100%;
+        min-width: unset;
+    }
+}

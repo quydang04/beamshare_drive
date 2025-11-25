@@ -161,9 +161,7 @@
         "description": "or <span class=\"highlight\">choose files from your computer</span>"
       },
       "info": {
-        "maxFiles": "Up to 5 files",
-        "maxSize": "2GB per file",
-        "security": "Enterprise-grade security"
+        "maxFiles": "Unlimited files"
       },
       "selectButton": "Select Files"
     },

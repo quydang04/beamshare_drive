@@ -5,6 +5,9 @@ let redirectQuery = '';
 let loginUrlWithRedirect = '/auth/login';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Check if user is already logged in and redirect to dashboard
+    checkAuthAndRedirect();
+
     const forms = document.querySelectorAll('.auth-form');
     const passwordToggles = document.querySelectorAll('.password-toggle');
     const urlParams = new URLSearchParams(window.location.search);
@@ -382,4 +385,29 @@ function hideAlert(alertBox) {
 
     alertBox.textContent = '';
     alertBox.classList.remove('is-error', 'is-success', 'is-info');
+}
+
+// Check if user is already authenticated and redirect to dashboard
+async function checkAuthAndRedirect() {
+    try {
+        const response = await fetch('/api/auth/me', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const user = data?.user || data;
+            if (user && (user.id || user._id)) {
+                // User is already logged in, redirect to dashboard or intended target
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectParam = urlParams.get('redirect');
+                const safeRedirect = getSafeRedirectTarget(redirectParam);
+                window.location.href = safeRedirect;
+            }
+        }
+    } catch (error) {
+        // User not logged in, continue with auth page
+        console.log('User not authenticated, showing auth form');
+    }
 }

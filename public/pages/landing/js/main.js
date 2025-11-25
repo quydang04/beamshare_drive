@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Check auth and update navigation links
+    checkAuthAndUpdateLinks();
+
     // Theme Toggle
     const themeToggle = document.getElementById('themeToggle');
     const html = document.documentElement;
@@ -124,3 +127,50 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// Function to check authentication and update navigation links
+async function checkAuthAndUpdateLinks() {
+    try {
+        const response = await fetch('/api/auth/me', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const user = data?.user || data;
+            if (user && (user.id || user._id)) {
+                updateNavForLoggedInUser(user);
+            }
+        }
+    } catch (error) {
+        // User not logged in, keep default links
+        console.log('User not authenticated');
+    }
+}
+
+// Update navigation for logged in user
+function updateNavForLoggedInUser(user) {
+    const navActions = document.querySelector('.nav-actions');
+    const loginBtn = navActions?.querySelector('a[href="/auth/login"]');
+    const registerBtn = navActions?.querySelector('a[href="/auth/register"]');
+
+    // Update login button to go to dashboard
+    if (loginBtn) {
+        loginBtn.href = '/dashboard';
+        loginBtn.textContent = 'Dashboard';
+    }
+
+    // Update register button to show user info or go to dashboard
+    if (registerBtn) {
+        registerBtn.href = '/dashboard';
+        registerBtn.innerHTML = '<i class="fa-solid fa-user"></i> ' + (user.fullName || user.email || 'Tài khoản');
+    }
+
+    // Update hero buttons
+    const heroRegisterBtn = document.querySelector('.hero-btns a[href="/auth/register"]');
+    if (heroRegisterBtn) {
+        heroRegisterBtn.href = '/dashboard';
+        heroRegisterBtn.innerHTML = 'Đi đến Dashboard <i class="fa-solid fa-arrow-right"></i>';
+    }
+}

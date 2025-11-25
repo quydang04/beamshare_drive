@@ -1,0 +1,113 @@
+/**
+ * My Files - Base Styles
+ * Container, header, page layout
+ */
+
+/* My Files Page - Compact Design */
+.myfiles-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Compact Header */
+.page-header-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px 0;
+}
+
+.header-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    box-shadow: 0 14px 36px -28px rgba(79, 70, 229, 0.4);
+}
+
+.header-icon__image {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    opacity: 0.9;
+}
+
+/* Duplicate header-icon with different values - keeping both for compatibility */
+.header-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    overflow: hidden;
+}
+
+.header-icon__image {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.header-text h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 2px;
+}
+
+.file-count {
+    font-size: 14px;
+    color: #718096;
+    font-weight: 500;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Drag and Drop State */
+.myfiles-container.drag-over {
+    background: linear-gradient(145deg, #f0f4ff 0%, #e0e7ff 100%);
+    border-radius: 20px;
+}
+
+.myfiles-container.drag-over::after {
+    content: '🚀 Thả tệp để tải lên nhanh!';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 40px;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    z-index: 1000;
+    animation: bounce 0.5s ease infinite alternate;
+}
+
+@keyframes bounce {
+    from { transform: translate(-50%, -50%) scale(1); }
+    to { transform: translate(-50%, -50%) scale(1.05); }
+}

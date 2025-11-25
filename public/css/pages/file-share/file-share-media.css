@@ -1,0 +1,442 @@
+/**
+ * File Share - Media Player Styles (Video & Audio)
+ * Separated from file-share.css for better maintainability
+ */
+
+/* ===== MEDIA CARD BASE ===== */
+.media-card {
+    background: linear-gradient(160deg, rgba(30, 64, 175, 0.18), rgba(79, 70, 229, 0.12));
+    border-radius: 18px;
+    box-shadow: 0 24px 48px rgba(30, 64, 175, 0.18);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ===== VIDEO PLAYER ===== */
+.media-card--video {
+    position: relative;
+    padding: 32px 32px 96px;
+    background: linear-gradient(160deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.88));
+    border-radius: 32px;
+    box-shadow: 0 40px 80px rgba(15, 23, 42, 0.45);
+    overflow: visible;
+}
+
+.media-card--video .media-visual,
+.media-card--video .media-element {
+    width: 100%;
+    display: block;
+}
+
+.media-card--video .media-element {
+    background: radial-gradient(circle at center, rgba(15, 23, 42, 0.9), #000000);
+    border-radius: 24px;
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+    max-height: 420px;
+    box-shadow: 0 32px 60px rgba(15, 23, 42, 0.55);
+}
+
+/* ===== AUDIO PLAYER ===== */
+.media-card--audio {
+    padding: 18px;
+    position: relative;
+    background: linear-gradient(145deg, rgba(15, 118, 110, 0.85), rgba(236, 72, 153, 0.72));
+    color: #f8fafc;
+}
+
+.audio-hero {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.audio-cover {
+    width: 88px;
+    height: 88px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.3), rgba(30, 41, 59, 0.65));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: rgba(226, 232, 240, 0.8);
+    text-transform: uppercase;
+}
+
+.audio-cover::after {
+    content: "\266B";
+    font-size: 1.6rem;
+}
+
+.audio-cover[data-has-cover="true"]::after {
+    content: "";
+}
+
+.audio-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.audio-info-title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.audio-info-artist {
+    margin: 6px 0 0;
+    font-size: 0.95rem;
+    color: rgba(226, 232, 240, 0.9);
+}
+
+.audio-playback-note {
+    margin: 0 16px 16px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: #0f172a;
+    font-weight: 500;
+}
+
+/* ===== MEDIA ELEMENT ===== */
+.media-element {
+    width: 100%;
+    display: block;
+}
+
+.media-card--audio .media-element {
+    display: none;
+}
+
+/* ===== MEDIA CONTROLS ===== */
+.media-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    color: #f8fafc;
+    flex-wrap: wrap;
+    transition: opacity 0.25s ease;
+}
+
+.media-card--audio .media-controls {
+    background: rgba(15, 23, 42, 0.35);
+}
+
+.media-card--video .media-controls {
+    position: absolute;
+    left: 32px;
+    right: 32px;
+    bottom: 32px;
+    margin: 0;
+    padding: 22px 26px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.88));
+    box-shadow: 0 28px 60px rgba(15, 23, 42, 0.6);
+    gap: 20px;
+    align-items: center;
+    backdrop-filter: blur(16px);
+    z-index: 2;
+}
+
+.media-controls--active {
+    opacity: 1;
+}
+
+.media-controls--hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ===== MEDIA BUTTONS ===== */
+.media-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: inherit;
+    background: linear-gradient(135deg, rgba(129, 140, 248, 0.9), rgba(99, 102, 241, 0.9));
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.media-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px rgba(79, 70, 229, 0.28);
+}
+
+.media-card--video .media-button {
+    width: 56px;
+    height: 56px;
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    box-shadow: 0 20px 36px rgba(99, 102, 241, 0.4);
+}
+
+.media-card--video .media-button:hover {
+    box-shadow: 0 26px 44px rgba(99, 102, 241, 0.45);
+}
+
+.media-button--secondary {
+    background: rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.media-card--video .media-button--secondary {
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    color: rgba(248, 250, 252, 0.85);
+    width: 48px;
+    height: 48px;
+}
+
+/* ===== PROGRESS BAR ===== */
+.media-progress-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.media-card--video .media-progress-wrapper {
+    gap: 12px;
+}
+
+.media-time {
+    font-variant-numeric: tabular-nums;
+    font-size: 0.85rem;
+    min-width: 48px;
+    text-align: center;
+}
+
+.media-card--video .media-time {
+    color: rgba(226, 232, 240, 0.75);
+    font-weight: 500;
+}
+
+.media-progress {
+    --progress-value: 0%;
+    flex: 1;
+    appearance: none;
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #60a5fa 0%, #818cf8 var(--progress-value, 0%), rgba(226, 232, 240, 0.3) var(--progress-value, 0%), rgba(226, 232, 240, 0.3) 100%);
+    outline: none;
+    cursor: pointer;
+}
+
+.media-progress::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: transparent;
+}
+
+.media-progress::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: transparent;
+}
+
+.media-progress::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #f59e0b;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+.media-progress::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: none;
+    border-radius: 50%;
+    background: #f59e0b;
+}
+
+.media-card--video .media-progress::-webkit-slider-thumb,
+.media-card--video .media-progress::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: #fbbf24;
+    box-shadow: 0 0 0 5px rgba(248, 250, 252, 0.35);
+}
+
+/* ===== VOLUME CONTROL ===== */
+.media-volume {
+    width: 100px;
+    appearance: none;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(226, 232, 240, 0.35);
+    outline: none;
+    cursor: pointer;
+}
+
+.media-card--video .media-volume {
+    width: 120px;
+    background: linear-gradient(90deg, rgba(248, 250, 252, 0.75), rgba(148, 163, 184, 0.35));
+}
+
+.media-volume::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(248, 250, 252, 0.95);
+}
+
+.media-volume::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(248, 250, 252, 0.95);
+}
+
+.media-card--video .media-volume::-webkit-slider-thumb,
+.media-card--video .media-volume::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: rgba(248, 250, 252, 0.95);
+    box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.25);
+}
+
+/* ===== MEDIA LABELS & META ===== */
+.media-label {
+    font-size: 0.82rem;
+    color: rgba(226, 232, 240, 0.8);
+}
+
+.media-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px 16px;
+    font-size: 0.9rem;
+    color: rgba(248, 250, 252, 0.85);
+    background: rgba(15, 23, 42, 0.65);
+}
+
+.media-card--audio .media-meta {
+    background: transparent;
+    padding: 0;
+    color: rgba(226, 232, 240, 0.85);
+}
+
+.media-card--video .media-meta {
+    position: absolute;
+    top: 32px;
+    left: 32px;
+    right: 32px;
+    padding: 14px 24px;
+    border-radius: 20px;
+    background: linear-gradient(120deg, rgba(226, 232, 240, 0.55), rgba(30, 41, 59, 0.45));
+    color: rgba(248, 250, 252, 0.92);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    pointer-events: none;
+    backdrop-filter: blur(18px);
+    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.35);
+    font-size: 0.95rem;
+    z-index: 2;
+}
+
+.media-card--video.is-fullscreen .media-meta {
+    background: transparent;
+}
+
+.media-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.media-card--video .media-meta span {
+    font-weight: 600;
+}
+
+.media-card--video .media-meta span:first-child {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.media-card--video .media-meta span:last-child {
+    justify-content: flex-end;
+    color: rgba(248, 250, 252, 0.75);
+    font-weight: 500;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.media-meta svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.8;
+}
+
+/* ===== FULLSCREEN MODE ===== */
+.media-card--video:fullscreen,
+.media-card--video:-webkit-full-screen {
+    background: #000000;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+}
+
+.media-card--video:fullscreen .media-element,
+.media-card--video:-webkit-full-screen .media-element,
+.media-card--video.is-fullscreen .media-element {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    object-fit: contain;
+    background: #000000;
+}
+
+.media-card--video:fullscreen .media-controls,
+.media-card--video:-webkit-full-screen .media-controls,
+.media-card--video.is-fullscreen .media-controls {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    bottom: 24px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.8);
+}
+
+.media-card--video:fullscreen .media-meta,
+.media-card--video:-webkit-full-screen .media-meta,
+.media-card--video.is-fullscreen .media-meta {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    top: 24px;
+    padding: 12px 20px;
+    border-radius: 18px;
+    background: linear-gradient(120deg, rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.35));
+    color: rgba(248, 250, 252, 0.9);
+    box-shadow: none;
+}

@@ -1,0 +1,127 @@
+/**
+ * Upload Page - Drop Zone Styles
+ * Main upload area with drag & drop
+ */
+
+/* Main Upload Area */
+.upload-main {
+    margin-bottom: 50px;
+}
+
+.upload-drop-zone {
+    background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 3px dashed #cbd5e0;
+    border-radius: 20px;
+    padding: 60px 40px;
+    text-align: center;
+    margin-bottom: 30px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-drop-zone::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.upload-drop-zone:hover::before {
+    left: 100%;
+}
+
+.upload-drop-zone:hover {
+    border-color: #667eea;
+    background: linear-gradient(145deg, #f0f4ff 0%, #e0e7ff 100%);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+}
+
+.drop-zone-content {
+    position: relative;
+    z-index: 1;
+}
+
+.upload-illustration {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 30px;
+}
+
+.cloud-icon {
+    font-size: 60px;
+    color: #667eea;
+    position: relative;
+}
+
+.upload-arrow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: white;
+    animation: bounce 2s infinite;
+}
+
+.upload-drop-zone h3 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 12px;
+}
+
+.upload-drop-zone p {
+    font-size: 18px;
+    color: #718096;
+    margin-bottom: 30px;
+}
+
+.highlight {
+    color: #667eea;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.upload-info {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #718096;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.info-item i {
+    color: #667eea;
+    font-size: 16px;
+}
+
+/* Drag over state */
+.upload-drop-zone.drag-over {
+    border-color: #667eea !important;
+    background: linear-gradient(145deg, #f0f4ff 0%, #e0e7ff 100%) !important;
+    transform: translateY(-5px) !important;
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Upload Actions */
+.upload-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}

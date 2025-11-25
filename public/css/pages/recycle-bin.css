@@ -48,6 +48,50 @@
     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
 }
 
+.recycle-info-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.recycle-info-icon.retention {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.2));
+    color: #6366f1;
+}
+
+.recycle-info-icon.total {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.2));
+    color: #22c55e;
+}
+
+.recycle-info-icon i {
+    font-size: 1.1rem;
+}
+
+.recycle-info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.recycle-info-content strong {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.recycle-info-content p {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.4;
+    margin: 0;
+}
+
 .recycle-selection-bar {
     display: flex;
     align-items: center;

@@ -488,6 +488,157 @@
         font-size: 12px;
         min-width: 50px;
     }
+
+    .file-name {
+        font-size: 14px;
+        max-width: 200px;
+    }
+
+    /* Office Options Extra Small */
+    .office-actions-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .office-action-btn {
+        padding: 14px 12px;
+        min-height: 80px;
+        flex-direction: row;
+        gap: 12px;
+    }
+
+    .office-action-btn i {
+        font-size: 18px;
+    }
+
+    .office-action-btn span {
+        font-size: 12px;
+    }
+
+    .office-action-btn small {
+        font-size: 10px;
+        display: none;
+    }
+
+    .office-options h4 {
+        font-size: 18px;
+    }
+
+    .office-info-card {
+        padding: 12px;
+    }
+
+    .office-info-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    .office-info-text h5 {
+        font-size: 13px;
+    }
+
+    .office-info-text p {
+        font-size: 12px;
+    }
+}
+
+/* ===== TABLET LANDSCAPE ===== */
+@media (max-width: 1024px) and (orientation: landscape) {
+    .pdf-preview-content {
+        width: 95vw;
+        height: 95vh;
+    }
+
+    .pdf-preview-header {
+        flex-direction: row;
+        padding: 10px 16px;
+        min-height: 56px;
+    }
+
+    .pdf-preview-controls {
+        flex-direction: row;
+    }
+}
+
+/* ===== MOBILE LANDSCAPE ===== */
+@media (max-width: 820px) and (orientation: landscape) {
+    .pdf-preview-content {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    .pdf-preview-header {
+        flex-direction: row;
+        padding: 8px 12px;
+        min-height: 48px;
+        gap: 10px;
+    }
+
+    .file-name {
+        font-size: 13px;
+        max-width: 150px;
+    }
+
+    .pdf-preview-controls {
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .page-controls,
+    .zoom-controls,
+    .action-controls {
+        gap: 4px;
+    }
+
+    .control-btn {
+        padding: 6px 8px;
+        min-width: 36px;
+        height: 36px;
+        font-size: 12px;
+    }
+
+    .page-info,
+    .zoom-info {
+        font-size: 11px;
+        min-width: 40px;
+    }
+
+    .pdf-container {
+        padding: 8px;
+    }
+
+    #pdf-canvas {
+        max-height: calc(100vh - 60px);
+    }
+}
+
+/* ===== TOUCH DEVICE OPTIMIZATION ===== */
+@media (hover: none) and (pointer: coarse) {
+    .control-btn {
+        min-width: 44px;
+        height: 44px;
+    }
+
+    .control-btn:hover {
+        background: rgba(255, 255, 255, 0.9);
+        transform: none;
+    }
+
+    .control-btn:active {
+        background: rgba(99, 102, 241, 0.2);
+        transform: scale(0.95);
+    }
+
+    .office-action-btn:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .office-action-btn:active {
+        transform: scale(0.98);
+    }
 }
 
 /* Scrollbar Styling */

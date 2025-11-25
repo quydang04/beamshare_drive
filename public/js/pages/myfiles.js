@@ -893,7 +893,7 @@ function buildFileDetailsModal(fileDetails) {
             <div class="file-activity-timeline">
                 ${timelineItems.map(item => `
                     <div class="timeline-item">
-                        <div class="timeline-icon"><i class="fas ${item.icon}"></i></div>
+                        <div class="timeline-icon ${item.iconClass || ''}"><i class="fas ${item.icon}"></i></div>
                         <div class="timeline-content">
                             <div class="timeline-title">${escapeHtml(item.title)}</div>
                             <div class="timeline-subtitle">${escapeHtml(item.subtitle)}</div>
@@ -914,6 +914,7 @@ function createTimelineItems(fileDetails, snapshot = {}) {
     if (fileDetails.uploadDate) {
         items.push({
             icon: 'fa-cloud-upload-alt',
+            iconClass: 'icon-upload',
             title: 'Tải lên thành công',
             subtitle: formatAbsoluteDateTime(fileDetails.uploadDate) || '—'
         });
@@ -922,6 +923,7 @@ function createTimelineItems(fileDetails, snapshot = {}) {
     if (fileDetails.modifiedDate && fileDetails.modifiedDate !== fileDetails.uploadDate) {
         items.push({
             icon: 'fa-sync-alt',
+            iconClass: 'icon-sync',
             title: 'Chỉnh sửa lần cuối',
             subtitle: formatAbsoluteDateTime(fileDetails.modifiedDate) || '—'
         });
@@ -932,6 +934,7 @@ function createTimelineItems(fileDetails, snapshot = {}) {
         const shareUpdatedAt = (snapshot && (snapshot.shareUpdatedAt || snapshot.updatedAt)) || fileDetails.shareUpdatedAt;
         items.push({
             icon: shareState === 'public' ? 'fa-unlock' : 'fa-lock',
+            iconClass: shareState === 'public' ? 'icon-unlock' : 'icon-lock',
             title: shareState === 'public' ? 'Đang công khai' : 'Đang riêng tư',
             subtitle: shareUpdatedAt ? formatRelativeDate(shareUpdatedAt) : 'Cập nhật ngay'
         });

@@ -1,0 +1,1037 @@
+/**
+ * MyFiles Responsive - Media Preview Breakpoints
+ * Unified with file-share responsive design
+ */
+
+/* ===== TABLET (820px) ===== */
+@media (max-width: 820px) {
+    /* ===== VIDEO PLAYER ===== */
+    .media-card--video {
+        padding: 20px 20px 72px;
+        border-radius: 20px;
+    }
+
+    .media-card--video .media-element {
+        border-radius: 14px;
+        max-height: 320px;
+    }
+
+    .media-card--video .media-controls {
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        padding: 14px 18px;
+        border-radius: 18px;
+        gap: 14px;
+    }
+
+    .media-card--video .media-button {
+        width: 48px;
+        height: 48px;
+        font-size: 1rem;
+    }
+
+    .media-card--video .media-button--secondary {
+        width: 42px;
+        height: 42px;
+    }
+
+    .media-card--video .media-meta {
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        padding: 10px 16px;
+        border-radius: 14px;
+        font-size: 0.85rem;
+    }
+
+    .media-card--video .media-time {
+        font-size: 0.8rem;
+        min-width: 44px;
+    }
+
+    .media-card--video .media-volume {
+        width: 90px;
+    }
+
+    /* ===== AUDIO PLAYER ===== */
+    .media-card--audio {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .audio-hero {
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .audio-cover {
+        width: 76px;
+        height: 76px;
+        border-radius: 14px;
+    }
+
+    .audio-info-title {
+        font-size: 1.1rem;
+    }
+
+    .audio-info-artist {
+        font-size: 0.9rem;
+    }
+
+    .media-controls {
+        padding: 14px;
+        gap: 12px;
+        border-radius: 14px;
+    }
+
+    .media-button {
+        width: 40px;
+        height: 40px;
+        font-size: 0.95rem;
+    }
+
+    .media-progress {
+        height: 5px;
+    }
+
+    .media-time {
+        font-size: 0.8rem;
+        min-width: 44px;
+    }
+
+    .media-volume {
+        width: 80px;
+    }
+
+    /* Legacy Players */
+    .details-media-card {
+        border-radius: 14px;
+    }
+
+    .video-controls {
+        gap: 10px;
+        padding: 10px 12px;
+    }
+
+    .video-controls button {
+        width: 34px;
+        height: 34px;
+        font-size: 14px;
+    }
+
+    .audio-player-card {
+        border-radius: 14px;
+    }
+
+    .audio-visualizer-area {
+        padding: 24px 16px;
+        gap: 18px;
+    }
+
+    .audio-artwork {
+        width: 110px;
+        height: 110px;
+        border-radius: 16px;
+    }
+
+    .audio-artwork i {
+        font-size: 44px;
+    }
+
+    .audio-controls {
+        padding: 14px 16px 20px;
+        gap: 14px;
+    }
+
+    .audio-buttons button {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+
+    .audio-buttons button.play-btn {
+        width: 52px;
+        height: 52px;
+        font-size: 20px;
+    }
+
+    /* PDF Preview */
+    .pdf-preview {
+        border-radius: 10px;
+    }
+
+    .pdf-header {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+
+    .pdf-header i {
+        font-size: 20px;
+    }
+
+    .pdf-header h4 {
+        font-size: 14px;
+    }
+
+    .preview-pdf {
+        height: 55vh;
+        border-radius: 0 0 10px 10px;
+    }
+
+    /* Text Preview */
+    .text-preview {
+        border-radius: 10px;
+    }
+
+    .text-header {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+
+    .text-header i {
+        font-size: 20px;
+    }
+
+    .text-header h4 {
+        font-size: 14px;
+    }
+
+    .text-content {
+        max-height: 50vh;
+    }
+
+    .text-content pre {
+        padding: 16px;
+        font-size: 13px;
+        border-radius: 0 0 10px 10px;
+    }
+
+    /* Office/Archive Preview */
+    .office-preview,
+    .archive-preview,
+    .file-info-preview {
+        padding: 28px 20px;
+    }
+
+    .office-header,
+    .archive-header {
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .office-header i,
+    .archive-header i {
+        font-size: 40px;
+    }
+
+    .office-header h4,
+    .archive-header h4 {
+        font-size: 16px;
+    }
+
+    .office-info p,
+    .archive-info p,
+    .file-details-preview p {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .btn-office-online {
+        padding: 10px 20px;
+        font-size: 13px;
+        border-radius: 10px;
+    }
+
+    .file-icon-large {
+        width: 70px;
+        height: 70px;
+        border-radius: 16px;
+        font-size: 2.4rem;
+        margin-bottom: 20px;
+    }
+
+    .file-details-preview h4 {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .btn-download,
+    .btn-close {
+        padding: 10px 18px;
+        font-size: 13px;
+        border-radius: 10px;
+    }
+
+    .loading-text,
+    .error-text {
+        padding: 28px 20px;
+        font-size: 14px;
+    }
+}
+
+/* ===== MOBILE LARGE (640px) ===== */
+@media (max-width: 640px) {
+    /* ===== VIDEO PLAYER ===== */
+    .media-card--video {
+        padding: 16px;
+        padding-bottom: 20px;
+        border-radius: 16px;
+    }
+
+    .media-card--video .media-element {
+        border-radius: 12px;
+        aspect-ratio: 16 / 9;
+        max-height: none;
+    }
+
+    .media-card--video .media-controls {
+        position: static;
+        margin-top: 14px;
+        border-radius: 14px;
+        padding: 12px 14px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .media-card--video .media-meta {
+        position: static;
+        margin-bottom: 14px;
+        order: -1;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+
+    .media-card--video .media-button {
+        width: 44px;
+        height: 44px;
+        font-size: 0.95rem;
+    }
+
+    .media-card--video .media-button--secondary {
+        width: 38px;
+        height: 38px;
+    }
+
+    .media-card--video .media-progress-wrapper {
+        width: 100%;
+        order: 10;
+    }
+
+    .media-card--video .media-time {
+        font-size: 0.75rem;
+        min-width: 40px;
+    }
+
+    .media-card--video .media-volume {
+        width: 60px;
+    }
+
+    /* ===== AUDIO PLAYER ===== */
+    .media-card--audio {
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .audio-hero {
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .audio-cover {
+        width: 68px;
+        height: 68px;
+        border-radius: 12px;
+    }
+
+    .audio-cover::after {
+        font-size: 1.3rem;
+    }
+
+    .audio-info-title {
+        font-size: 1rem;
+    }
+
+    .audio-info-artist {
+        font-size: 0.85rem;
+    }
+
+    .media-controls {
+        padding: 12px;
+        gap: 10px;
+        border-radius: 12px;
+    }
+
+    .media-button {
+        width: 38px;
+        height: 38px;
+        font-size: 0.9rem;
+    }
+
+    .media-progress {
+        height: 5px;
+    }
+
+    .media-progress::-webkit-slider-thumb {
+        width: 12px;
+        height: 12px;
+    }
+
+    .media-progress::-moz-range-thumb {
+        width: 12px;
+        height: 12px;
+    }
+
+    .media-time {
+        font-size: 0.75rem;
+        min-width: 40px;
+    }
+
+    .media-volume {
+        width: 70px;
+        height: 5px;
+    }
+
+    /* Legacy Players */
+    .details-media-card {
+        border-radius: 12px;
+    }
+
+    .video-controls {
+        gap: 8px;
+        padding: 8px 10px;
+    }
+
+    .video-controls button {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+
+    .audio-player-card {
+        border-radius: 12px;
+    }
+
+    .audio-visualizer-area {
+        padding: 20px 14px;
+        gap: 16px;
+    }
+
+    .audio-artwork {
+        width: 90px;
+        height: 90px;
+        border-radius: 14px;
+    }
+
+    .audio-artwork i {
+        font-size: 36px;
+    }
+
+    .audio-controls {
+        padding: 12px 14px 18px;
+        gap: 12px;
+    }
+
+    .audio-buttons button {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    .audio-buttons button.play-btn {
+        width: 46px;
+        height: 46px;
+        font-size: 18px;
+    }
+
+    /* PDF Preview */
+    .pdf-header {
+        padding: 10px 12px;
+        gap: 8px;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .pdf-header i {
+        font-size: 18px;
+    }
+
+    .pdf-header h4 {
+        font-size: 13px;
+    }
+
+    .preview-pdf {
+        height: 50vh;
+        border-radius: 0 0 8px 8px;
+    }
+
+    /* Text Preview */
+    .text-header {
+        padding: 10px 12px;
+        gap: 8px;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .text-header i {
+        font-size: 18px;
+    }
+
+    .text-header h4 {
+        font-size: 13px;
+    }
+
+    .text-content {
+        max-height: 45vh;
+    }
+
+    .text-content pre {
+        padding: 14px;
+        font-size: 12px;
+        line-height: 1.4;
+        border-radius: 0 0 8px 8px;
+    }
+
+    /* Office/Archive Preview */
+    .office-preview,
+    .archive-preview,
+    .file-info-preview {
+        padding: 24px 16px;
+    }
+
+    .office-header,
+    .archive-header {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .office-header i,
+    .archive-header i {
+        font-size: 36px;
+    }
+
+    .office-header h4,
+    .archive-header h4 {
+        font-size: 15px;
+    }
+
+    .office-info p,
+    .archive-info p,
+    .file-details-preview p {
+        font-size: 12px;
+    }
+
+    .btn-office-online {
+        padding: 10px 18px;
+        font-size: 12px;
+        border-radius: 8px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .file-icon-large {
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
+        font-size: 2rem;
+        margin-bottom: 18px;
+    }
+
+    .file-details-preview h4 {
+        font-size: 16px;
+    }
+
+    .btn-download,
+    .btn-close {
+        padding: 10px 16px;
+        font-size: 12px;
+        border-radius: 8px;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .loading-text,
+    .error-text {
+        padding: 24px 16px;
+        font-size: 13px;
+    }
+}
+
+/* ===== MOBILE SMALL (520px) ===== */
+@media (max-width: 520px) {
+    /* ===== VIDEO PLAYER ===== */
+    .media-card--video {
+        padding: 12px;
+        padding-bottom: 14px;
+        border-radius: 14px;
+    }
+
+    .media-card--video .media-element {
+        border-radius: 10px;
+    }
+
+    .media-card--video .media-controls {
+        margin-top: 10px;
+        border-radius: 12px;
+        padding: 10px;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .media-card--video .media-meta {
+        margin-bottom: 10px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .media-card--video .media-button {
+        width: 40px;
+        height: 40px;
+        font-size: 0.9rem;
+    }
+
+    .media-card--video .media-button--secondary {
+        width: 34px;
+        height: 34px;
+    }
+
+    .media-card--video .media-time {
+        font-size: 0.7rem;
+        min-width: 36px;
+    }
+
+    .media-card--video .media-volume {
+        width: 100%;
+        order: 11;
+    }
+
+    /* ===== AUDIO PLAYER ===== */
+    .media-card--audio {
+        padding: 12px;
+        border-radius: 12px;
+    }
+
+    .audio-hero {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .audio-cover {
+        width: 64px;
+        height: 64px;
+        border-radius: 10px;
+    }
+
+    .audio-cover::after {
+        font-size: 1.1rem;
+    }
+
+    .audio-info-title {
+        font-size: 0.95rem;
+    }
+
+    .audio-info-artist {
+        font-size: 0.8rem;
+    }
+
+    .media-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 10px;
+        gap: 8px;
+        border-radius: 10px;
+    }
+
+    .media-button {
+        width: 36px;
+        height: 36px;
+        font-size: 0.85rem;
+    }
+
+    .media-progress-wrapper {
+        width: 100%;
+        order: 2;
+    }
+
+    .media-progress {
+        height: 4px;
+    }
+
+    .media-time {
+        font-size: 0.7rem;
+        min-width: 36px;
+    }
+
+    .media-volume {
+        width: 100%;
+        order: 3;
+        height: 4px;
+    }
+
+    /* Legacy Players */
+    .details-media-card {
+        border-radius: 10px;
+    }
+
+    .video-controls {
+        gap: 6px;
+        padding: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .video-controls button {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+
+    .audio-player-card {
+        border-radius: 10px;
+    }
+
+    .audio-visualizer-area {
+        padding: 16px 12px;
+        gap: 12px;
+    }
+
+    .audio-artwork {
+        width: 72px;
+        height: 72px;
+        border-radius: 12px;
+    }
+
+    .audio-artwork i {
+        font-size: 28px;
+    }
+
+    .audio-controls {
+        padding: 10px 12px 16px;
+        gap: 10px;
+    }
+
+    .audio-buttons {
+        gap: 10px;
+    }
+
+    .audio-buttons button {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .audio-buttons button.play-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 16px;
+    }
+
+    .audio-volume-wrapper {
+        display: none;
+    }
+
+    /* PDF Preview */
+    .pdf-header {
+        padding: 8px 10px;
+        gap: 6px;
+        border-radius: 6px 6px 0 0;
+    }
+
+    .pdf-header i {
+        font-size: 16px;
+    }
+
+    .pdf-header h4 {
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .preview-pdf {
+        height: 45vh;
+        border-radius: 0 0 6px 6px;
+    }
+
+    /* Text Preview */
+    .text-header {
+        padding: 8px 10px;
+        gap: 6px;
+        border-radius: 6px 6px 0 0;
+    }
+
+    .text-header i {
+        font-size: 16px;
+    }
+
+    .text-header h4 {
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .text-content {
+        max-height: 40vh;
+    }
+
+    .text-content pre {
+        padding: 12px;
+        font-size: 11px;
+        line-height: 1.35;
+        border-radius: 0 0 6px 6px;
+    }
+
+    /* Office/Archive Preview */
+    .office-preview,
+    .archive-preview,
+    .file-info-preview {
+        padding: 18px 12px;
+    }
+
+    .office-header,
+    .archive-header {
+        gap: 6px;
+        margin-bottom: 14px;
+    }
+
+    .office-header i,
+    .archive-header i {
+        font-size: 32px;
+    }
+
+    .office-header h4,
+    .archive-header h4 {
+        font-size: 14px;
+    }
+
+    .office-info p,
+    .archive-info p,
+    .file-details-preview p {
+        font-size: 11px;
+    }
+
+    .btn-office-online {
+        padding: 9px 16px;
+        font-size: 11px;
+        border-radius: 6px;
+    }
+
+    .file-icon-large {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        font-size: 1.6rem;
+        margin-bottom: 16px;
+    }
+
+    .file-details-preview h4 {
+        font-size: 14px;
+        word-break: break-word;
+    }
+
+    .btn-download,
+    .btn-close {
+        padding: 9px 14px;
+        font-size: 11px;
+        border-radius: 6px;
+    }
+
+    .loading-text,
+    .error-text {
+        padding: 20px 14px;
+        font-size: 12px;
+    }
+}
+
+/* ===== EXTRA SMALL (400px) ===== */
+@media (max-width: 400px) {
+    .media-card--video {
+        padding: 10px;
+        padding-bottom: 12px;
+        border-radius: 12px;
+    }
+
+    .media-card--video .media-element {
+        border-radius: 8px;
+    }
+
+    .media-card--video .media-controls {
+        padding: 8px;
+        gap: 6px;
+        border-radius: 10px;
+    }
+
+    .media-card--video .media-meta {
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 0.7rem;
+    }
+
+    .media-card--video .media-button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .media-card--video .media-button--secondary {
+        width: 30px;
+        height: 30px;
+    }
+
+    .media-card--audio {
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .audio-cover {
+        width: 56px;
+        height: 56px;
+        border-radius: 8px;
+    }
+
+    .audio-info-title {
+        font-size: 0.9rem;
+    }
+
+    .audio-info-artist {
+        font-size: 0.75rem;
+    }
+
+    .media-controls {
+        padding: 8px;
+        gap: 6px;
+        border-radius: 8px;
+    }
+
+    .media-button {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+}
+
+/* ===== LANDSCAPE MODE ===== */
+@media (max-width: 820px) and (orientation: landscape) {
+    .media-card--video {
+        padding: 12px;
+    }
+
+    .media-card--video .media-element {
+        max-height: 55vh;
+        aspect-ratio: 16 / 9;
+    }
+
+    .media-card--video .media-controls {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        padding: 10px 14px;
+        margin-top: 0;
+    }
+
+    .media-card--video .media-meta {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        margin-bottom: 0;
+        flex-direction: row;
+    }
+
+    .media-card--video .media-volume {
+        width: 80px;
+        order: 0;
+    }
+
+    .media-card--audio {
+        padding: 12px 16px;
+    }
+
+    .audio-hero {
+        flex-direction: row;
+        text-align: left;
+        margin-bottom: 10px;
+    }
+
+    .audio-cover {
+        width: 56px;
+        height: 56px;
+    }
+
+    .media-controls {
+        padding: 10px 12px;
+    }
+
+    .media-volume {
+        width: 80px;
+        order: 0;
+    }
+
+    /* PDF/Text landscape */
+    .preview-pdf {
+        height: 65vh;
+    }
+
+    .text-content {
+        max-height: 55vh;
+    }
+}
+
+/* ===== TOUCH DEVICE OPTIMIZATION ===== */
+@media (hover: none) and (pointer: coarse) {
+    .media-button:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .media-button:active {
+        transform: scale(0.95);
+    }
+
+    .media-card--video .media-button:hover {
+        box-shadow: 0 16px 32px rgba(99, 102, 241, 0.35);
+    }
+
+    .media-card--video .media-button:active {
+        transform: scale(0.95);
+    }
+
+    /* Larger touch targets */
+    .media-button {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .media-progress {
+        height: 8px;
+    }
+
+    .media-progress::-webkit-slider-thumb {
+        width: 16px;
+        height: 16px;
+    }
+
+    .media-progress::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+    }
+
+    .media-volume {
+        height: 8px;
+    }
+
+    .media-volume::-webkit-slider-thumb {
+        width: 14px;
+        height: 14px;
+    }
+
+    .media-volume::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+    }
+}
