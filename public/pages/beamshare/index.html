@@ -55,33 +55,40 @@
                 <use xlink:href="#icon-language-selector"></use>
             </svg>
         </div>
-        <div id="theme-wrapper">
-            <div id="theme-auto" class="icon-button selected" data-i18n-key="header.theme-auto" data-i18n-attrs="title">
-                <svg class="icon">
+        <div id="theme-toggle-wrapper" class="theme-toggle-wrapper">
+            <button id="theme-toggle" class="theme-toggle" type="button">
+                <svg class="icon theme-toggle__icon" id="theme-toggle-icon">
                     <use xlink:href="#icon-theme-auto"></use>
                 </svg>
-            </div>
-            <div>
-                <div id="theme-light" class="icon-button" data-i18n-key="header.theme-light" data-i18n-attrs="title">
+                <span class="theme-toggle__label" id="theme-toggle-label" data-i18n-key="header.theme-auto_text" data-i18n-attrs="text">Auto</span>
+                <svg class="icon theme-toggle__caret">
+                    <use xlink:href="#caret"></use>
+                </svg>
+            </button>
+            <div class="theme-menu" id="theme-menu">
+                <button class="theme-option" data-theme="auto" type="button">
+                    <svg class="icon">
+                        <use xlink:href="#icon-theme-auto"></use>
+                    </svg>
+                    <span data-i18n-key="header.theme-auto_text" data-i18n-attrs="text">Auto</span>
+                </button>
+                <button class="theme-option" data-theme="light" type="button">
                     <svg class="icon">
                         <use xlink:href="#icon-theme-light"></use>
                     </svg>
-                </div>
-                <div id="theme-dark" class="icon-button" data-i18n-key="header.theme-dark" data-i18n-attrs="title">
+                    <span data-i18n-key="header.theme-light_text" data-i18n-attrs="text">Light</span>
+                </button>
+                <button class="theme-option" data-theme="dark" type="button">
                     <svg class="icon">
                         <use xlink:href="#icon-theme-dark"></use>
                     </svg>
-                </div>
+                    <span data-i18n-key="header.theme-dark_text" data-i18n-attrs="text">Dark</span>
+                </button>
             </div>
         </div>
         <div id="notification" class="icon-button" data-i18n-key="header.notification" data-i18n-attrs="title" hidden>
             <svg class="icon">
                 <use xlink:href="#notifications"></use>
-            </svg>
-        </div>
-        <div id="install" class="icon-button" data-i18n-key="header.install" data-i18n-attrs="title" hidden>
-            <svg class="icon">
-                <use xlink:href="#homescreen"></use>
             </svg>
         </div>
         <div id="expand" class="icon-button" data-i18n-key="header.expand" data-i18n-attrs="title" hidden>
@@ -418,7 +425,7 @@
                         </a>
                     </div>
                     <div class="about-footer text-center">
-                        <p class="copyright">© 2025 BeamShare Drive.</p>
+                        <p class="copyright">Quý Đặng Blog</p>
                     </div>
                 </div>
             </x-paper>

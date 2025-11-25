@@ -1,4 +1,4 @@
-const cacheVersion = 'v1.11.4';
+const cacheVersion = 'v1.11.5';
 const cacheTitle = `beamshare-cache-${cacheVersion}`;
 const relativePathsToCache = [
     './',
@@ -25,6 +25,18 @@ const relativePathsToCache = [
 const relativePathsNotToCache = [
     'config'
 ]
+
+// API paths that should never be cached and always fetched from network
+const apiPathsToBypassCache = [
+    '/api/',
+    '/auth/'
+]
+
+// Check if request is an API request that should bypass cache
+const isApiRequest = request => {
+    const url = new URL(request.url);
+    return apiPathsToBypassCache.some(path => url.pathname.startsWith(path));
+};
 
 self.addEventListener('install', function(event) {
     // Perform install steps
@@ -115,6 +127,17 @@ self.addEventListener('fetch', function(event) {
     if (swOrigin !== requestOrigin) {
         // Do not handle requests from other origin
         event.respondWith(fetch(event.request));
+    }
+    else if (isApiRequest(event.request)) {
+        // API requests should always bypass cache and fetch from network
+        // This is critical for authentication checks to work correctly
+        event.respondWith(
+            fetch(event.request, { cache: "no-store" })
+                .catch(error => {
+                    console.error("API request failed:", event.request.url, error);
+                    throw error;
+                })
+        );
     }
     else if (event.request.method === "POST") {
         // Requests related to Web Share Target.

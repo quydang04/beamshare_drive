@@ -354,7 +354,7 @@ function togglePasswordVisibility(button) {
 
     const showing = field.type === 'text';
     field.type = showing ? 'password' : 'text';
-    button.textContent = showing ? 'Hiện' : 'Ẩn';
+    button.classList.toggle('is-visible', !showing);
 }
 
 function showAlert(alertBox, status, message) {

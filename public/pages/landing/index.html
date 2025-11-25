@@ -41,10 +41,27 @@
                     <li><a href="#faq" class="nav-link">FAQ</a></li>
                 </ul>
                 <div class="nav-actions">
-                    <button class="theme-btn" id="themeToggle" aria-label="Chuyển đổi giao diện">
-                        <i class="fa-solid fa-sun sun-icon"></i>
-                        <i class="fa-solid fa-moon moon-icon"></i>
-                    </button>
+                    <div class="theme-toggle-wrapper">
+                        <button class="theme-toggle" id="themeToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Chuyển đổi giao diện">
+                            <i class="fas fa-sun theme-toggle__icon"></i>
+                            <span class="theme-toggle__label">Sáng</span>
+                            <i class="fas fa-caret-down theme-toggle__caret"></i>
+                        </button>
+                        <div class="theme-menu" id="themeMenu" role="menu">
+                            <button class="theme-option" type="button" data-theme="light" role="menuitemradio">
+                                <i class="fas fa-sun"></i>
+                                <span>Sáng</span>
+                            </button>
+                            <button class="theme-option" type="button" data-theme="dark" role="menuitemradio">
+                                <i class="fas fa-moon"></i>
+                                <span>Tối</span>
+                            </button>
+                            <button class="theme-option" type="button" data-theme="system" role="menuitemradio">
+                                <i class="fas fa-desktop"></i>
+                                <span>Hệ thống</span>
+                            </button>
+                        </div>
+                    </div>
                     <a href="/auth/login" class="btn btn-text">Đăng nhập</a>
                     <a href="/auth/register" class="btn btn-primary">Đăng ký ngay</a>
                 </div>
@@ -343,7 +360,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; Quý Đặng Blog</p>
+                <p> Quý Đặng Blog </p>
             </div>
         </div>
     </footer>

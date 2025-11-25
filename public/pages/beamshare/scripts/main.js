@@ -2,7 +2,7 @@ class PairDrop {
 
     constructor() {
         this.$headerNotificationBtn = $('notification');
-        this.$headerInstallBtn = $('install');
+        this.$headerInstallBtn = $('install'); // May be null if removed
 
         this.deferredStyles = [];
         this.deferredScripts = [
@@ -56,6 +56,14 @@ class PairDrop {
     }
 
     async initialize() {
+        // Check authentication status first - redirect to login if not authenticated
+        const isAuthenticated = await this.checkAuthStatus();
+        if (!isAuthenticated) {
+            console.log("User not authenticated, redirecting to login page...");
+            window.location.href = '/landing';
+            return;
+        }
+
         // Translate page before fading in
         await this.localization.setInitialTranslation()
         console.log("Initial translation successful.");
@@ -100,7 +108,42 @@ class PairDrop {
         }
     }
 
+    /**
+     * Check if user is authenticated by calling /api/auth/me
+     * Returns true if authenticated, false if not (401 response)
+     */
+    async checkAuthStatus() {
+        try {
+            const response = await fetch('/api/auth/me', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                console.log("User is authenticated.");
+                return true;
+            }
+
+            if (response.status === 401) {
+                console.log("User is not authenticated (401).");
+                return false;
+            }
+
+            // For other errors, assume authenticated to avoid blocking users
+            console.warn(`Auth check returned status ${response.status}, assuming authenticated.`);
+            return true;
+        } catch (error) {
+            console.error('Error checking auth status:', error);
+            // On network error, assume authenticated to avoid blocking users
+            return true;
+        }
+    }
+
     onPwaInstallable(e) {
+        // Skip if install button doesn't exist
+        if (!this.$headerInstallBtn) {
+            return e.preventDefault();
+        }
         if (!window.matchMedia('(display-mode: standalone)').matches) {
             // only display install btn when not installed
             this.$headerInstallBtn.removeAttribute('hidden');
@@ -227,6 +270,13 @@ class PairDrop {
                 headers
             });
 
+            // Handle 401 - user logged out, redirect to login page
+            if (detailsResponse.status === 401) {
+                console.log("User session expired or logged out, redirecting to login...");
+                window.location.href = '/landing';
+                return;
+            }
+
             const detailsPayload = await detailsResponse.json().catch(() => null);
             if (!detailsResponse.ok) {
                 const message = detailsPayload?.error || detailsPayload?.message || `Failed to fetch drive file details: ${detailsResponse.status}`;
@@ -240,6 +290,13 @@ class PairDrop {
                 credentials: 'same-origin',
                 headers
             });
+
+            // Handle 401 - user logged out, redirect to login page
+            if (downloadResponse.status === 401) {
+                console.log("User session expired or logged out, redirecting to login...");
+                window.location.href = '/landing';
+                return;
+            }
 
             if (!downloadResponse.ok) {
                 let message = `Failed to download drive file: ${downloadResponse.status}`;
@@ -346,6 +403,13 @@ class PairDrop {
                 method: 'GET',
                 credentials: 'include'
             });
+
+            // Handle 401 - user logged out, redirect to login page
+            if (response.status === 401) {
+                console.log("User session expired or logged out, redirecting to login...");
+                window.location.href = '/landing';
+                return;
+            }
 
             const payload = await response.json().catch(() => null);
             if (!response.ok || !payload) {

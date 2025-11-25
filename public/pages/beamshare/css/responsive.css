@@ -595,3 +595,306 @@
         display: none;
     }
 }
+
+/* ===================================
+   ENHANCED RESPONSIVE FOR BEAMSHARE
+   =================================== */
+
+/* Header responsive improvements */
+@media (max-width: 575px) {
+    header {
+        padding: 6px 10px;
+        gap: 4px;
+        min-height: 50px;
+    }
+
+    header > .icon-button {
+        width: 38px;
+        height: 38px;
+    }
+
+    header .icon {
+        width: 22px;
+        height: 22px;
+    }
+}
+
+/* Footer responsive improvements */
+@media (max-width: 575px) {
+    footer {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .beamshare-brand {
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .beamshare-brand__icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .beamshare-brand__name {
+        font-size: 16px;
+    }
+
+    .known-as-wrapper {
+        font-size: 14px;
+    }
+
+    #display-name {
+        font-size: 14px;
+        max-width: 12em;
+    }
+
+    .discovery-wrapper {
+        margin-top: 10px;
+        padding: 8px 12px;
+    }
+
+    .discovery-wrapper .badge {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+
+    .beamshare-plan-card {
+        padding: 12px;
+        margin-top: 10px;
+    }
+
+    .beamshare-plan-card .plan-card-title {
+        font-size: 14px;
+    }
+
+    .beamshare-plan-card .plan-card-row {
+        font-size: 13px;
+    }
+
+    .beamshare-plan-card .plan-card-label {
+        font-size: 11px;
+    }
+}
+
+/* Peer cards responsive */
+@media (max-width: 575px) {
+    x-peer {
+        width: 100px;
+        margin: 8px;
+    }
+
+    x-peer label {
+        padding: 14px 10px 12px;
+        border-radius: 18px;
+    }
+
+    x-peer x-icon,
+    x-peer .icon-wrapper {
+        width: 60px;
+        height: 60px;
+    }
+
+    x-peer .icon-wrapper {
+        border-radius: 18px;
+    }
+
+    x-peer .icon-wrapper .icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    x-peer .device-descriptor .name {
+        font-size: 13px;
+    }
+
+    x-peer .device-descriptor .device-name {
+        font-size: 11px;
+    }
+
+    x-peer .device-descriptor .status {
+        font-size: 11px;
+    }
+}
+
+/* No peers responsive */
+@media (max-width: 575px) {
+    x-no-peers h2 {
+        font-size: 18px;
+        margin-bottom: 4px;
+    }
+
+    x-no-peers > div {
+        font-size: 13px;
+    }
+}
+
+/* Dialog responsive improvements */
+@media (max-width: 575px) {
+    x-dialog x-paper {
+        max-width: calc(100vw - 24px);
+        border-radius: 20px;
+        margin: 12px;
+    }
+
+    x-dialog x-background {
+        padding: 12px 8px 16px;
+    }
+
+    .textarea {
+        padding: 12px 16px;
+        font-size: 15px;
+        border-radius: 16px;
+    }
+
+    .btn-row .btn {
+        height: 46px;
+        font-size: 13px;
+        min-width: 100px;
+    }
+}
+
+/* Connection status responsive */
+@media (max-width: 575px) {
+    .connection-status {
+        padding: 6px 12px !important;
+        font-size: 11px !important;
+        border-radius: 16px;
+    }
+
+    .connection-dot {
+        width: 6px !important;
+        height: 6px !important;
+    }
+}
+
+/* Safe area insets for modern mobile devices */
+@supports (padding: max(0px)) {
+    header {
+        padding-top: max(8px, env(safe-area-inset-top));
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+    }
+
+    footer {
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+        padding-left: max(10px, env(safe-area-inset-left));
+        padding-right: max(10px, env(safe-area-inset-right));
+    }
+}
+
+/* Landscape mobile improvements */
+@media (orientation: landscape) and (max-height: 450px) {
+    header {
+        min-height: 44px;
+        padding: 4px 10px;
+    }
+
+    header > .icon-button {
+        width: 36px;
+        height: 36px;
+    }
+
+    footer {
+        padding: 8px;
+    }
+
+    .beamshare-brand {
+        margin-bottom: 8px;
+    }
+
+    .beamshare-brand__icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .beamshare-brand__name {
+        font-size: 15px;
+    }
+
+    x-peer {
+        width: 90px;
+        margin: 6px;
+    }
+
+    x-peer label {
+        padding: 10px 8px 8px;
+    }
+
+    x-peer x-icon,
+    x-peer .icon-wrapper {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+/* Extra small devices (very narrow screens) */
+@media (max-width: 320px) {
+    header {
+        padding: 4px 8px;
+    }
+
+    header > .icon-button {
+        width: 34px;
+        height: 34px;
+    }
+
+    #theme-wrapper {
+        padding: 2px 4px !important;
+    }
+
+    #theme-wrapper .icon-button {
+        width: 28px !important;
+        height: 28px !important;
+    }
+
+    footer {
+        padding: 8px;
+    }
+
+    .beamshare-brand__icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .beamshare-brand__name {
+        font-size: 14px;
+    }
+
+    .known-as-wrapper {
+        font-size: 13px;
+    }
+
+    x-peer {
+        width: 85px;
+        margin: 6px;
+    }
+}
+
+/* Touch-friendly improvements for all touch devices */
+@media (hover: none) and (pointer: coarse) {
+    /* Ensure buttons are large enough for touch */
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .icon-button {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    /* Better tap targets for peer cards */
+    x-peer label {
+        min-height: 100px;
+    }
+
+    /* Disable hover effects that cause issues on touch */
+    x-peer label:hover {
+        transform: none;
+    }
+
+    x-peer label:active {
+        transform: scale(0.97);
+    }
+}

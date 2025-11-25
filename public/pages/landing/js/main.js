@@ -2,31 +2,132 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check auth and update navigation links
     checkAuthAndUpdateLinks();
 
-    // Theme Toggle
+    // Theme Toggle with Dropdown
     const themeToggle = document.getElementById('themeToggle');
+    const themeMenu = document.getElementById('themeMenu');
+    const themeWrapper = themeToggle?.closest('.theme-toggle-wrapper');
+    const themeOptions = document.querySelectorAll('.theme-option');
     const html = document.documentElement;
     const STORAGE_KEY = 'beamshare-theme';
 
-    const setTheme = (theme) => {
-        html.setAttribute('data-theme', theme);
-        localStorage.setItem(STORAGE_KEY, theme);
+    const getSystemTheme = () => window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    
+    const resolveTheme = (mode) => mode === 'system' ? getSystemTheme() : mode;
+
+    const getThemeLabel = (mode) => {
+        const labels = { light: 'Sáng', dark: 'Tối', system: 'Hệ thống' };
+        return labels[mode] || 'Sáng';
+    };
+
+    const getThemeIcon = (mode) => {
+        const icons = { light: 'fa-sun', dark: 'fa-moon', system: 'fa-desktop' };
+        return icons[mode] || 'fa-sun';
+    };
+
+    const updateToggleUI = (mode) => {
+        const icon = themeToggle?.querySelector('.theme-toggle__icon');
+        const label = themeToggle?.querySelector('.theme-toggle__label');
+        
+        if (icon) {
+            icon.className = `fas ${getThemeIcon(mode)} theme-toggle__icon`;
+        }
+        if (label) {
+            label.textContent = getThemeLabel(mode);
+        }
+
+        // Update active state on options
+        themeOptions.forEach(opt => {
+            const optTheme = opt.getAttribute('data-theme');
+            opt.classList.toggle('is-active', optTheme === mode);
+            opt.setAttribute('aria-checked', optTheme === mode ? 'true' : 'false');
+        });
+    };
+
+    const setTheme = (mode, persist = true) => {
+        const effective = resolveTheme(mode);
+        
+        // Add transition class for smooth animation
+        document.body.classList.add('theme-transitioning');
+        
+        html.setAttribute('data-theme', effective);
+        html.setAttribute('data-theme-mode', mode);
+        
+        if (persist) {
+            localStorage.setItem(STORAGE_KEY, mode);
+        }
+        
+        updateToggleUI(mode);
+        
+        // Remove transition class after animation completes
+        setTimeout(() => {
+            document.body.classList.remove('theme-transitioning');
+        }, 500);
     };
 
     const initTheme = () => {
         const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-            setTheme(stored);
+        const initial = stored || 'system';
+        setTheme(initial, Boolean(stored));
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            const currentMode = html.getAttribute('data-theme-mode') || 'system';
+            if (currentMode === 'system') {
+                setTheme('system', false);
+            }
+        });
+    };
+
+    const openMenu = () => {
+        themeWrapper?.classList.add('is-open');
+        themeToggle?.setAttribute('aria-expanded', 'true');
+    };
+
+    const closeMenu = () => {
+        themeWrapper?.classList.remove('is-open');
+        themeToggle?.setAttribute('aria-expanded', 'false');
+    };
+
+    const toggleMenu = () => {
+        if (themeWrapper?.classList.contains('is-open')) {
+            closeMenu();
         } else {
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            setTheme(prefersDark ? 'dark' : 'light');
+            openMenu();
         }
     };
 
     initTheme();
 
-    themeToggle.addEventListener('click', () => {
-        const current = html.getAttribute('data-theme');
-        setTheme(current === 'dark' ? 'light' : 'dark');
+    // Toggle menu on button click
+    themeToggle?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleMenu();
+    });
+
+    // Handle theme option clicks
+    themeOptions.forEach(option => {
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const theme = option.getAttribute('data-theme');
+            if (theme) {
+                setTheme(theme);
+                closeMenu();
+            }
+        });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!themeWrapper?.contains(e.target)) {
+            closeMenu();
+        }
+    });
+
+    // Close menu on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeMenu();
+        }
     });
 
     // Mobile Menu

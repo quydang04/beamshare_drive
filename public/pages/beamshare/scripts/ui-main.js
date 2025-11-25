@@ -19,95 +19,212 @@ class Events {
 
 // UIs needed on start
 class ThemeUI {
+    // Use same storage key as dashboard/landing/auth pages for theme sync
+    static STORAGE_KEY = 'beamshare-theme';
 
     constructor() {
         this.prefersDarkTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
         this.prefersLightTheme = window.matchMedia('(prefers-color-scheme: light)').matches;
 
-        this.$themeAutoBtn = document.getElementById('theme-auto');
-        this.$themeLightBtn = document.getElementById('theme-light');
-        this.$themeDarkBtn = document.getElementById('theme-dark');
+        this.$themeToggle = document.getElementById('theme-toggle');
+        this.$themeToggleWrapper = document.getElementById('theme-toggle-wrapper');
+        this.$themeMenu = document.getElementById('theme-menu');
+        this.$themeToggleIcon = document.getElementById('theme-toggle-icon');
+        this.$themeToggleLabel = document.getElementById('theme-toggle-label');
+        this.$themeOptions = document.querySelectorAll('.theme-option');
 
+        // Migrate old 'theme' key to new 'beamshare-theme' key
+        this._migrateOldThemeKey();
+
+        // Initialize theme from synced storage
         let currentTheme = this.getCurrentTheme();
         if (currentTheme === 'dark') {
             this.setModeToDark();
         } else if (currentTheme === 'light') {
             this.setModeToLight();
+        } else {
+            // 'system' or null/undefined = auto mode
+            this.setModeToAuto();
         }
 
-        this.$themeAutoBtn.addEventListener('click', _ => this.onClickAuto());
-        this.$themeLightBtn.addEventListener('click', _ => this.onClickLight());
-        this.$themeDarkBtn.addEventListener('click', _ => this.onClickDark());
+        // Toggle menu
+        if (this.$themeToggle) {
+            this.$themeToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleMenu();
+            });
+        }
+
+        // Theme option clicks
+        this.$themeOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const theme = option.dataset.theme;
+                if (theme === 'auto') {
+                    this.setModeToAuto();
+                } else if (theme === 'light') {
+                    this.setModeToLight();
+                } else if (theme === 'dark') {
+                    this.setModeToDark();
+                }
+                this.closeMenu();
+            });
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (this.$themeToggleWrapper && !this.$themeToggleWrapper.contains(e.target)) {
+                this.closeMenu();
+            }
+        });
+
+        // Close menu on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeMenu();
+            }
+        });
+
+        // Listen for system theme changes
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                this.prefersDarkTheme = e.matches;
+                this.prefersLightTheme = !e.matches;
+                // Only update if in auto mode
+                const current = this.getCurrentTheme();
+                if (!current || current === 'system') {
+                    this.setModeToAuto();
+                }
+            });
+        }
+
+        // Listen for storage changes from other tabs/pages
+        window.addEventListener('storage', (e) => {
+            if (e.key === ThemeUI.STORAGE_KEY) {
+                const newTheme = e.newValue;
+                if (newTheme === 'dark') {
+                    this.setModeToDark(false); // Don't save again
+                } else if (newTheme === 'light') {
+                    this.setModeToLight(false);
+                } else {
+                    this.setModeToAuto(false);
+                }
+            }
+        });
+    }
+
+    // Migrate from old 'theme' key to new 'beamshare-theme' key
+    _migrateOldThemeKey() {
+        try {
+            const oldTheme = localStorage.getItem('theme');
+            const newTheme = localStorage.getItem(ThemeUI.STORAGE_KEY);
+            
+            // If old key exists and new key doesn't, migrate
+            if (oldTheme && !newTheme) {
+                // Map 'auto' to 'system' for consistency with other pages
+                const mappedTheme = oldTheme === 'auto' ? 'system' : oldTheme;
+                localStorage.setItem(ThemeUI.STORAGE_KEY, mappedTheme);
+            }
+            // Clean up old key
+            if (oldTheme) {
+                localStorage.removeItem('theme');
+            }
+        } catch (e) {
+            console.warn('Theme migration failed:', e);
+        }
+    }
+
+    toggleMenu() {
+        if (this.$themeToggleWrapper) {
+            this.$themeToggleWrapper.classList.toggle('is-open');
+        }
+    }
+
+    closeMenu() {
+        if (this.$themeToggleWrapper) {
+            this.$themeToggleWrapper.classList.remove('is-open');
+        }
     }
 
     getCurrentTheme() {
-        return localStorage.getItem('theme');
+        try {
+            return localStorage.getItem(ThemeUI.STORAGE_KEY);
+        } catch (e) {
+            return null;
+        }
     }
 
     setCurrentTheme(theme) {
-        localStorage.setItem('theme', theme);
-    }
-
-    onClickAuto() {
-        if (this.getCurrentTheme()) {
-            this.setModeToAuto();
-        } else {
-            this.setModeToDark();
+        try {
+            if (theme) {
+                localStorage.setItem(ThemeUI.STORAGE_KEY, theme);
+            } else {
+                localStorage.removeItem(ThemeUI.STORAGE_KEY);
+            }
+        } catch (e) {
+            console.warn('Unable to save theme:', e);
         }
     }
 
-    onClickLight() {
-        if (this.getCurrentTheme() !== 'light') {
-            this.setModeToLight();
-        } else {
-            this.setModeToAuto();
+    updateToggleUI(iconHref, labelKey) {
+        if (this.$themeToggleIcon) {
+            const useEl = this.$themeToggleIcon.querySelector('use');
+            if (useEl) {
+                useEl.setAttribute('xlink:href', iconHref);
+            }
         }
+        if (this.$themeToggleLabel) {
+            // Set data attribute for auto-translation system (key + _text suffix)
+            this.$themeToggleLabel.setAttribute('data-i18n-key', labelKey + '_text');
+            // Update label text - use default labels since translations may not be loaded yet
+            // The auto-translation system will update this when translations are loaded
+            this.$themeToggleLabel.textContent = this.getDefaultLabel(labelKey);
+        }
+        // Update active state on options
+        this.$themeOptions.forEach(opt => {
+            opt.classList.remove('is-active');
+        });
     }
 
-    onClickDark() {
-        if (this.getCurrentTheme() !== 'dark') {
-            this.setModeToDark();
-        } else {
-            this.setModeToLight();
-        }
+    getDefaultLabel(key) {
+        const labels = {
+            'header.theme-auto': 'Tự động',
+            'header.theme-light': 'Sáng',
+            'header.theme-dark': 'Tối'
+        };
+        return labels[key] || 'Auto';
     }
 
-    setModeToDark() {
+    setModeToDark(persist = true) {
         document.body.classList.remove('light-theme');
         document.body.classList.add('dark-theme');
-
-        this.setCurrentTheme('dark');
-
-        this.$themeAutoBtn.classList.remove("selected");
-        this.$themeLightBtn.classList.remove("selected");
-        this.$themeDarkBtn.classList.add("selected");
+        if (persist) this.setCurrentTheme('dark');
+        this.updateToggleUI('#icon-theme-dark', 'header.theme-dark');
+        const darkOption = document.querySelector('.theme-option[data-theme="dark"]');
+        if (darkOption) darkOption.classList.add('is-active');
     }
 
-    setModeToLight() {
+    setModeToLight(persist = true) {
         document.body.classList.remove('dark-theme');
         document.body.classList.add('light-theme');
-
-        this.setCurrentTheme('light');
-
-        this.$themeAutoBtn.classList.remove("selected");
-        this.$themeLightBtn.classList.add("selected");
-        this.$themeDarkBtn.classList.remove("selected");
+        if (persist) this.setCurrentTheme('light');
+        this.updateToggleUI('#icon-theme-light', 'header.theme-light');
+        const lightOption = document.querySelector('.theme-option[data-theme="light"]');
+        if (lightOption) lightOption.classList.add('is-active');
     }
 
-    setModeToAuto() {
+    setModeToAuto(persist = true) {
         document.body.classList.remove('dark-theme');
         document.body.classList.remove('light-theme');
         if (this.prefersDarkTheme) {
             document.body.classList.add('dark-theme');
-        }
-        else if (this.prefersLightTheme) {
+        } else if (this.prefersLightTheme) {
             document.body.classList.add('light-theme');
         }
-        localStorage.removeItem('theme');
-
-        this.$themeAutoBtn.classList.add("selected");
-        this.$themeLightBtn.classList.remove("selected");
-        this.$themeDarkBtn.classList.remove("selected");
+        if (persist) this.setCurrentTheme('system');
+        this.updateToggleUI('#icon-theme-auto', 'header.theme-auto');
+        const autoOption = document.querySelector('.theme-option[data-theme="auto"]');
+        if (autoOption) autoOption.classList.add('is-active');
     }
 }
 
