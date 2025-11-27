@@ -1,0 +1,94 @@
+@media (max-width: 1200px) {
+    .payments-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-detail {
+        order: 2;
+    }
+}
+
+@media (max-width: 992px) {
+    .payments-page .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .payments-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .history-filters {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .history-filters select,
+    .search-box {
+        width: 100%;
+    }
+
+    .payments-table-wrapper {
+        margin: 0 -8px;
+        padding: 0 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .payments-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .payments-table thead {
+        display: none;
+    }
+
+    .payments-table tbody td {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 6px;
+        border-bottom: 1px solid var(--theme-border);
+    }
+
+    .payments-table tbody tr {
+        display: block;
+        background: var(--theme-surface);
+        margin-bottom: 10px;
+        border: 1px solid var(--theme-border);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .payments-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--theme-muted);
+    }
+
+    .payments-table .column-actions {
+        text-align: left;
+    }
+}
+
+@media (max-width: 520px) {
+    .payments-header-actions .btn-primary,
+    .payments-header-actions .btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .payments-layout {
+        gap: 12px;
+    }
+
+    .payment-meta {
+        grid-template-columns: 1fr;
+    }
+}

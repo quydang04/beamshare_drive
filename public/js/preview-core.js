@@ -110,159 +110,77 @@
     }
 
     function renderVideoPreview(context) {
-        maybeAppendDisclaimer(context.container, context.options);
+        const disclaimer = maybeAppendDisclaimer(context.container, context.options);
 
-        const card = document.createElement('div');
-        card.className = 'media-card media-card--video';
+        if (!window.videojs) {
+            if (disclaimer && disclaimer.parentElement === context.container) {
+                context.container.removeChild(disclaimer);
+            }
+            showUnsupportedMessage(context.container, 'Không thể tải Video.js để phát video này. Vui lòng tải xuống để xem.');
+            return;
+        }
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'video-preview';
 
         const video = document.createElement('video');
-        video.className = 'media-element';
-        video.preload = 'metadata';
-        video.playsInline = true;
+        video.className = 'video-js vjs-big-play-centered';
+        video.setAttribute('controls', 'controls');
+        video.setAttribute('preload', 'metadata');
         video.setAttribute('playsinline', '');
         video.setAttribute('webkit-playsinline', '');
-        video.controls = false;
-        video.src = context.previewUrl;
-        if (context.metadata.mimeType) {
-            const source = document.createElement('source');
-            source.src = context.previewUrl;
-            source.type = context.metadata.mimeType;
-            video.innerHTML = '';
-            video.appendChild(source);
+        video.setAttribute('data-setup', '{}');
+
+        const source = document.createElement('source');
+        source.src = context.previewUrl;
+        source.type = context.metadata.mimeType || 'video/mp4';
+        video.appendChild(source);
+
+        wrapper.appendChild(video);
+        context.container.appendChild(wrapper);
+
+        try {
+            window.videojs(video, {
+                controls: true,
+                preload: 'metadata',
+                fluid: true,
+                sources: [
+                    {
+                        src: context.previewUrl,
+                        type: context.metadata.mimeType || 'video/mp4'
+                    }
+                ]
+            });
+        } catch (_error) {
+            wrapper.remove();
+            if (disclaimer && disclaimer.parentElement === context.container) {
+                context.container.removeChild(disclaimer);
+            }
+            showUnsupportedMessage(context.container, 'Không thể khởi tạo trình phát video. Vui lòng tải xuống để xem.');
         }
-
-        card.appendChild(video);
-
-        const controlsBundle = buildMediaControls({
-            playLabel: 'Phát hoặc tạm dừng video',
-            showFullscreen: true
-        });
-        card.appendChild(controlsBundle.controls);
-
-        const meta = document.createElement('div');
-        meta.className = 'media-meta';
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = context.metadata.displayName || context.metadata.originalName || 'Video';
-        meta.appendChild(nameSpan);
-
-        if (context.metadata.formattedSize) {
-            const sizeSpan = document.createElement('span');
-            sizeSpan.textContent = context.metadata.formattedSize;
-            meta.appendChild(sizeSpan);
-        }
-
-        card.appendChild(meta);
-        context.container.appendChild(card);
-
-        initMediaControls(video, card, controlsBundle, {
-            autoHideControls: true,
-            isVideo: true
-        });
     }
 
     function renderAudioPreview(context) {
         maybeAppendDisclaimer(context.container, context.options);
 
-        const card = document.createElement('div');
-        card.className = 'media-card media-card--audio';
+        const audio = document.createElement('audio');
+        audio.setAttribute('controls', 'controls');
+        audio.setAttribute('preload', 'metadata');
+        audio.src = context.previewUrl;
 
-        const playbackNote = buildAudioPlaybackNote(context.metadata);
-        const disablePlayback = Boolean(playbackNote);
-
-        let audio = null;
-        let controlsBundle = null;
-
-        if (!disablePlayback) {
-            audio = document.createElement('audio');
-            audio.className = 'media-element';
-            audio.preload = 'metadata';
-            audio.src = context.previewUrl;
-
-            const audioMimeType = resolveAudioMimeType(context.metadata);
-            if (audioMimeType) {
-                const source = document.createElement('source');
-                source.src = context.previewUrl;
-                source.type = audioMimeType;
-                audio.appendChild(source);
-            }
-
-            card.appendChild(audio);
+        if (context.metadata.mimeType) {
+            const source = document.createElement('source');
+            source.src = context.previewUrl;
+            source.type = context.metadata.mimeType;
+            audio.appendChild(source);
         }
 
-        const hero = document.createElement('div');
-        hero.className = 'audio-hero';
+        const helper = document.createElement('p');
+        helper.className = 'share-preview-message';
+        helper.textContent = context.metadata.displayName || context.metadata.originalName || 'Bản nhạc';
 
-        const cover = document.createElement('div');
-        cover.className = 'audio-cover';
-        cover.setAttribute('data-has-cover', 'false');
-        hero.appendChild(cover);
-
-        const coverImg = document.createElement('img');
-        coverImg.alt = 'Bìa album';
-        coverImg.style.display = 'none';
-        cover.appendChild(coverImg);
-
-        const info = document.createElement('div');
-        const titleEl = document.createElement('h3');
-        titleEl.className = 'audio-info-title';
-        titleEl.textContent = context.metadata.displayName || context.metadata.originalName || 'Bản nhạc';
-        const artistEl = document.createElement('p');
-        artistEl.className = 'audio-info-artist';
-        artistEl.textContent = 'Đang tải thông tin nghệ sĩ…';
-        info.appendChild(titleEl);
-        info.appendChild(artistEl);
-        hero.appendChild(info);
-        card.appendChild(hero);
-
-        if (playbackNote) {
-            card.appendChild(playbackNote);
-        }
-
-        if (!disablePlayback) {
-            controlsBundle = buildMediaControls({
-                playLabel: 'Phát hoặc tạm dừng nhạc',
-                showFullscreen: false
-            });
-            card.appendChild(controlsBundle.controls);
-        }
-        context.container.appendChild(card);
-
-        if (!disablePlayback && audio && controlsBundle) {
-            initMediaControls(audio, card, controlsBundle, {
-                autoHideControls: false,
-                isVideo: false
-            });
-
-            // Begin loading after listeners are attached so duration/metadata events are captured
-            audio.load();
-        }
-
-        if (window.jsmediatags) {
-            loadAudioTags(context.previewUrl)
-                .then((tags) => {
-                    if (tags.title) {
-                        titleEl.textContent = tags.title;
-                    }
-                    if (tags.artist) {
-                        artistEl.textContent = tags.artist;
-                    } else {
-                        artistEl.textContent = context.options.ownerName;
-                    }
-                    if (tags.picture) {
-                        const dataUrl = buildPictureDataUrl(tags.picture);
-                        if (dataUrl) {
-                            coverImg.src = dataUrl;
-                            coverImg.style.display = 'block';
-                            cover.setAttribute('data-has-cover', 'true');
-                        }
-                    }
-                })
-                .catch(() => {
-                    artistEl.textContent = context.options.ownerName;
-                });
-        } else {
-            artistEl.textContent = context.options.ownerName;
-        }
+        context.container.appendChild(audio);
+        context.container.appendChild(helper);
     }
 
     function renderPdfPreview(context) {
@@ -430,445 +348,6 @@
         loader.textContent = message;
         return loader;
     }
-
-    function buildMediaControls(options) {
-        const controls = document.createElement('div');
-        controls.className = 'media-controls';
-
-        const playBtn = document.createElement('button');
-        playBtn.type = 'button';
-        playBtn.className = 'media-button';
-        playBtn.setAttribute('aria-label', options.playLabel || 'Phát/tạm dừng');
-        playBtn.innerHTML = '&#9658;';
-
-        const progressWrapper = document.createElement('div');
-        progressWrapper.className = 'media-progress-wrapper';
-
-        const currentTimeEl = document.createElement('span');
-        currentTimeEl.className = 'media-time media-time--current';
-        currentTimeEl.textContent = '00:00';
-
-        const progress = document.createElement('input');
-        progress.type = 'range';
-        progress.className = 'media-progress';
-        progress.min = '0';
-        progress.max = '1000';
-        progress.value = '0';
-        progress.style.setProperty('--progress-value', '0%');
-
-        const durationEl = document.createElement('span');
-        durationEl.className = 'media-time media-time--duration';
-        durationEl.textContent = '--:--';
-
-        progressWrapper.appendChild(currentTimeEl);
-        progressWrapper.appendChild(progress);
-        progressWrapper.appendChild(durationEl);
-
-        const volume = document.createElement('input');
-        volume.type = 'range';
-        volume.className = 'media-volume';
-        volume.min = '0';
-        volume.max = '1';
-        volume.step = '0.01';
-        volume.value = '0.75';
-
-        controls.appendChild(playBtn);
-        controls.appendChild(progressWrapper);
-        controls.appendChild(volume);
-
-        let fullscreenBtn = null;
-        if (options.showFullscreen && document.fullscreenEnabled) {
-            fullscreenBtn = document.createElement('button');
-            fullscreenBtn.type = 'button';
-            fullscreenBtn.className = 'media-button media-button--secondary';
-            fullscreenBtn.setAttribute('aria-label', 'Bật/tắt toàn màn hình');
-            fullscreenBtn.textContent = '\u2922';
-            controls.appendChild(fullscreenBtn);
-        }
-
-        return {
-            controls,
-            elements: {
-                playBtn,
-                progress,
-                currentTimeEl,
-                durationEl,
-                volume,
-                fullscreenBtn
-            }
-        };
-    }
-
-    function initMediaControls(media, container, bundle, options = {}) {
-        const { controls, elements } = bundle;
-        const { playBtn, progress, currentTimeEl, durationEl, volume, fullscreenBtn } = elements;
-        const config = {
-            autoHideControls: false,
-            isVideo: false,
-            ...options
-        };
-        const syncProgressBackground = () => {
-            const value = parseFloat(progress.value) || 0;
-            const percent = Math.max(0, Math.min(100, value / 10));
-            progress.style.setProperty('--progress-value', `${percent}%`);
-        };
-        if (!media) {
-            return;
-        }
-
-        const metaOverlay = config.isVideo ? container.querySelector('.media-meta') : null;
-
-        media.volume = parseFloat(volume.value) || 0.75;
-
-        const updatePlayVisual = () => {
-            playBtn.innerHTML = media.paused ? '&#9658;' : '&#10073;&#10073;';
-        };
-
-        const updateDurationLabel = () => {
-            if (isFinite(media.duration) && media.duration > 0) {
-                durationEl.textContent = formatTime(media.duration);
-            } else if (media.seekable && media.seekable.length > 0) {
-                const end = media.seekable.end(media.seekable.length - 1);
-                durationEl.textContent = formatTime(end);
-            } else {
-                durationEl.textContent = '--:--';
-            }
-        };
-
-        let showControls = () => {};
-        let hideControls = () => {};
-        let cancelControlsHide = () => {};
-        let scheduleControlsHide = () => {};
-
-        playBtn.addEventListener('click', () => {
-            if (media.paused) {
-                media.play().catch(() => {
-                    // autoplay prevented, ignore
-                });
-            } else {
-                media.pause();
-            }
-        });
-
-        media.addEventListener('play', () => {
-            updatePlayVisual();
-            if (config.autoHideControls) {
-                showControls();
-                scheduleControlsHide();
-            }
-        });
-        media.addEventListener('pause', () => {
-            updatePlayVisual();
-            if (config.autoHideControls) {
-                showControls();
-                cancelControlsHide();
-            }
-        });
-        media.addEventListener('ended', () => {
-            progress.value = '0';
-            currentTimeEl.textContent = '00:00';
-            syncProgressBackground();
-            updatePlayVisual();
-            if (config.autoHideControls) {
-                showControls();
-            }
-        });
-
-        media.addEventListener('loadedmetadata', () => {
-            updateDurationLabel();
-            volume.value = media.volume.toString();
-        });
-
-        media.addEventListener('durationchange', updateDurationLabel);
-
-        let isSeeking = false;
-
-        media.addEventListener('timeupdate', () => {
-            if (isSeeking) {
-                return;
-            }
-
-            let ratio = 0;
-            if (isFinite(media.duration) && media.duration > 0) {
-                ratio = media.currentTime / media.duration;
-            } else if (media.duration === Infinity && media.seekable && media.seekable.length > 0) {
-                const end = media.seekable.end(media.seekable.length - 1);
-                if (Number.isFinite(end) && end > 0) {
-                    ratio = media.currentTime / end;
-                }
-            }
-
-            const clampedRatio = Math.max(0, Math.min(1, ratio || 0));
-            progress.value = Math.round(clampedRatio * 1000).toString();
-            currentTimeEl.textContent = formatTime(media.currentTime);
-            syncProgressBackground();
-        });
-
-        progress.addEventListener('input', () => {
-            isSeeking = true;
-            const ratio = parseFloat(progress.value) / 1000;
-            const targetDuration = getSeekableDuration(media);
-            if (!targetDuration) {
-                syncProgressBackground();
-                return;
-            }
-            const newTime = targetDuration * ratio;
-            currentTimeEl.textContent = formatTime(newTime);
-            syncProgressBackground();
-        });
-
-        progress.addEventListener('change', () => {
-            const ratio = parseFloat(progress.value) / 1000;
-            const targetDuration = getSeekableDuration(media);
-            if (targetDuration) {
-                media.currentTime = targetDuration * ratio;
-            }
-            isSeeking = false;
-            syncProgressBackground();
-        });
-
-        volume.addEventListener('input', () => {
-            const value = parseFloat(volume.value);
-            const normalized = Number.isFinite(value) ? value : media.volume;
-            media.volume = Math.min(Math.max(normalized, 0), 1);
-            media.muted = media.volume <= 0;
-        });
-
-        media.addEventListener('volumechange', () => {
-            const effectiveVolume = media.muted ? 0 : media.volume;
-            volume.value = effectiveVolume.toFixed(2);
-        });
-
-        if (fullscreenBtn) {
-            fullscreenBtn.addEventListener('click', () => {
-                if (!document.fullscreenElement) {
-                    if (container.requestFullscreen) {
-                        container.requestFullscreen().catch(() => {
-                            // ignore failure
-                        });
-                    }
-                } else if (document.exitFullscreen) {
-                    document.exitFullscreen().catch(() => {
-                        // ignore failure
-                    });
-                }
-            });
-        }
-
-        updatePlayVisual();
-        updateDurationLabel();
-        syncProgressBackground();
-
-        if (config.autoHideControls && controls) {
-            controls.classList.add('media-controls--active');
-            const HIDE_DELAY = 5000; // Hide controls after 5s of inactivity
-            let hideTimer = null;
-
-            showControls = () => {
-                controls.classList.remove('media-controls--hidden');
-                if (metaOverlay) {
-                    metaOverlay.classList.remove('media-meta--hidden');
-                }
-            };
-
-            hideControls = () => {
-                if (media.paused) {
-                    return;
-                }
-                controls.classList.add('media-controls--hidden');
-                if (metaOverlay) {
-                    metaOverlay.classList.add('media-meta--hidden');
-                }
-            };
-
-            cancelControlsHide = () => {
-                if (hideTimer) {
-                    clearTimeout(hideTimer);
-                    hideTimer = null;
-                }
-            };
-
-            scheduleControlsHide = () => {
-                cancelControlsHide();
-                if (media.paused) {
-                    return;
-                }
-                hideTimer = window.setTimeout(hideControls, HIDE_DELAY);
-            };
-
-            const handleUserActivity = () => {
-                // General pointer activity: show and restart hide timer
-                showControls();
-                scheduleControlsHide();
-            };
-
-            const startUserInteraction = () => {
-                // While interacting (dragging, touching, focusing inputs), keep controls visible
-                showControls();
-                cancelControlsHide();
-            };
-
-            const endUserInteraction = () => {
-                // When done interacting, start the hide timer again
-                showControls();
-                scheduleControlsHide();
-            };
-
-            container.addEventListener('mousemove', handleUserActivity);
-            container.addEventListener('touchstart', handleUserActivity, { passive: true });
-            controls.addEventListener('mousemove', handleUserActivity);
-
-            // Keep controls visible while user is interacting with them
-            controls.addEventListener('mousedown', startUserInteraction);
-            controls.addEventListener('mouseup', endUserInteraction);
-            controls.addEventListener('touchstart', startUserInteraction, { passive: true });
-            controls.addEventListener('touchend', endUserInteraction);
-            controls.addEventListener('focusin', startUserInteraction);
-            controls.addEventListener('focusout', endUserInteraction);
-
-            // Sliders adjustments should prevent hide until finished
-            progress.addEventListener('input', startUserInteraction);
-            progress.addEventListener('change', endUserInteraction);
-            volume.addEventListener('input', startUserInteraction);
-            volume.addEventListener('change', endUserInteraction);
-
-            document.addEventListener('fullscreenchange', () => {
-                const isFull = document.fullscreenElement === container;
-                container.classList.toggle('is-fullscreen', Boolean(isFull));
-                showControls();
-                scheduleControlsHide();
-            });
-
-            media.addEventListener('play', () => {
-                showControls();
-                scheduleControlsHide();
-            });
-
-            media.addEventListener('pause', () => {
-                showControls();
-                cancelControlsHide();
-            });
-
-            container.addEventListener('mouseleave', () => {
-                if (document.fullscreenElement === container) {
-                    scheduleControlsHide();
-                }
-            });
-
-            controls.dataset.hideManaged = 'true';
-            if (metaOverlay) {
-                metaOverlay.dataset.hideManaged = 'true';
-            }
-        }
-    }
-
-    function getSeekableDuration(media) {
-        if (isFinite(media.duration) && media.duration > 0) {
-            return media.duration;
-        }
-        if (media.duration === Infinity && media.seekable && media.seekable.length > 0) {
-            const end = media.seekable.end(media.seekable.length - 1);
-            if (Number.isFinite(end) && end > 0) {
-                return end;
-            }
-        }
-        return null;
-    }
-
-    function formatTime(seconds) {
-        if (!Number.isFinite(seconds)) {
-            return '--:--';
-        }
-        const total = Math.max(seconds, 0);
-        const mins = Math.floor(total / 60);
-        const secs = Math.floor(total % 60);
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function loadAudioTags(url) {
-        return new Promise((resolve, reject) => {
-            if (!window.jsmediatags) {
-                reject(new Error('Thiếu thư viện jsmediatags'));
-                return;
-            }
-            window.jsmediatags.read(url, {
-                onSuccess: (result) => {
-                    resolve(result?.tags || {});
-                },
-                onError: (error) => {
-                    reject(error);
-                }
-            });
-        });
-    }
-
-    function buildPictureDataUrl(picture) {
-        if (!picture || !picture.data || !picture.format) {
-            return null;
-        }
-        try {
-            const byteArray = picture.data instanceof Uint8Array ? picture.data : new Uint8Array(picture.data);
-            const chunk = 0x8000;
-            let binary = '';
-            for (let i = 0; i < byteArray.length; i += chunk) {
-                const slice = byteArray.subarray(i, i + chunk);
-                binary += String.fromCharCode.apply(null, slice);
-            }
-            const base64 = window.btoa(binary);
-            return `data:${picture.format};base64,${base64}`;
-        } catch (_error) {
-            return null;
-        }
-    }
-
-    function resolveAudioMimeType(metadata = {}) {
-        const mimeType = typeof metadata.mimeType === 'string' ? metadata.mimeType.toLowerCase() : '';
-        const extension = typeof metadata.extension === 'string'
-            ? (metadata.extension.startsWith('.') ? metadata.extension.toLowerCase() : `.${metadata.extension.toLowerCase()}`)
-            : '';
-
-        if (mimeType === 'audio/x-m4a') {
-            return 'audio/mp4';
-        }
-        if (mimeType) {
-            return mimeType;
-        }
-
-        switch (extension) {
-            case '.m4a':
-                return 'audio/mp4';
-            case '.mp3':
-                return 'audio/mpeg';
-            case '.wav':
-                return 'audio/wav';
-            case '.flac':
-                return 'audio/flac';
-            case '.ogg':
-            case '.oga':
-                return 'audio/ogg';
-            case '.aac':
-                return 'audio/aac';
-            default:
-                return '';
-        }
-    }
-
-    function buildAudioPlaybackNote(metadata = {}) {
-        const rawExtension = typeof metadata.extension === 'string' ? metadata.extension.toLowerCase() : '';
-        const extension = rawExtension
-            ? (rawExtension.startsWith('.') ? rawExtension : `.${rawExtension}`)
-            : '';
-
-        if (extension !== '.m4a') {
-            return null;
-        }
-
-        const note = document.createElement('p');
-        note.className = 'audio-playback-note';
-        note.textContent = 'Không thể phát tệp âm thanh này trong trình duyệt của bạn. Vui lòng tải xuống để nghe đầy đủ.';
-        return note;
-    }
-
     window.BeamPreview = {
         render
     };

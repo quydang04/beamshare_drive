@@ -1,6 +1,7 @@
 const express = require('express');
 const { IpnUnknownError } = require('vnpay');
 const { PLAN_DEFINITIONS, resolvePlan } = require('../constants/plans');
+const Payment = require('../models/payment');
 const PaymentService = require('../services/payment-service');
 const { issueAuthCookie } = require('../middleware/auth-middleware');
 const User = require('../models/user');
@@ -96,8 +97,9 @@ class SubscriptionRoutes {
     }
 
     setupRoutes() {
-    this.router.get('/overview', this.auth.requireAuth, this.getOverview.bind(this));
+        this.router.get('/overview', this.auth.requireAuth, this.getOverview.bind(this));
         this.router.post('/plan', this.auth.requireAuth, this.switchPlan.bind(this));
+        this.router.get('/payments/history', this.auth.requireAuth, this.getPaymentHistory.bind(this));
         this.router.post('/payments/vnpay', this.auth.requireAuth, this.createVNPayPayment.bind(this));
         this.router.get('/payments/vnpay/return', this.handleReturn.bind(this));
         this.router.get('/payments/vnpay/ipn', this.handleIpn.bind(this));
@@ -217,6 +219,46 @@ class SubscriptionRoutes {
         } catch (error) {
             console.error('VNPay IPN error:', error);
             return res.json(IpnUnknownError);
+        }
+    }
+
+    async getPaymentHistory(req, res) {
+        try {
+            const payments = await Payment.find({ userId: req.user.userId })
+                .sort({ createdAt: -1 })
+                .lean();
+
+            const records = payments.map((payment) => {
+                const plan = resolvePlan(payment.plan || 'basic');
+                const bankCode = payment.vnp_BankCode || payment.rawQuery?.vnp_BankCode;
+                const paidAt = this.paymentService.parseVNPayDate(payment.vnp_PayDate || payment.rawQuery?.vnp_PayDate);
+                const methodLabel = bankCode
+                    ? `VNPay • ${bankCode}`
+                    : (payment.provider || 'VNPay').toUpperCase();
+
+                return {
+                    id: payment.txnRef || payment._id.toString(),
+                    invoiceId: payment.txnRef || payment._id.toString(),
+                    userId: payment.userId,
+                    plan: payment.plan || 'basic',
+                    amount: payment.amount,
+                    currency: payment.currency || plan.currency || 'VND',
+                    status: payment.status || 'pending',
+                    note: payment.note || payment.orderInfo || `BeamShare ${plan.title} plan`,
+                    provider: payment.provider || 'vnpay',
+                    bankCode: bankCode || null,
+                    method: methodLabel,
+                    txnRef: payment.txnRef || null,
+                    createdAt: payment.createdAt,
+                    updatedAt: payment.updatedAt,
+                    paidAt
+                };
+            });
+
+            return res.json({ payments: records });
+        } catch (error) {
+            console.error('Error fetching payment history:', error);
+            return res.status(500).json({ error: 'Không thể tải lịch sử thanh toán.' });
         }
     }
 
