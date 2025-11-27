@@ -25,6 +25,7 @@
     "myFiles": "Tệp của tôi",
     "recycleBin": "Thùng rác",
     "subscription": "Gói đăng ký",
+    "payments": "Thanh toán",
     "info": "Thông tin",
     "beamshareLive": "BeamShare Live"
   },
@@ -285,18 +286,85 @@
           "toastPaymentSuccess": "Thanh toán thành công.",
           "toastPaymentFailure": "Thanh toán thất bại."
         },
-        "dialogs": {
-          "downgradeTitle": "Xác nhận chuyển về gói Basic",
-          "downgradeMessage": "<p>Bạn sắp chuyển từ gói Premium về gói Basic.</p><p>Bạn sẽ mất các quyền lợi Premium như dung lượng cao hơn và giới hạn BeamShare không giới hạn.</p><p>Bạn có chắc chắn muốn tiếp tục?</p>",
-          "downgradeConfirm": "Chuyển về Basic",
-          "downgradeCancel": "Hủy",
-          "downgradePrompt": "Bạn sắp chuyển từ gói Premium về gói Basic và sẽ mất các quyền lợi Premium. Bạn có chắc chắn muốn tiếp tục?"
-        }
+      "dialogs": {
+        "downgradeTitle": "Xác nhận chuyển về gói Basic",
+        "downgradeMessage": "<p>Bạn sắp chuyển từ gói Premium về gói Basic.</p><p>Bạn sẽ mất các quyền lợi Premium như dung lượng cao hơn và giới hạn BeamShare không giới hạn.</p><p>Bạn có chắc chắn muốn tiếp tục?</p>",
+        "downgradeConfirm": "Chuyển về Basic",
+        "downgradeCancel": "Hủy",
+        "downgradePrompt": "Bạn sắp chuyển từ gói Premium về gói Basic và sẽ mất các quyền lợi Premium. Bạn có chắc chắn muốn tiếp tục?"
       }
+    }
+  },
+  "payments": {
+    "eyebrow": "Thanh toán",
+    "title": "Lịch sử thanh toán",
+    "subtitle": "Xem lại các giao dịch, tải hóa đơn và kiểm tra trạng thái từng lần thanh toán.",
+    "actions": {
+      "refresh": "Làm mới",
+      "export": "Xuất dữ liệu",
+      "view": "Xem",
+      "exportHint": "Chức năng xuất dữ liệu được mô phỏng trong môi trường demo."
     },
-    "info": {
-      "title": "Thông tin dự án & hệ thống",
-      "subtitle": "Tổng quan về nền tảng lưu trữ và chia sẻ tệp BeamShare.",
+    "summary": {
+      "totalLabel": "Tổng chi tiêu",
+      "totalCount": "{{count}} hóa đơn",
+      "latestLabel": "Thanh toán gần nhất",
+      "planLabel": "Gói hiện tại",
+      "planCurrent": "{{plan}}"
+    },
+    "history": {
+      "eyebrow": "Giao dịch",
+      "title": "Tất cả thanh toán",
+      "tableLabel": "Lịch sử thanh toán"
+    },
+    "filters": {
+      "statusLabel": "Lọc theo trạng thái",
+      "all": "Tất cả trạng thái",
+      "paid": "Đã thanh toán",
+      "pending": "Đang xử lý",
+      "refunded": "Đã hoàn tiền",
+      "canceled": "Đã hủy",
+      "failed": "Thất bại",
+      "searchLabel": "Tìm kiếm thanh toán",
+      "searchPlaceholder": "Tìm theo mã hóa đơn hoặc ghi chú"
+    },
+    "table": {
+      "date": "Ngày",
+      "note": "Ghi chú",
+      "amount": "Số tiền",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "state": {
+      "loading": "Đang tải lịch sử thanh toán...",
+      "empty": "Không có giao dịch nào",
+      "error": "Không thể tải lịch sử thanh toán."
+    },
+    "status": {
+      "paid": "Đã thanh toán",
+      "pending": "Đang xử lý",
+      "refunded": "Đã hoàn tiền",
+      "failed": "Thất bại",
+      "canceled": "Đã hủy"
+    },
+    "detail": {
+      "eyebrow": "Chi tiết",
+      "title": "Chọn một giao dịch",
+      "subtitle": "Chọn giao dịch để xem thông tin đầy đủ.",
+      "empty": "Hãy chọn một thanh toán trong bảng để xem hóa đơn và thông tin thanh toán.",
+      "invoice": "Hóa đơn",
+      "status": "Trạng thái",
+      "date": "Ngày",
+      "method": "Phương thức",
+      "period": "Hiệu lực",
+      "total": "Tổng cộng",
+      "items": "Hạng mục",
+      "for": "Hóa đơn {{id}}"
+    }
+  },
+  "info": {
+    "title": "Thông tin dự án & hệ thống",
+    "subtitle": "Tổng quan về nền tảng lưu trữ và chia sẻ tệp BeamShare.",
       "meta": {
         "versionLabel": "Phiên bản"
       },
