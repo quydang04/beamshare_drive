@@ -19,15 +19,16 @@
     "vietnamese": "Vietnamese",
     "english": "English"
   },
-  "nav": {
-    "dashboard": "Dashboard",
-    "upload": "Upload",
-    "myFiles": "My Files",
-    "recycleBin": "Recycle Bin",
-    "subscription": "Subscription",
-    "info": "About",
-    "beamshareLive": "BeamShare Live"
-  },
+    "nav": {
+      "dashboard": "Dashboard",
+      "upload": "Upload",
+      "myFiles": "My Files",
+      "recycleBin": "Recycle Bin",
+      "subscription": "Subscription",
+      "payments": "Payments",
+      "info": "About",
+      "beamshareLive": "BeamShare Live"
+    },
   "sidebar": {
     "logout": "Sign out"
   },
@@ -285,18 +286,85 @@
           "toastPaymentSuccess": "Payment successful.",
           "toastPaymentFailure": "Payment failed."
         },
-        "dialogs": {
-          "downgradeTitle": "Confirm switch to Basic",
-          "downgradeMessage": "<p>You are about to move from Premium back to Basic.</p><p>You will lose Premium perks such as higher storage and unlimited BeamShare limits.</p><p>Do you want to continue?</p>",
-          "downgradeConfirm": "Switch to Basic",
-          "downgradeCancel": "Cancel",
-          "downgradePrompt": "You are about to switch from Premium to Basic and will lose Premium benefits. Do you want to continue?"
-        }
+      "dialogs": {
+        "downgradeTitle": "Confirm switch to Basic",
+        "downgradeMessage": "<p>You are about to move from Premium back to Basic.</p><p>You will lose Premium perks such as higher storage and unlimited BeamShare limits.</p><p>Do you want to continue?</p>",
+        "downgradeConfirm": "Switch to Basic",
+        "downgradeCancel": "Cancel",
+        "downgradePrompt": "You are about to switch from Premium to Basic and will lose Premium benefits. Do you want to continue?"
       }
+    }
+  },
+  "payments": {
+    "eyebrow": "Billing",
+    "title": "Payment history",
+    "subtitle": "Review your past charges, download receipts, and see the status of each payment.",
+    "actions": {
+      "refresh": "Refresh",
+      "export": "Export",
+      "view": "View",
+      "exportHint": "Export is simulated in this demo environment."
     },
-    "info": {
-      "title": "Project & system information",
-      "subtitle": "A quick overview of the BeamShare file sharing platform.",
+    "summary": {
+      "totalLabel": "Total spent",
+      "totalCount": "{{count}} invoices",
+      "latestLabel": "Latest payment",
+      "planLabel": "Current plan",
+      "planCurrent": "{{plan}}"
+    },
+    "history": {
+      "eyebrow": "Transactions",
+      "title": "All payments",
+      "tableLabel": "Payment history"
+    },
+    "filters": {
+      "statusLabel": "Filter by status",
+      "all": "All statuses",
+      "paid": "Paid",
+      "pending": "Pending",
+      "refunded": "Refunded",
+      "canceled": "Canceled",
+      "failed": "Failed",
+      "searchLabel": "Search payments",
+      "searchPlaceholder": "Search by invoice or note"
+    },
+    "table": {
+      "date": "Date",
+      "note": "Note",
+      "amount": "Amount",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "state": {
+      "loading": "Loading payments...",
+      "empty": "No payments found",
+      "error": "Unable to load payment history."
+    },
+    "status": {
+      "paid": "Paid",
+      "pending": "Pending",
+      "refunded": "Refunded",
+      "failed": "Failed",
+      "canceled": "Canceled"
+    },
+    "detail": {
+      "eyebrow": "Details",
+      "title": "Select a payment",
+      "subtitle": "Choose a transaction to see full information.",
+      "empty": "Select a payment from the table to view its receipt and billing info.",
+      "invoice": "Invoice",
+      "status": "Status",
+      "date": "Date",
+      "method": "Payment method",
+      "period": "Coverage",
+      "total": "Total",
+      "items": "Items",
+      "for": "Invoice {{id}}"
+    }
+  },
+  "info": {
+    "title": "Project & system information",
+    "subtitle": "A quick overview of the BeamShare file sharing platform.",
       "meta": {
         "versionLabel": "Version"
       },
