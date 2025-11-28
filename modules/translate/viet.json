@@ -303,19 +303,29 @@
       "refresh": "Làm mới",
       "export": "Xuất dữ liệu",
       "view": "Xem",
-      "exportHint": "Chức năng xuất dữ liệu được mô phỏng trong môi trường demo."
+      "exportHint": "Chức năng xuất dữ liệu được mô phỏng trong môi trường demo.",
+      "upgrade": "Nâng cấp lên Premium",
+      "downgrade": "Hạ cấp về Basic",
+      "downloadInvoice": "Tải hóa đơn",
+      "contactSupport": "Liên hệ hỗ trợ",
+      "invoiceDownloaded": "Đã tải hóa đơn"
     },
     "summary": {
       "totalLabel": "Tổng chi tiêu",
       "totalCount": "{{count}} hóa đơn",
       "latestLabel": "Thanh toán gần nhất",
       "planLabel": "Gói hiện tại",
-      "planCurrent": "{{plan}}"
+      "planCurrent": "{{plan}}",
+      "paymentsLabel": "thanh toán",
+      "ofLabel": "của",
+      "storageLabel": "Dung lượng đã dùng",
+      "nextLabel": "Đăng ký"
     },
     "history": {
       "eyebrow": "Giao dịch",
       "title": "Tất cả thanh toán",
-      "tableLabel": "Lịch sử thanh toán"
+      "tableLabel": "Lịch sử thanh toán",
+      "subtitle": "Tất cả giao dịch của bạn"
     },
     "filters": {
       "statusLabel": "Lọc theo trạng thái",
@@ -333,12 +343,23 @@
       "note": "Ghi chú",
       "amount": "Số tiền",
       "status": "Trạng thái",
-      "actions": "Thao tác"
+      "actions": "Thao tác",
+      "description": "Mô tả",
+      "currency": "Tiền tệ",
+      "method": "Phương thức",
+      "showing": "Đang hiển thị",
+      "of": "trong tổng số"
     },
     "state": {
       "loading": "Đang tải lịch sử thanh toán...",
       "empty": "Không có giao dịch nào",
-      "error": "Không thể tải lịch sử thanh toán."
+      "error": "Không thể tải lịch sử thanh toán.",
+      "noDate": "—",
+      "noTime": "--",
+      "noAmount": "--",
+      "noPayments": "Chưa có thanh toán nào",
+      "emptyTitle": "Chưa có thanh toán nào",
+      "emptyDescription": "Lịch sử thanh toán sẽ xuất hiện tại đây sau khi bạn thực hiện giao dịch đầu tiên."
     },
     "status": {
       "paid": "Đã thanh toán",
@@ -349,17 +370,65 @@
     },
     "detail": {
       "eyebrow": "Chi tiết",
-      "title": "Chọn một giao dịch",
+      "title": "Chi tiết thanh toán",
+      "back": "Quay lại",
       "subtitle": "Chọn giao dịch để xem thông tin đầy đủ.",
       "empty": "Hãy chọn một thanh toán trong bảng để xem hóa đơn và thông tin thanh toán.",
-      "invoice": "Hóa đơn",
+      "invoice": "Mã hóa đơn",
       "status": "Trạng thái",
       "date": "Ngày",
+      "time": "Thời gian",
       "method": "Phương thức",
+      "plan": "Gói",
+      "description": "Mô tả",
       "period": "Hiệu lực",
       "total": "Tổng cộng",
       "items": "Hạng mục",
-      "for": "Hóa đơn {{id}}"
+      "for": "Hóa đơn {{id}}",
+      "amount": "Số tiền"
+    },
+    "plan": {
+      "free": "Miễn phí",
+      "basic": "Basic",
+      "premium": "Premium",
+      "basicLabel": "Gói Basic",
+      "nameSuffix": "Plan",
+      "loadingDescription": "Đang tải thông tin gói...",
+      "cycle": "/tháng",
+      "active": "Đang hoạt động",
+      "storageDefault": "5 GB lưu trữ",
+      "beamshareDefault": "BeamShare cơ bản"
+    },
+    "subscription": {
+      "premium": "Premium",
+      "free": "Gói miễn phí",
+      "active": "Đang hoạt động",
+      "noSubscription": "Chưa có gói"
+    },
+    "confirm": {
+      "downgrade": "Bạn có chắc chắn muốn hạ cấp về gói Basic?",
+      "downgradeTitle": "Xác nhận hạ cấp",
+      "downgradeMessage": "<p>Bạn có chắc chắn muốn hạ cấp về gói <strong>Basic</strong>?</p><p>Bạn sẽ mất các quyền lợi Premium như dung lượng cao hơn và BeamShare không giới hạn.</p>",
+      "downgradeYes": "Hạ cấp",
+      "downgradeNo": "Hủy"
+    },
+    "success": {
+      "downgrade": "Đã hạ cấp về gói Basic thành công"
+    },
+    "error": {
+      "upgrade": "Không thể nâng cấp gói",
+      "downgrade": "Không thể hạ cấp gói"
+    },
+    "support": {
+      "message": "Vui lòng liên hệ support@beamshare.app"
+    },
+    "export": {
+      "noData": "Không có dữ liệu để xuất",
+      "success": "Xuất dữ liệu thành công"
+    },
+    "invoice": {
+      "header": "HÓA ĐƠN BEAMSHARE",
+      "thanks": "Cảm ơn bạn đã sử dụng dịch vụ!"
     }
   },
   "info": {

@@ -13,10 +13,6 @@
                 <button class="btn-icon" type="button" data-action="refresh-payments" title="Refresh" data-i18n="pages.payments.actions.refresh" data-i18n-attr="title">
                     <i class="fas fa-sync-alt"></i>
                 </button>
-                <button class="btn-secondary" type="button" data-action="export-payments">
-                    <i class="fas fa-download"></i>
-                    <span data-i18n="pages.payments.actions.export">Export CSV</span>
-                </button>
             </div>
         </div>
     </header>
@@ -92,20 +88,6 @@
             </div>
         </article>
 
-        <article class="stat-card stat-storage">
-            <div class="stat-icon">
-                <i class="fas fa-hard-drive"></i>
-            </div>
-            <div class="stat-content">
-                <p class="stat-label" data-i18n="pages.payments.summary.storageLabel">Storage Used</p>
-                <p class="stat-value" data-binding="storage-used">—</p>
-                <div class="storage-bar">
-                    <div class="storage-fill" data-binding="storage-percent" style="width: 0%"></div>
-                </div>
-                <p class="stat-subtext" data-binding="storage-info">— of —</p>
-            </div>
-        </article>
-
         <article class="stat-card stat-next">
             <div class="stat-icon">
                 <i class="fas fa-calendar-alt"></i>
@@ -137,7 +119,6 @@
                             <option value="all" data-i18n="pages.payments.filters.all">All Status</option>
                             <option value="paid" data-i18n="pages.payments.filters.paid">Paid</option>
                             <option value="pending" data-i18n="pages.payments.filters.pending">Pending</option>
-                            <option value="refunded" data-i18n="pages.payments.filters.refunded">Refunded</option>
                             <option value="canceled" data-i18n="pages.payments.filters.canceled">Canceled</option>
                             <option value="failed" data-i18n="pages.payments.filters.failed">Failed</option>
                         </select>
@@ -164,12 +145,11 @@
                             <th class="col-description" data-i18n="pages.payments.table.description">Description</th>
                             <th class="col-amount" data-i18n="pages.payments.table.amount">Amount</th>
                             <th class="col-status" data-i18n="pages.payments.table.status">Status</th>
-                            <th class="col-actions" data-i18n="pages.payments.table.actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody data-payments-table>
                         <tr class="loading-row">
-                            <td colspan="5">
+                            <td colspan="4">
                                 <div class="table-loading">
                                     <div class="spinner"></div>
                                     <span data-i18n="pages.payments.state.loading">Loading payments...</span>
@@ -192,6 +172,15 @@
             <!-- Pagination -->
             <div class="table-footer" data-table-footer style="display: none;">
                 <span class="showing-text" data-binding="showing-count">Showing 0 of 0</span>
+                <div class="pagination-controls" data-pagination>
+                    <button class="pagination-btn" data-action="prev-page" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="pagination-info" data-binding="page-info">1 / 1</span>
+                    <button class="pagination-btn" data-action="next-page" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </section>

@@ -303,19 +303,29 @@
       "refresh": "Refresh",
       "export": "Export",
       "view": "View",
-      "exportHint": "Export is simulated in this demo environment."
+      "exportHint": "Export is simulated in this demo environment.",
+      "upgrade": "Upgrade to Premium",
+      "downgrade": "Downgrade to Basic",
+      "downloadInvoice": "Download Invoice",
+      "contactSupport": "Contact Support",
+      "invoiceDownloaded": "Invoice downloaded"
     },
     "summary": {
       "totalLabel": "Total spent",
       "totalCount": "{{count}} invoices",
       "latestLabel": "Latest payment",
       "planLabel": "Current plan",
-      "planCurrent": "{{plan}}"
+      "planCurrent": "{{plan}}",
+      "paymentsLabel": "payments",
+      "ofLabel": "of",
+      "storageLabel": "Storage Used",
+      "nextLabel": "Subscription"
     },
     "history": {
       "eyebrow": "Transactions",
       "title": "All payments",
-      "tableLabel": "Payment history"
+      "tableLabel": "Payment history",
+      "subtitle": "All your transactions"
     },
     "filters": {
       "statusLabel": "Filter by status",
@@ -333,12 +343,23 @@
       "note": "Note",
       "amount": "Amount",
       "status": "Status",
-      "actions": "Actions"
+      "actions": "Actions",
+      "description": "Description",
+      "currency": "Currency",
+      "method": "Method",
+      "showing": "Showing",
+      "of": "of"
     },
     "state": {
       "loading": "Loading payments...",
       "empty": "No payments found",
-      "error": "Unable to load payment history."
+      "error": "Unable to load payment history.",
+      "noDate": "—",
+      "noTime": "--",
+      "noAmount": "--",
+      "noPayments": "No payments yet",
+      "emptyTitle": "No payments yet",
+      "emptyDescription": "Your payment history will appear here once you make your first transaction."
     },
     "status": {
       "paid": "Paid",
@@ -349,17 +370,65 @@
     },
     "detail": {
       "eyebrow": "Details",
-      "title": "Select a payment",
+      "title": "Payment Details",
+      "back": "Back to History",
       "subtitle": "Choose a transaction to see full information.",
       "empty": "Select a payment from the table to view its receipt and billing info.",
-      "invoice": "Invoice",
+      "invoice": "Invoice ID",
       "status": "Status",
       "date": "Date",
+      "time": "Time",
       "method": "Payment method",
+      "plan": "Plan",
+      "description": "Description",
       "period": "Coverage",
       "total": "Total",
       "items": "Items",
-      "for": "Invoice {{id}}"
+      "for": "Invoice {{id}}",
+      "amount": "Amount"
+    },
+    "plan": {
+      "free": "Free",
+      "basic": "Basic",
+      "premium": "Premium",
+      "basicLabel": "Basic Plan",
+      "nameSuffix": "Plan",
+      "loadingDescription": "Loading plan details...",
+      "cycle": "/month",
+      "active": "Active",
+      "storageDefault": "5 GB storage",
+      "beamshareDefault": "Basic BeamShare"
+    },
+    "subscription": {
+      "premium": "Premium",
+      "free": "Free Plan",
+      "active": "Active subscription",
+      "noSubscription": "No active subscription"
+    },
+    "confirm": {
+      "downgrade": "Are you sure you want to downgrade to Basic plan?",
+      "downgradeTitle": "Confirm Downgrade",
+      "downgradeMessage": "<p>Are you sure you want to downgrade to <strong>Basic</strong> plan?</p><p>You will lose Premium benefits like higher storage and unlimited BeamShare.</p>",
+      "downgradeYes": "Downgrade",
+      "downgradeNo": "Cancel"
+    },
+    "success": {
+      "downgrade": "Successfully downgraded to Basic plan"
+    },
+    "error": {
+      "upgrade": "Unable to upgrade plan",
+      "downgrade": "Unable to downgrade plan"
+    },
+    "support": {
+      "message": "Please contact support@beamshare.app"
+    },
+    "export": {
+      "noData": "No payments to export",
+      "success": "Payments exported successfully"
+    },
+    "invoice": {
+      "header": "BEAMSHARE INVOICE",
+      "thanks": "Thank you for your purchase!"
     }
   },
   "info": {

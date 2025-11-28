@@ -123,13 +123,16 @@
         const wrapper = document.createElement('div');
         wrapper.className = 'video-preview';
 
+        // Generate unique ID for video element
+        const videoId = 'video-preview-' + Date.now();
+        
         const video = document.createElement('video');
-        video.className = 'video-js vjs-big-play-centered';
-        video.setAttribute('controls', 'controls');
-        video.setAttribute('preload', 'metadata');
+        video.id = videoId;
+        video.className = 'video-js vjs-default-skin vjs-big-play-centered';
+        video.setAttribute('controls', '');
+        video.setAttribute('preload', 'auto');
         video.setAttribute('playsinline', '');
         video.setAttribute('webkit-playsinline', '');
-        video.setAttribute('data-setup', '{}');
 
         const source = document.createElement('source');
         source.src = context.previewUrl;
@@ -139,25 +142,45 @@
         wrapper.appendChild(video);
         context.container.appendChild(wrapper);
 
-        try {
-            window.videojs(video, {
-                controls: true,
-                preload: 'metadata',
-                fluid: true,
-                sources: [
-                    {
-                        src: context.previewUrl,
-                        type: context.metadata.mimeType || 'video/mp4'
-                    }
-                ]
-            });
-        } catch (_error) {
-            wrapper.remove();
-            if (disclaimer && disclaimer.parentElement === context.container) {
-                context.container.removeChild(disclaimer);
+        // Use requestAnimationFrame to ensure DOM is ready
+        requestAnimationFrame(function() {
+            try {
+                const player = window.videojs(videoId, {
+                    controls: true,
+                    autoplay: false,
+                    preload: 'auto',
+                    fluid: false,
+                    responsive: true,
+                    playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2],
+                    sources: [
+                        {
+                            src: context.previewUrl,
+                            type: context.metadata.mimeType || 'video/mp4'
+                        }
+                    ]
+                });
+
+                // Handle player ready event
+                player.ready(function() {
+                    // Add error handler
+                    player.on('error', function() {
+                        const error = player.error();
+                        console.error('Video playback error:', error);
+                    });
+                });
+
+                // Store player reference for cleanup
+                wrapper.dataset.playerId = videoId;
+                
+            } catch (_error) {
+                console.error('Video.js initialization error:', _error);
+                wrapper.remove();
+                if (disclaimer && disclaimer.parentElement === context.container) {
+                    context.container.removeChild(disclaimer);
+                }
+                showUnsupportedMessage(context.container, 'Không thể khởi tạo trình phát video. Vui lòng tải xuống để xem.');
             }
-            showUnsupportedMessage(context.container, 'Không thể khởi tạo trình phát video. Vui lòng tải xuống để xem.');
-        }
+        });
     }
 
     function renderAudioPreview(context) {

@@ -10,7 +10,10 @@
         search: '',
         selectedId: null,
         loading: false,
-        error: null
+        error: null,
+        // Pagination
+        currentPage: 1,
+        itemsPerPage: 5
     };
 
     // ===== SELECTORS =====
@@ -55,7 +58,12 @@
         
         // Actions
         refreshButton: '[data-action="refresh-payments"]',
-        exportButton: '[data-action="export-payments"]'
+        
+        // Pagination
+        pagination: '[data-pagination]',
+        pageInfo: '[data-binding="page-info"]',
+        prevPageBtn: '[data-action="prev-page"]',
+        nextPageBtn: '[data-action="next-page"]'
     };
 
     const eventUnsubscribers = [];
@@ -107,7 +115,6 @@
         const safeDate = date instanceof Date ? date : new Date(date);
         if (Number.isNaN(safeDate.getTime())) return missingTimeLabel;
         return safeDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    });
     }
 
     function formatBytes(bytes) {
@@ -117,6 +124,27 @@
         const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
         const value = bytes / Math.pow(k, i);
         return value.toFixed(value >= 10 || i === 0 ? 0 : 1) + ' ' + sizes[i];
+    }
+
+    // Translate server-side labels based on known values
+    function translateBeamshareLabel(label) {
+        if (!label) return null;
+        const normalized = label.toLowerCase().trim();
+        
+        // Map known English labels to translation keys
+        if (normalized === 'unlimited sends, up to 200mb per file') {
+            return translate('pages.subscription.runtime.labels.beamshareBasic', 'Không giới hạn lượt gửi, tối đa 200MB mỗi file');
+        }
+        if (normalized === 'unlimited' || normalized === 'không giới hạn') {
+            return translate('pages.subscription.runtime.labels.beamsharePremium', 'Không giới hạn');
+        }
+        return label;
+    }
+
+    function translateStorageLabel(label) {
+        if (!label) return null;
+        // Storage labels like "5 GB" or "50 GB" are already numeric, just return as-is
+        return label;
     }
 
     // ===== DATA NORMALIZATION =====
@@ -206,10 +234,10 @@
 
         // Update features
         const storageLimitEl = document.querySelector(selectors.storageLimit);
-        if (storageLimitEl) storageLimitEl.textContent = planDef.storageLabel || translate('pages.payments.plan.storageDefault', '5 GB storage');
+        if (storageLimitEl) storageLimitEl.textContent = translateStorageLabel(planDef.storageLabel) || translate('pages.payments.plan.storageDefault', '5 GB storage');
 
         const beamshareLimitEl = document.querySelector(selectors.beamshareLimit);
-        if (beamshareLimitEl) beamshareLimitEl.textContent = (planDef.beamshare && planDef.beamshare.limitLabel) || translate('pages.payments.plan.beamshareDefault', 'BeamShare');
+        if (beamshareLimitEl) beamshareLimitEl.textContent = translateBeamshareLabel(planDef.beamshare && planDef.beamshare.limitLabel) || translate('pages.payments.plan.beamshareDefault', 'BeamShare');
 
         // Show/hide action buttons
         const upgradeBtn = document.querySelector(selectors.upgradeBtn);
@@ -297,14 +325,14 @@
         tableEventUnsubscribers.splice(0).forEach(function(unsub) { unsub(); });
 
         if (state.loading) {
-            tbody.innerHTML = '<tr class="loading-row"><td colspan="5"><div class="table-loading"><div class="spinner"></div><span>' + translate('pages.payments.state.loading', 'Loading payments...') + '</span></div></td></tr>';
+            tbody.innerHTML = '<tr class="loading-row"><td colspan="4"><div class="table-loading"><div class="spinner"></div><span>' + translate('pages.payments.state.loading', 'Loading payments...') + '</span></div></td></tr>';
             if (emptyState) emptyState.style.display = 'none';
             if (tableFooter) tableFooter.style.display = 'none';
             return;
         }
 
         if (state.error) {
-            tbody.innerHTML = '<tr class="loading-row"><td colspan="5"><div class="table-loading" style="color: var(--theme-danger);"><i class="fas fa-exclamation-circle"></i><span>' + state.error + '</span></div></td></tr>';
+            tbody.innerHTML = '<tr class="loading-row"><td colspan="4"><div class="table-loading" style="color: var(--theme-danger);"><i class="fas fa-exclamation-circle"></i><span>' + state.error + '</span></div></td></tr>';
             if (emptyState) emptyState.style.display = 'none';
             if (tableFooter) tableFooter.style.display = 'none';
             return;
@@ -320,28 +348,61 @@
         if (emptyState) emptyState.style.display = 'none';
         if (tableFooter) tableFooter.style.display = 'flex';
 
-        let showingCountEl = document.querySelector(selectors.showingCount);
-        if (showingCountEl) {
-            let showingLabel = translate('pages.payments.table.showing', 'Showing');
-            let ofLabel = translate('pages.payments.table.of', 'of');
-            showingCountEl.textContent = showingLabel + ' ' + records.length + ' ' + ofLabel + ' ' + state.payments.length;
-        }
-
+        // Sort records by date (newest first)
         let sortedRecords = records.slice().sort(function(a, b) {
             let aTime = a && a.date ? new Date(a.date).getTime() : 0;
             let bTime = b && b.date ? new Date(b.date).getTime() : 0;
             return bTime - aTime;
         });
 
-        let rows = sortedRecords.map(function(payment) {
+        // Pagination logic
+        let totalRecords = sortedRecords.length;
+        let totalPages = Math.ceil(totalRecords / state.itemsPerPage);
+        
+        // Ensure current page is valid
+        if (state.currentPage > totalPages) {
+            state.currentPage = totalPages || 1;
+        }
+        if (state.currentPage < 1) {
+            state.currentPage = 1;
+        }
+
+        let startIndex = (state.currentPage - 1) * state.itemsPerPage;
+        let endIndex = startIndex + state.itemsPerPage;
+        let paginatedRecords = sortedRecords.slice(startIndex, endIndex);
+
+        // Update showing count
+        let showingCountEl = document.querySelector(selectors.showingCount);
+        if (showingCountEl) {
+            let showingLabel = translate('pages.payments.table.showing', 'Showing');
+            let ofLabel = translate('pages.payments.table.of', 'of');
+            let fromItem = startIndex + 1;
+            let toItem = Math.min(endIndex, totalRecords);
+            showingCountEl.textContent = showingLabel + ' ' + fromItem + '-' + toItem + ' ' + ofLabel + ' ' + totalRecords;
+        }
+
+        // Update pagination controls
+        let pageInfoEl = document.querySelector(selectors.pageInfo);
+        let prevBtn = document.querySelector(selectors.prevPageBtn);
+        let nextBtn = document.querySelector(selectors.nextPageBtn);
+
+        if (pageInfoEl) {
+            pageInfoEl.textContent = state.currentPage + ' / ' + totalPages;
+        }
+        if (prevBtn) {
+            prevBtn.disabled = state.currentPage <= 1;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = state.currentPage >= totalPages;
+        }
+
+        let rows = paginatedRecords.map(function(payment) {
             let status = getStatusMeta(payment.status);
             let isSelected = payment.id === state.selectedId;
             let dateLabel = translate('pages.payments.table.date', 'Date');
             let descLabel = translate('pages.payments.table.description', 'Description');
             let amountLabel = translate('pages.payments.table.amount', 'Amount');
             let statusLabel = translate('pages.payments.table.status', 'Status');
-            let actionsLabel = translate('pages.payments.table.actions', 'Actions');
-            let viewLabel = translate('pages.payments.actions.view', 'View');
             
             return '<tr data-payment-id="' + payment.id + '" class="' + (isSelected ? 'selected' : '') + '">' +
                 '<td class="col-date" data-label="' + dateLabel + '">' +
@@ -358,9 +419,6 @@
                 '<td class="col-status" data-label="' + statusLabel + '">' +
                     '<span class="status-badge ' + status.className + '"><i class="fas ' + status.icon + '"></i> ' + status.label + '</span>' +
                 '</td>' +
-                '<td class="col-actions" data-label="' + actionsLabel + '">' +
-                    '<button class="btn-view" type="button" data-action="view-payment" data-payment-id="' + payment.id + '"><i class="fas fa-eye"></i> ' + viewLabel + '</button>' +
-                '</td>' +
             '</tr>';
         }).join('');
 
@@ -369,23 +427,10 @@
         // Attach row click handlers
         tbody.querySelectorAll('tr[data-payment-id]').forEach(function(row) {
             let handler = function(e) {
-                if (e.target.closest('button')) return;
                 selectPayment(row.getAttribute('data-payment-id'));
             };
             row.addEventListener('click', handler);
             tableEventUnsubscribers.push(function() { row.removeEventListener('click', handler); });
-        });
-
-        // Attach View button click handlers
-        tbody.querySelectorAll('[data-action="view-payment"]').forEach(function(btn) {
-            let handler = function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                let paymentId = btn.getAttribute('data-payment-id');
-                if (paymentId) selectPayment(paymentId);
-            };
-            btn.addEventListener('click', handler);
-            tableEventUnsubscribers.push(function() { btn.removeEventListener('click', handler); });
         });
     }
 
@@ -407,8 +452,6 @@
         let methodLabel = translate('pages.payments.detail.method', 'Method');
         let planLabel = translate('pages.payments.detail.plan', 'Plan');
         let descLabel = translate('pages.payments.detail.description', 'Description');
-        let downloadLabel = translate('pages.payments.actions.downloadInvoice', 'Download Invoice');
-        let supportLabel = translate('pages.payments.actions.contactSupport', 'Contact Support');
         
         container.innerHTML = '<div class="detail-content-wrapper">' +
             '<div class="detail-amount-section">' +
@@ -423,30 +466,7 @@
                 '<div class="meta-item"><span class="meta-label">' + planLabel + '</span><span class="meta-value">' + (payment.plan === 'premium' ? translate('pages.payments.plan.premium', 'Premium') : translate('pages.payments.plan.basic', 'Basic')) + '</span></div>' +
                 '<div class="meta-item"><span class="meta-label">' + descLabel + '</span><span class="meta-value">' + payment.note + '</span></div>' +
             '</div>' +
-            '<div class="detail-divider"></div>' +
-            '<div class="detail-actions">' +
-                '<button class="btn-download-invoice" type="button" data-action="download-invoice" data-payment-id="' + payment.id + '"><i class="fas fa-download"></i> ' + downloadLabel + '</button>' +
-                '<button class="btn-contact-support" type="button" data-action="contact-support"><i class="fas fa-headset"></i> ' + supportLabel + '</button>' +
-            '</div>' +
         '</div>';
-
-        // Attach action handlers
-        let downloadBtn = container.querySelector('[data-action="download-invoice"]');
-        if (downloadBtn) {
-            downloadBtn.addEventListener('click', function() { downloadInvoice(payment); });
-        }
-
-        let supportBtn = container.querySelector('[data-action="contact-support"]');
-        if (supportBtn) {
-            supportBtn.addEventListener('click', function() {
-                if (window.toastSystem && window.toastSystem.show) {
-                    window.toastSystem.show({
-                        message: translate('pages.payments.support.message', 'Please contact support@beamshare.app'),
-                        type: 'info'
-                    });
-                }
-            });
-        }
 
         // Show modal
         modal.classList.add('active');
@@ -480,109 +500,19 @@
 
     function handleStatusFilter(event) {
         state.status = event.target.value;
+        state.currentPage = 1; // Reset to first page when filter changes
         update();
     }
 
     function handleSearch(event) {
         state.search = event.target.value || '';
+        state.currentPage = 1; // Reset to first page when search changes
         update();
     }
 
-    function downloadInvoice(payment) {
-        let status = getStatusMeta(payment.status);
-        let invoiceHeader = translate('pages.payments.invoice.header', 'BEAMSHARE INVOICE');
-        let divider = '==================';
-        let invoiceIdLabel = translate('pages.payments.detail.invoice', 'Invoice ID');
-        let dateLabel = translate('pages.payments.detail.date', 'Date');
-        let statusLabel = translate('pages.payments.detail.status', 'Status');
-        let descriptionLabel = translate('pages.payments.detail.description', 'Description');
-        let amountLabel = translate('pages.payments.detail.amount', 'Amount');
-        let methodLabel = translate('pages.payments.detail.method', 'Method');
-        let thankYouLabel = translate('pages.payments.invoice.thanks', 'Thank you for your purchase!');
-
-        let invoiceContent = invoiceHeader + '\n' +
-            divider + '\n' +
-            invoiceIdLabel + ': ' + payment.id + '\n' +
-            dateLabel + ': ' + formatDate(payment.date) + '\n' +
-            statusLabel + ': ' + status.label + '\n\n' +
-            descriptionLabel + ': ' + payment.note + '\n' +
-            amountLabel + ': ' + formatCurrency(payment.amount, payment.currency) + '\n\n' +
-            methodLabel + ': ' + payment.method + '\n\n' +
-            thankYouLabel + '\n' +
-            divider;
-
-        let blob = new Blob([invoiceContent], { type: 'text/plain' });
-        let url = URL.createObjectURL(blob);
-        let a = document.createElement('a');
-        a.href = url;
-        a.download = 'invoice-' + payment.id + '.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        if (window.toastSystem && window.toastSystem.show) {
-            window.toastSystem.show({
-                message: translate('pages.payments.actions.invoiceDownloaded', 'Invoice downloaded'),
-                type: 'success'
-            });
-        }
-    }
-
-    function exportPayments() {
-        if (!state.payments.length) {
-            if (window.toastSystem && window.toastSystem.show) {
-                window.toastSystem.show({
-                    message: translate('pages.payments.export.noData', 'No payments to export'),
-                    type: 'warning'
-                });
-            }
-            return;
-        }
-
-        let headers = [
-            translate('pages.payments.table.date', 'Date'),
-            translate('pages.payments.detail.invoice', 'Invoice ID'),
-            translate('pages.payments.table.description', 'Description'),
-            translate('pages.payments.table.amount', 'Amount'),
-            translate('pages.payments.table.currency', 'Currency'),
-            translate('pages.payments.table.status', 'Status'),
-            translate('pages.payments.table.method', 'Method')
-        ];
-        let rows = state.payments.map(function(p) {
-            return [
-                formatDate(p.date),
-                p.id,
-                p.note,
-                p.amount,
-                p.currency,
-                p.status,
-                p.method
-            ];
-        });
-
-        let csvContent = headers.join(',') + '\n' + rows.map(function(row) {
-            return row.map(function(cell) {
-                return '"' + String(cell).replace(/"/g, '""') + '"';
-            }).join(',');
-        }).join('\n');
-
-        let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        let url = URL.createObjectURL(blob);
-        let a = document.createElement('a');
-        a.href = url;
-        a.download = 'beamshare-payments-' + new Date().toISOString().split('T')[0] + '.csv';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        if (window.toastSystem && window.toastSystem.show) {
-            window.toastSystem.show({
-                message: translate('pages.payments.export.success', 'Payments exported successfully'),
-                type: 'success'
-            });
-        }
+    function goToPage(page) {
+        state.currentPage = page;
+        update();
     }
 
     function upgradePlan() {
@@ -611,10 +541,43 @@
     }
 
     function downgradePlan() {
-        if (!confirm(translate('pages.payments.confirm.downgrade', 'Are you sure you want to downgrade to Basic plan?'))) {
+        // Use modal instead of confirm()
+        if (!window.modalSystem) {
+            console.warn('Modal system not available');
             return;
         }
 
+        const confirmTitle = translate('pages.payments.confirm.downgradeTitle', 'Xác nhận hạ cấp');
+        const confirmMessage = translate('pages.payments.confirm.downgradeMessage', 
+            '<p>Bạn có chắc chắn muốn hạ cấp về gói <strong>Basic</strong>?</p><p>Bạn sẽ mất các quyền lợi Premium như dung lượng cao hơn và BeamShare không giới hạn.</p>'
+        );
+        const confirmYes = translate('pages.payments.confirm.downgradeYes', 'Hạ cấp');
+        const confirmNo = translate('pages.payments.confirm.downgradeNo', 'Hủy');
+
+        window.modalSystem.createModal({
+            title: confirmTitle,
+            content: '<div class="confirm-downgrade-content">' + confirmMessage + '</div>',
+            buttons: [
+                {
+                    text: confirmNo,
+                    className: 'btn-secondary',
+                    onclick: function(e, modal) {
+                        modal.closeModal();
+                    }
+                },
+                {
+                    text: confirmYes,
+                    className: 'btn-danger',
+                    onclick: function(e, modal) {
+                        modal.closeModal();
+                        executeDowngrade();
+                    }
+                }
+            ]
+        });
+    }
+
+    function executeDowngrade() {
         fetch('/api/subscriptions/plan', {
             method: 'POST',
             credentials: 'include',
@@ -657,9 +620,10 @@
         let statusEl = document.querySelector(selectors.statusFilter);
         let searchEl = document.querySelector(selectors.searchBox);
         let refreshEl = document.querySelector(selectors.refreshButton);
-        let exportEl = document.querySelector(selectors.exportButton);
         let upgradeEl = document.querySelector(selectors.upgradeBtn);
         let downgradeEl = document.querySelector(selectors.downgradeBtn);
+        let prevPageBtn = document.querySelector(selectors.prevPageBtn);
+        let nextPageBtn = document.querySelector(selectors.nextPageBtn);
 
         if (statusEl) {
             let handler = function(e) { handleStatusFilter(e); };
@@ -679,10 +643,17 @@
             eventUnsubscribers.push(function() { refreshEl.removeEventListener('click', handler); });
         }
 
-        if (exportEl) {
-            let handler = function() { exportPayments(); };
-            exportEl.addEventListener('click', handler);
-            eventUnsubscribers.push(function() { exportEl.removeEventListener('click', handler); });
+        // Pagination controls
+        if (prevPageBtn) {
+            let handler = function() { goToPage(state.currentPage - 1); };
+            prevPageBtn.addEventListener('click', handler);
+            eventUnsubscribers.push(function() { prevPageBtn.removeEventListener('click', handler); });
+        }
+
+        if (nextPageBtn) {
+            let handler = function() { goToPage(state.currentPage + 1); };
+            nextPageBtn.addEventListener('click', handler);
+            eventUnsubscribers.push(function() { nextPageBtn.removeEventListener('click', handler); });
         }
 
         // Close modal buttons (multiple elements)
