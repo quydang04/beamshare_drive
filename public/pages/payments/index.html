@@ -1,116 +1,217 @@
 <div class="page payments-page" id="payments-page">
-    <div class="page-header">
-        <div>
-            <p class="page-eyebrow" data-i18n="pages.payments.eyebrow">Billing</p>
-            <h1 data-i18n="pages.payments.title">Payment history</h1>
-            <p class="page-subtitle" data-i18n="pages.payments.subtitle">
-                Review your past charges, download receipts, and see the status of each payment.
-            </p>
+    <!-- Page Header -->
+    <header class="payments-header">
+        <div class="header-content">
+            <div class="header-text">
+                <p class="page-eyebrow" data-i18n="pages.payments.eyebrow">Billing & Payments</p>
+                <h1 class="page-title" data-i18n="pages.payments.title">Payment Center</h1>
+                <p class="page-subtitle" data-i18n="pages.payments.subtitle">
+                    Manage your subscription, view payment history, and download invoices.
+                </p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon" type="button" data-action="refresh-payments" title="Refresh" data-i18n="pages.payments.actions.refresh" data-i18n-attr="title">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="btn-secondary" type="button" data-action="export-payments">
+                    <i class="fas fa-download"></i>
+                    <span data-i18n="pages.payments.actions.export">Export CSV</span>
+                </button>
+            </div>
         </div>
-        <div class="payments-header-actions">
-            <button class="btn-primary" type="button" data-action="refresh-payments">
-                <i class="fas fa-rotate"></i>
-                <span data-i18n="pages.payments.actions.refresh">Refresh</span>
-            </button>
-            <button class="btn-secondary" type="button" data-action="export-payments">
-                <i class="fas fa-file-arrow-down"></i>
-                <span data-i18n="pages.payments.actions.export">Export</span>
-            </button>
-        </div>
-    </div>
+    </header>
 
-    <div class="payments-summary" role="list">
-        <article class="summary-card" role="listitem">
-            <div class="summary-icon summary-icon-accent">
-                <i class="fas fa-money-check-alt"></i>
-            </div>
-            <div class="summary-content">
-                <p class="summary-label" data-i18n="pages.payments.summary.totalLabel">Total spent</p>
-                <p class="summary-value" data-binding="total-amount">—</p>
-                <p class="summary-subtext" data-binding="total-count"></p>
-            </div>
-        </article>
-        <article class="summary-card" role="listitem">
-            <div class="summary-icon summary-icon-muted">
-                <i class="fas fa-receipt"></i>
-            </div>
-            <div class="summary-content">
-                <p class="summary-label" data-i18n="pages.payments.summary.latestLabel">Latest payment</p>
-                <p class="summary-value" data-binding="latest-amount">—</p>
-                <p class="summary-subtext" data-binding="latest-status"></p>
-            </div>
-        </article>
-        <article class="summary-card" role="listitem">
-            <div class="summary-icon summary-icon-success">
-                <i class="fas fa-shield-check"></i>
-            </div>
-            <div class="summary-content">
-                <p class="summary-label" data-i18n="pages.payments.summary.planLabel">Current plan</p>
-                <p class="summary-value" data-binding="plan-name">—</p>
-                <p class="summary-subtext" data-binding="plan-cycle"></p>
-            </div>
-        </article>
-    </div>
-
-    <section class="payments-layout">
-        <div class="payments-history-card">
-            <div class="card-header">
-                <div>
-                    <p class="card-eyebrow" data-i18n="pages.payments.history.eyebrow">Transactions</p>
-                    <h2 data-i18n="pages.payments.history.title">All payments</h2>
+    <!-- Current Plan Card -->
+    <section class="current-plan-section">
+        <div class="plan-card" data-plan-card>
+            <div class="plan-card-bg"></div>
+            <div class="plan-card-content">
+                <div class="plan-info">
+                    <div class="plan-badge" data-binding="plan-badge">
+                        <i class="fas fa-crown"></i>
+                        <span data-binding="plan-tier">Loading...</span>
+                    </div>
+                    <h2 class="plan-name" data-binding="plan-name" data-i18n="pages.payments.plan.basicLabel">--h2>
+                    <p class="plan-description" data-binding="plan-description" data-i18n="pages.payments.plan.loadingDescription">Loading plan details...</p>
                 </div>
-                <div class="history-filters">
-                    <label class="sr-only" for="payment-status-filter" data-i18n="pages.payments.filters.statusLabel">Filter by status</label>
-                    <select id="payment-status-filter" data-filter="status">
-                        <option value="all" data-i18n="pages.payments.filters.all">All statuses</option>
-                        <option value="paid" data-i18n="pages.payments.filters.paid">Paid</option>
-                        <option value="pending" data-i18n="pages.payments.filters.pending">Pending</option>
-                        <option value="refunded" data-i18n="pages.payments.filters.refunded">Refunded</option>
-                        <option value="canceled" data-i18n="pages.payments.filters.canceled">Canceled</option>
-                        <option value="failed" data-i18n="pages.payments.filters.failed">Failed</option>
-                    </select>
-                    <label class="sr-only" for="payment-search" data-i18n="pages.payments.filters.searchLabel">Search payments</label>
-                    <div class="search-box">
+                <div class="plan-pricing">
+                    <div class="price-display">
+                        <span class="price-amount" data-binding="plan-price">—</span>
+                        <span class="price-period" data-binding="plan-cycle" data-i18n="pages.payments.plan.cycle">/month</span>
+                    </div>
+                    <div class="plan-status" data-binding="plan-status">
+                        <i class="fas fa-check-circle"></i>
+                        <span data-i18n="pages.payments.plan.active">Active</span>
+                    </div>
+                </div>
+                <div class="plan-features" data-binding="plan-features">
+                    <div class="feature-item">
+                        <i class="fas fa-database"></i>
+                        <span data-binding="storage-limit" data-i18n="pages.payments.plan.storageDefault">-- storage</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-paper-plane"></i>
+                        <span data-binding="beamshare-limit" data-i18n="pages.payments.plan.beamshareDefault">-- BeamShare</span>
+                    </div>
+                </div>
+                <div class="plan-actions">
+                    <button class="btn-upgrade" type="button" data-action="upgrade-plan" style="display: none;">
+                        <i class="fas fa-rocket"></i>
+                        <span data-i18n="pages.payments.actions.upgrade">Upgrade to Premium</span>
+                    </button>
+                    <button class="btn-downgrade" type="button" data-action="downgrade-plan" style="display: none;">
+                        <i class="fas fa-arrow-down"></i>
+                        <span data-i18n="pages.payments.actions.downgrade">Downgrade to Basic</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Overview -->
+    <section class="stats-overview">
+        <article class="stat-card stat-total">
+            <div class="stat-icon">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label" data-i18n="pages.payments.summary.totalLabel">Total Spent</p>
+                <p class="stat-value" data-binding="total-amount">₫0</p>
+                <p class="stat-subtext" data-binding="total-count">0 payments</p>
+            </div>
+        </article>
+
+        <article class="stat-card stat-latest">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label" data-i18n="pages.payments.summary.latestLabel">Latest Payment</p>
+                <p class="stat-value" data-binding="latest-amount">—</p>
+                <p class="stat-subtext" data-binding="latest-status">No payments yet</p>
+            </div>
+        </article>
+
+        <article class="stat-card stat-storage">
+            <div class="stat-icon">
+                <i class="fas fa-hard-drive"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label" data-i18n="pages.payments.summary.storageLabel">Storage Used</p>
+                <p class="stat-value" data-binding="storage-used">—</p>
+                <div class="storage-bar">
+                    <div class="storage-fill" data-binding="storage-percent" style="width: 0%"></div>
+                </div>
+                <p class="stat-subtext" data-binding="storage-info">— of —</p>
+            </div>
+        </article>
+
+        <article class="stat-card stat-next">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label" data-i18n="pages.payments.summary.nextLabel">Subscription</p>
+                <p class="stat-value" data-binding="next-payment">—</p>
+                <p class="stat-subtext" data-binding="subscription-status">—</p>
+            </div>
+        </article>
+    </section>
+
+    <!-- Main Content Layout -->
+    <section class="payments-main">
+        <!-- Payment History Table -->
+        <div class="history-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <i class="fas fa-receipt"></i>
+                    <div>
+                        <h2 data-i18n="pages.payments.history.title">Payment History</h2>
+                        <p class="card-subtitle" data-i18n="pages.payments.history.subtitle">All your transactions</p>
+                    </div>
+                </div>
+                <div class="card-filters">
+                    <div class="filter-group">
+                        <label class="sr-only" for="payment-status-filter">Filter by status</label>
+                        <select id="payment-status-filter" data-filter="status" class="filter-select">
+                            <option value="all" data-i18n="pages.payments.filters.all">All Status</option>
+                            <option value="paid" data-i18n="pages.payments.filters.paid">Paid</option>
+                            <option value="pending" data-i18n="pages.payments.filters.pending">Pending</option>
+                            <option value="refunded" data-i18n="pages.payments.filters.refunded">Refunded</option>
+                            <option value="canceled" data-i18n="pages.payments.filters.canceled">Canceled</option>
+                            <option value="failed" data-i18n="pages.payments.filters.failed">Failed</option>
+                        </select>
+                    </div>
+                    <div class="search-group">
                         <i class="fas fa-search"></i>
-                        <input id="payment-search" type="search" data-search="payments" placeholder="Search by invoice or note" data-i18n="pages.payments.filters.searchPlaceholder" data-i18n-attr="placeholder" />
+                        <input 
+                            id="payment-search" 
+                            type="search" 
+                            data-search="payments" 
+                            placeholder="Search payments..." 
+                            data-i18n="pages.payments.filters.searchPlaceholder" 
+                            data-i18n-attr="placeholder" 
+                        />
                     </div>
                 </div>
             </div>
 
-            <div class="table-wrapper payments-table-wrapper" role="region" aria-live="polite">
-                <table class="payments-table" aria-label="Payment history" data-i18n="pages.payments.history.tableLabel" data-i18n-attr="aria-label">
+            <div class="table-container" role="region" aria-live="polite">
+                <table class="payments-table" aria-label="Payment history" data-i18n="pages.payments.history.title" data-i18n-attr="aria-label">
                     <thead>
                         <tr>
-                            <th data-i18n="pages.payments.table.date">Date</th>
-                            <th data-i18n="pages.payments.table.note">Note</th>
-                            <th data-i18n="pages.payments.table.amount">Amount</th>
-                            <th data-i18n="pages.payments.table.status">Status</th>
-                            <th data-i18n="pages.payments.table.actions" class="column-actions">Actions</th>
+                            <th class="col-date" data-i18n="pages.payments.table.date">Date</th>
+                            <th class="col-description" data-i18n="pages.payments.table.description">Description</th>
+                            <th class="col-amount" data-i18n="pages.payments.table.amount">Amount</th>
+                            <th class="col-status" data-i18n="pages.payments.table.status">Status</th>
+                            <th class="col-actions" data-i18n="pages.payments.table.actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody data-payments-table>
-                        <tr>
-                            <td colspan="5" class="loading-row" data-i18n="pages.payments.state.loading">Loading payments...</td>
+                        <tr class="loading-row">
+                            <td colspan="5">
+                                <div class="table-loading">
+                                    <div class="spinner"></div>
+                                    <span data-i18n="pages.payments.state.loading">Loading payments...</span>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
 
-        <aside class="payment-detail" aria-live="polite">
-            <div class="detail-header">
-                <p class="card-eyebrow" data-i18n="pages.payments.detail.eyebrow">Details</p>
-                <h2 data-binding="detail-title" data-i18n="pages.payments.detail.title">Select a payment</h2>
-                <p class="detail-subtitle" data-binding="detail-subtitle" data-i18n="pages.payments.detail.subtitle">Choose a transaction to see full information.</p>
-            </div>
-            <div class="detail-content" data-detail-content>
-                <div class="empty-detail">
-                    <div class="empty-icon">
-                        <i class="fas fa-clipboard-list"></i>
-                    </div>
-                    <p data-i18n="pages.payments.detail.empty">Select a payment from the table to view its receipt and billing info.</p>
+            <!-- Empty State -->
+            <div class="empty-state" data-empty-state style="display: none;">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox"></i>
                 </div>
+                <h3 data-i18n="pages.payments.state.emptyTitle">No payments yet</h3>
+                <p data-i18n="pages.payments.state.emptyDescription">Your payment history will appear here once you make your first transaction.</p>
             </div>
-        </aside>
+
+            <!-- Pagination -->
+            <div class="table-footer" data-table-footer style="display: none;">
+                <span class="showing-text" data-binding="showing-count">Showing 0 of 0</span>
+            </div>
+        </div>
     </section>
+
+    <!-- Payment Detail Modal (Full Page Overlay) -->
+    <div class="payment-detail-modal" data-detail-modal>
+        <div class="detail-modal-backdrop" data-action="close-detail"></div>
+        <div class="detail-modal-container">
+            <div class="detail-modal-header">
+                <div class="detail-modal-title">
+                    <i class="fas fa-receipt"></i>
+                    <h2 data-i18n="pages.payments.detail.title">Payment Details</h2>
+                </div>
+                <button class="btn-close-modal" type="button" data-action="close-detail">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="detail-modal-body" data-detail-content>
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+    </div>
 </div>
