@@ -72,6 +72,17 @@
     "confirmDefault": "Are you sure?"
   },
   "modal": {
+    "confirm": {
+      "title": "Confirm",
+      "message": "Are you sure you want to perform this action?",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "prompt": {
+      "title": "Enter information",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
     "profile": {
       "title": "Edit Profile",
       "nameLabel": "Display name",
@@ -585,6 +596,7 @@
       "selection": {
         "cancel": "Cancel selection",
         "count": "{{count}} selected",
+        "itemsSelected": "items selected",
         "selectAll": "Select all",
         "deselectAll": "Deselect all",
         "restore": "Restore",
@@ -613,21 +625,41 @@
         "deleting": "Deleting",
         "restoring": "Restoring"
       },
+      "time": {
+        "days": "days",
+        "hours": "hours",
+        "minutes": "minutes",
+        "expiringSoon": "Expiring soon"
+      },
+      "summary": {
+        "items": "items"
+      },
+      "emptySearch": "No files match your current search.",
+      "actions": {
+        "select": "Select",
+        "restore": "Restore",
+        "deletePermanently": "Delete forever"
+      },
       "bulkRestore": {
         "title": "Bulk Restore",
         "confirm": "Restore",
         "messageSingle": "Restore selected item to My Files?",
-        "messageMultiple": "Restore {{count}} selected items to My Files?"
+        "messageMultiple": "Restore {{count}} selected items to My Files?",
+        "success": "Restored {{count}} items.",
+        "error": "Could not restore {{count}} items"
       },
       "bulkDelete": {
         "title": "Permanently Delete",
         "confirm": "Delete forever",
         "messageSingle": "Permanently delete selected item? This cannot be undone.",
-        "messageMultiple": "Permanently delete {{count}} selected items? This cannot be undone."
+        "messageMultiple": "Permanently delete {{count}} selected items? This cannot be undone.",
+        "success": "Permanently deleted {{count}} items.",
+        "error": "Could not delete {{count}} items"
       },
       "singleRestore": {
         "title": "Restore File",
         "confirm": "Restore",
+        "message": "Restore \"{{name}}\" to My Files?",
         "success": "Restored \"{{name}}\".",
         "error": "Unable to restore file",
         "errorToast": "Could not restore file."

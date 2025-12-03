@@ -10,6 +10,18 @@
     <link rel="stylesheet" href="/public/css/theme.css">
     <link rel="stylesheet" href="/public/pages/sso/css/auth.css">
     <script src="/public/pages/sso/js/auth-theme.js"></script>
+    <!-- Security: Prevent credentials from appearing in URL if JS fails -->
+    <script>
+        document.addEventListener('submit', function(e) {
+            var form = e.target;
+            if (form && form.classList && form.classList.contains('auth-form')) {
+                e.preventDefault();
+                if (typeof window.handleAuthFormSubmit === 'function') {
+                    window.handleAuthFormSubmit(form);
+                }
+            }
+        }, true);
+    </script>
 </head>
 <body>
     <a href="/" class="back-home">
@@ -64,7 +76,7 @@
                 <h1 data-i18n="auth.register.title">Tạo tài khoản mới</h1>
                 <p data-i18n="auth.register.subtitle">Đăng ký nhanh để bắt đầu lưu trữ và chia sẻ.</p>
             </div>
-            <form class="auth-form" id="register-form" data-form-type="register">
+            <form class="auth-form" id="register-form" data-form-type="register" method="POST" action="/api/auth/register" autocomplete="off">
                 <div class="auth-alert" role="alert"></div>
                 <div class="form-field">
                     <label for="register-name" data-i18n="auth.register.nameLabel">Họ và tên</label>

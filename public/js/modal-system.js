@@ -7,6 +7,15 @@ class ModalSystem {
         this.init();
     }
 
+    // Translation helper
+    t(key, fallback = '') {
+        const lang = window.LanguageManager;
+        if (lang && typeof lang.translate === 'function') {
+            return lang.translate(key) || fallback;
+        }
+        return fallback;
+    }
+
     init() {
         // Add ESC key listener
         document.addEventListener('keydown', (e) => {
@@ -188,12 +197,12 @@ class ModalSystem {
     confirm(config) {
         return new Promise((resolve) => {
             this.createModal({
-                title: config.title || 'Xác nhận',
-                content: config.message || 'Bạn có chắc chắn muốn thực hiện hành động này?',
+                title: config.title || this.t('modal.confirm.title', 'Xác nhận'),
+                content: config.message || this.t('modal.confirm.message', 'Bạn có chắc chắn muốn thực hiện hành động này?'),
                 autoFocus: '.btn-danger',
                 buttons: [
                     {
-                        text: config.cancelText || 'Hủy',
+                        text: config.cancelText || this.t('modal.confirm.cancel', 'Hủy'),
                         className: 'btn-secondary',
                         onclick: () => {
                             this.closeModal();
@@ -201,7 +210,7 @@ class ModalSystem {
                         }
                     },
                     {
-                        text: config.confirmText || 'Xác nhận',
+                        text: config.confirmText || this.t('modal.confirm.confirm', 'Xác nhận'),
                         className: config.confirmClass || 'btn-danger',
                         onclick: () => {
                             this.closeModal();
@@ -281,12 +290,12 @@ class ModalSystem {
             });
 
             this.createModal({
-                title: config.title || 'Nhập thông tin',
+                title: config.title || this.t('modal.prompt.title', 'Nhập thông tin'),
                 content: container,
                 autoFocus: '.modal-input',
                 buttons: [
                     {
-                        text: 'Hủy',
+                        text: this.t('modal.prompt.cancel', 'Hủy'),
                         className: 'btn-secondary',
                         onclick: () => {
                             this.closeModal();
@@ -294,7 +303,7 @@ class ModalSystem {
                         }
                     },
                     {
-                        text: config.confirmText || 'Xác nhận',
+                        text: config.confirmText || this.t('modal.prompt.confirm', 'Xác nhận'),
                         className: 'btn-primary',
                         onclick: () => {
                             if (validateInput()) {

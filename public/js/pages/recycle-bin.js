@@ -71,12 +71,14 @@
 
     function formatDateTime(value) {
         if (!value) {
-            return 'Không xác định';
+            return t('pages.recycle.status.unknown', 'Không xác định');
         }
 
         try {
             const date = value instanceof Date ? value : new Date(value);
-            return new Intl.DateTimeFormat('vi-VN', {
+            const lang = window.LanguageManager?.currentLang || 'vi';
+            const locale = lang === 'en' ? 'en-US' : 'vi-VN';
+            return new Intl.DateTimeFormat(locale, {
                 year: 'numeric',
                 month: 'short',
                 day: '2-digit',
@@ -84,24 +86,24 @@
                 minute: '2-digit'
             }).format(date);
         } catch (_error) {
-            return 'Không xác định';
+            return t('pages.recycle.status.unknown', 'Không xác định');
         }
     }
 
     function formatRemainingTime(expiresAt) {
         if (!expiresAt) {
-            return 'Không xác định';
+            return t('pages.recycle.status.unknown', 'Không xác định');
         }
 
         const now = Date.now();
         const expiry = expiresAt instanceof Date ? expiresAt.getTime() : new Date(expiresAt).getTime();
         if (Number.isNaN(expiry)) {
-            return 'Không xác định';
+            return t('pages.recycle.status.unknown', 'Không xác định');
         }
 
         const diff = expiry - now;
         if (diff <= 0) {
-            return '<span class="recycle-time-expired">Sắp xóa</span>';
+            return `<span class="recycle-time-expired">${t('pages.recycle.time.expiringSoon', 'Sắp xóa')}</span>`;
         }
 
         const totalMinutes = Math.floor(diff / 60000);
@@ -109,13 +111,17 @@
         const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
         const minutes = totalMinutes % 60;
 
+        const dayLabel = t('pages.recycle.time.days', 'ngày');
+        const hourLabel = t('pages.recycle.time.hours', 'giờ');
+        const minuteLabel = t('pages.recycle.time.minutes', 'phút');
+
         if (days > 0) {
-            return `${days} ngày ${hours} giờ`;
+            return `${days} ${dayLabel} ${hours} ${hourLabel}`;
         }
         if (hours > 0) {
-            return `${hours} giờ ${minutes} phút`;
+            return `${hours} ${hourLabel} ${minutes} ${minuteLabel}`;
         }
-        return `${Math.max(minutes, 1)} phút`;
+        return `${Math.max(minutes, 1)} ${minuteLabel}`;
     }
 
     function sanitizeIdSegment(value) {
@@ -150,17 +156,18 @@
         }
 
         const total = state.files.length;
+        const itemsLabel = t('pages.recycle.summary.items', 'mục');
         if (!total) {
-            elements.summaryTotal.textContent = '0 mục';
+            elements.summaryTotal.textContent = `0 ${itemsLabel}`;
             return;
         }
 
         const filteredCount = state.filteredFiles.length;
         const trimmedTerm = state.searchTerm.trim();
         if (trimmedTerm && filteredCount !== total) {
-            elements.summaryTotal.textContent = `${filteredCount}/${total} mục`;
+            elements.summaryTotal.textContent = `${filteredCount}/${total} ${itemsLabel}`;
         } else {
-            elements.summaryTotal.textContent = `${total} mục`;
+            elements.summaryTotal.textContent = `${total} ${itemsLabel}`;
         }
     }
 
@@ -223,14 +230,14 @@
                 icon.className = 'fas fa-undo';
             }
             if (label) {
-                label.textContent = 'Bỏ chọn tất cả';
+                label.textContent = t('pages.recycle.selection.deselectAll', 'Bỏ chọn tất cả');
             }
         } else {
             if (icon) {
                 icon.className = 'fas fa-check-double';
             }
             if (label) {
-                label.textContent = 'Chọn tất cả';
+                label.textContent = t('pages.recycle.selection.selectAll', 'Chọn tất cả');
             }
         }
     }
@@ -274,7 +281,7 @@
         const translator = window.i18n && typeof window.i18n.t === 'function' ? window.i18n.t : null;
         const template = translator
             ? translator('pages.recycle.selection.count', { count: token })
-            : `${token} mục đã chọn`;
+            : `${token} ${t('pages.recycle.selection.itemsSelected', 'mục đã chọn')}`;
         const [prefix = '', suffix = ''] = template.split(token);
 
         const numberEl = (elements.selectionCount && wrapper.contains(elements.selectionCount))
@@ -441,7 +448,7 @@
 
             const payload = await response.json().catch(() => ({}));
             if (!response.ok || payload.success !== true) {
-                throw new Error(payload.error || 'Thao tác không thành công');
+                throw new Error(payload.error || t('pages.recycle.status.operationFailed', 'Thao tác không thành công'));
             }
 
             const results = Array.isArray(payload.results) ? payload.results : [];
@@ -480,13 +487,13 @@
         }
 
         const message = fileIds.length === 1
-            ? 'Khôi phục mục đã chọn về thư mục My Files?'
-            : `Khôi phục ${fileIds.length} mục đã chọn về thư mục My Files?`;
+            ? t('pages.recycle.bulkRestore.messageSingle', 'Khôi phục mục đã chọn về thư mục My Files?')
+            : t('pages.recycle.bulkRestore.messageMultiple', 'Khôi phục {{count}} mục đã chọn về thư mục My Files?').replace('{{count}}', fileIds.length);
 
         const confirmed = await askForConfirmation({
-            title: 'Khôi phục hàng loạt',
+            title: t('pages.recycle.bulkRestore.title', 'Khôi phục hàng loạt'),
             message,
-            confirmText: 'Khôi phục'
+            confirmText: t('pages.recycle.bulkRestore.confirm', 'Khôi phục')
         });
 
         if (!confirmed) {
@@ -496,10 +503,10 @@
         await executeBulkAction(
             'restore',
             '/api/recycle-bin/bulk/restore',
-            (count) => `Đã khôi phục ${count} mục.`,
+            (count) => t('pages.recycle.bulkRestore.success', 'Đã khôi phục {{count}} mục.').replace('{{count}}', count),
             (total, names, suffix) => {
                 const detail = names.length ? ` (${names.join(', ')}${suffix})` : '';
-                return `Không thể khôi phục ${total} mục${detail}.`;
+                return t('pages.recycle.bulkRestore.error', 'Không thể khôi phục {{count}} mục').replace('{{count}}', total) + detail + '.';
             }
         );
     }
@@ -528,10 +535,10 @@
         await executeBulkAction(
             'delete',
             '/api/recycle-bin/bulk/delete',
-            (count) => `Đã xóa vĩnh viễn ${count} mục.`,
+            (count) => t('pages.recycle.bulkDelete.success', 'Đã xóa vĩnh viễn {{count}} mục.').replace('{{count}}', count),
             (total, names, suffix) => {
                 const detail = names.length ? ` (${names.join(', ')}${suffix})` : '';
-                return `Không thể xóa ${total} mục${detail}.`;
+                return t('pages.recycle.bulkDelete.error', 'Không thể xóa {{count}} mục').replace('{{count}}', total) + detail + '.';
             }
         );
     }
@@ -576,7 +583,7 @@
                 <td colspan="6">
                     <div class="recycle-empty-row__content">
                         <i class="fas fa-search" aria-hidden="true"></i>
-                        <p>Không tìm thấy tệp phù hợp với tìm kiếm hiện tại.</p>
+                        <p>${t('pages.recycle.emptySearch', 'Không tìm thấy tệp phù hợp với tìm kiếm hiện tại.')}</p>
                     </div>
                 </td>
             `;
@@ -603,7 +610,7 @@
 
             row.innerHTML = `
                 <td class="select-col">
-                    <label class="sr-only" for="${checkboxId}">Chọn ${displayName}</label>
+                    <label class="sr-only" for="${checkboxId}">${t('pages.recycle.actions.select', 'Chọn')} ${displayName}</label>
                     <input type="checkbox" class="recycle-row-checkbox" id="${checkboxId}" data-file-id="${escapeHtml(file.internalName)}"${isSelected ? ' checked' : ''}>
                 </td>
                 <td>
@@ -619,11 +626,11 @@
                     <div class="recycle-actions">
                         <button class="recycle-action-btn restore" type="button">
                             <i class="fas fa-undo"></i>
-                            Khôi phục
+                            ${t('pages.recycle.actions.restore', 'Khôi phục')}
                         </button>
                         <button class="recycle-action-btn delete" type="button">
                             <i class="fas fa-trash-alt"></i>
-                            Xóa vĩnh viễn
+                            ${t('pages.recycle.actions.deletePermanently', 'Xóa vĩnh viễn')}
                         </button>
                     </div>
                 </td>
@@ -728,11 +735,11 @@
 
     async function handleRestore(file) {
         const displayName = file.displayName || file.originalName || file.internalName;
-        const confirmMessage = `Khôi phục "${displayName}" về thư mục My Files?`;
+        const confirmMessage = t('pages.recycle.singleRestore.message', 'Khôi phục "{{name}}" về thư mục My Files?').replace('{{name}}', displayName);
         const confirmed = await askForConfirmation({
-            title: 'Khôi phục tệp',
+            title: t('pages.recycle.singleRestore.title', 'Khôi phục tệp'),
             message: confirmMessage,
-            confirmText: 'Khôi phục'
+            confirmText: t('pages.recycle.singleRestore.confirm', 'Khôi phục')
         });
 
         if (!confirmed) {

@@ -72,6 +72,17 @@
     "confirmDefault": "Bạn có chắc chắn?"
   },
   "modal": {
+    "confirm": {
+      "title": "Xác nhận",
+      "message": "Bạn có chắc chắn muốn thực hiện hành động này?",
+      "cancel": "Hủy",
+      "confirm": "Xác nhận"
+    },
+    "prompt": {
+      "title": "Nhập thông tin",
+      "cancel": "Hủy",
+      "confirm": "Xác nhận"
+    },
     "profile": {
       "title": "Thay đổi thông tin",
       "nameLabel": "Tên hiển thị",
@@ -585,6 +596,7 @@
       "selection": {
         "cancel": "Bỏ chọn",
         "count": "{{count}} mục đã chọn",
+        "itemsSelected": "mục đã chọn",
         "selectAll": "Chọn tất cả",
         "deselectAll": "Bỏ chọn tất cả",
         "restore": "Khôi phục",
@@ -613,21 +625,41 @@
         "deleting": "Đang xóa",
         "restoring": "Đang khôi phục"
       },
+      "time": {
+        "days": "ngày",
+        "hours": "giờ",
+        "minutes": "phút",
+        "expiringSoon": "Sắp xóa"
+      },
+      "summary": {
+        "items": "mục"
+      },
+      "emptySearch": "Không tìm thấy tệp phù hợp với tìm kiếm hiện tại.",
+      "actions": {
+        "select": "Chọn",
+        "restore": "Khôi phục",
+        "deletePermanently": "Xóa vĩnh viễn"
+      },
       "bulkRestore": {
         "title": "Khôi phục hàng loạt",
         "confirm": "Khôi phục",
         "messageSingle": "Khôi phục mục đã chọn về thư mục My Files?",
-        "messageMultiple": "Khôi phục {{count}} mục đã chọn về thư mục My Files?"
+        "messageMultiple": "Khôi phục {{count}} mục đã chọn về thư mục My Files?",
+        "success": "Đã khôi phục {{count}} mục.",
+        "error": "Không thể khôi phục {{count}} mục"
       },
       "bulkDelete": {
         "title": "Xóa vĩnh viễn hàng loạt",
         "confirm": "Xóa vĩnh viễn",
         "messageSingle": "Xóa vĩnh viễn mục đã chọn? Hành động này không thể hoàn tác.",
-        "messageMultiple": "Xóa vĩnh viễn {{count}} mục đã chọn? Hành động này không thể hoàn tác."
+        "messageMultiple": "Xóa vĩnh viễn {{count}} mục đã chọn? Hành động này không thể hoàn tác.",
+        "success": "Đã xóa vĩnh viễn {{count}} mục.",
+        "error": "Không thể xóa {{count}} mục"
       },
       "singleRestore": {
         "title": "Khôi phục tệp",
         "confirm": "Khôi phục",
+        "message": "Khôi phục \"{{name}}\" về thư mục My Files?",
         "success": "Đã khôi phục \"{{name}}\".",
         "error": "Không thể khôi phục tệp",
         "errorToast": "Không thể khôi phục tệp."

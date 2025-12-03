@@ -6,6 +6,23 @@ let loginUrlWithRedirect = '/auth/login';
 let resendCooldown = 0;
 let resendTimer = null;
 
+// Immediately prevent any form from submitting via GET to protect credentials
+// This runs immediately before DOMContentLoaded to ensure early protection
+(function preventFormGetSubmission() {
+    // Block any form submission that might expose credentials in URL
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (form && form.classList.contains('auth-form')) {
+            // Always ensure method is POST
+            if (!form.method || form.method.toUpperCase() !== 'POST') {
+                form.method = 'POST';
+            }
+            // Remove any action that could be a GET endpoint
+            // Let JavaScript handle the submission
+        }
+    }, true); // Use capture phase to run first
+})();
+
 // Get translation from authTranslate if available
 function t(key, fallbackVi, fallbackEn) {
     if (window.authTranslate && typeof window.authTranslate.t === 'function') {
@@ -23,6 +40,14 @@ function t(key, fallbackVi, fallbackEn) {
 function getCurrentLang() {
     return window.authTranslate?.getCurrentLang?.() || 'vi';
 }
+
+// Expose global handler for inline security script
+window.handleAuthFormSubmit = function(form) {
+    const alertBox = form.querySelector('.auth-alert');
+    if (alertBox) {
+        handleSubmit(form, alertBox);
+    }
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     // Check if user is already logged in and redirect to dashboard
