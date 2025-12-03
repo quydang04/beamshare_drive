@@ -33,13 +33,76 @@
     "logout": "Đăng xuất"
   },
   "theme": {
-    "light": "Giao diện sáng",
-    "dark": "Giao diện tối",
-    "system": "Theo hệ thống"
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Hệ thống"
   },
   "common": {
     "userFallbackName": "User",
-    "userFallbackInitials": "U"
+    "userFallbackInitials": "U",
+    "backHome": "Trang chủ",
+    "passwordToggle": {
+      "show": "Hiện",
+      "hide": "Ẩn"
+    },
+    "unknownValue": "Không xác định",
+    "unknownName": "Không rõ tên",
+    "unknown": "Không xác định",
+    "other": "Khác",
+    "beamshareFile": "Tệp BeamShare",
+    "sharedFile": "Tệp được chia sẻ",
+    "inFuture": "Trong tương lai",
+    "justNow": "Vừa xong",
+    "minutesAgo": "{{count}} phút trước",
+    "hoursAgo": "{{count}} giờ trước",
+    "yesterday": "Hôm qua",
+    "daysAgo": "{{count}} ngày trước",
+    "notUpdated": "Chưa cập nhật",
+    "updated": "Cập nhật {{time}}",
+    "updateNow": "Cập nhật ngay",
+    "loading": "Đang tải...",
+    "processing": "Đang xử lý...",
+    "genericError": "Đã xảy ra lỗi. Vui lòng thử lại sau.",
+    "cancel": "Hủy",
+    "retry": "Thử lại",
+    "saveChanges": "Lưu thay đổi",
+    "saving": "Đang lưu...",
+    "updating": "Đang cập nhật...",
+    "contactSupport": "Liên hệ hỗ trợ",
+    "confirmDefault": "Bạn có chắc chắn?"
+  },
+  "modal": {
+    "profile": {
+      "title": "Thay đổi thông tin",
+      "nameLabel": "Tên hiển thị",
+      "nameError": "Vui lòng nhập tên hiển thị.",
+      "nameMinError": "Tên hiển thị phải có ít nhất 2 ký tự.",
+      "updateError": "Không thể cập nhật thông tin người dùng.",
+      "updateSuccess": "Đã cập nhật tên hiển thị."
+    },
+    "password": {
+      "title": "Đổi mật khẩu",
+      "currentLabel": "Mật khẩu hiện tại",
+      "newLabel": "Mật khẩu mới",
+      "confirmLabel": "Nhập lại mật khẩu mới",
+      "newHint": "Mật khẩu mới cần ít nhất 6 ký tự.",
+      "submit": "Đổi mật khẩu",
+      "allFieldsRequired": "Vui lòng nhập đầy đủ thông tin.",
+      "minLengthError": "Mật khẩu mới phải có tối thiểu 6 ký tự.",
+      "mismatchError": "Mật khẩu mới và nhập lại chưa trùng khớp.",
+      "sameAsCurrentError": "Mật khẩu mới phải khác mật khẩu hiện tại.",
+      "updateError": "Không thể đổi mật khẩu.",
+      "updateSuccess": "Đổi mật khẩu thành công."
+    },
+    "paymentFailed": {
+      "title": "Thanh toán không thành công",
+      "defaultMessage": "Giao dịch đã bị hủy hoặc không thành công.",
+      "statusLabel": "Trạng thái",
+      "statusValue": "Không thành công",
+      "planLabel": "Gói đăng ký",
+      "timeLabel": "Thời gian",
+      "hint": "Nếu bạn đã bị trừ tiền nhưng giao dịch không thành công, vui lòng liên hệ hỗ trợ."
+    }
   },
   "auth": {
     "logout": {
@@ -49,6 +112,193 @@
       "confirmMessage": "Bạn có chắc chắn muốn đăng xuất khỏi BeamShare?",
       "confirmYes": "Đăng xuất",
       "confirmNo": "Hủy"
+    },
+    "login": {
+      "title": "Chào mừng trở lại",
+      "subtitle": "Đăng nhập để quản lý và chia sẻ tệp tin của bạn.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@email.com",
+      "passwordLabel": "Mật khẩu",
+      "passwordPlaceholder": "••••••••",
+      "rememberMe": "Ghi nhớ tôi",
+      "forgotPassword": "Quên mật khẩu?",
+      "submit": "Đăng nhập",
+      "noAccount": "Chưa có tài khoản?",
+      "registerLink": "Đăng ký ngay"
+    },
+    "register": {
+      "title": "Tạo tài khoản mới",
+      "subtitle": "Đăng ký nhanh để bắt đầu lưu trữ và chia sẻ.",
+      "nameLabel": "Họ và tên",
+      "namePlaceholder": "Nguyễn Văn A",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@email.com",
+      "passwordLabel": "Mật khẩu",
+      "passwordPlaceholder": "Tối thiểu 6 ký tự",
+      "confirmLabel": "Nhập lại mật khẩu",
+      "confirmPlaceholder": "Nhập lại mật khẩu",
+      "submit": "Đăng ký",
+      "hasAccount": "Đã có tài khoản?",
+      "loginLink": "Đăng nhập"
+    },
+    "forgotPassword": {
+      "title": "Quên mật khẩu",
+      "subtitle": "Nhập email để nhận hướng dẫn đặt lại mật khẩu.",
+      "emailLabel": "Email đăng ký",
+      "emailPlaceholder": "name@email.com",
+      "submit": "Gửi hướng dẫn",
+      "backToLogin": "Quay lại đăng nhập"
+    },
+    "resetPassword": {
+      "title": "Đặt lại mật khẩu",
+      "subtitle": "Nhập mật khẩu mới cho tài khoản BeamShare của bạn.",
+      "passwordLabel": "Mật khẩu mới",
+      "passwordPlaceholder": "Tối thiểu 6 ký tự",
+      "confirmLabel": "Nhập lại mật khẩu mới",
+      "confirmPlaceholder": "Nhập lại mật khẩu",
+      "submit": "Cập nhật mật khẩu",
+      "backToLogin": "Quay lại đăng nhập"
+    },
+    "messages": {
+      "processing": "Đang xử lý...",
+      "checkInfo": "Vui lòng kiểm tra lại thông tin.",
+      "loginSuccess": "Đăng nhập thành công. Đang chuyển hướng...",
+      "registerSuccess": "Đăng ký thành công. Đang chuyển hướng...",
+      "emailRequired": "Email là bắt buộc.",
+      "emailPasswordRequired": "Email và mật khẩu là bắt buộc.",
+      "passwordMismatch": "Mật khẩu xác nhận chưa trùng khớp.",
+      "invalidCredentials": "Thông tin đăng nhập không đúng, vui lòng kiểm tra lại.",
+      "serverError": "Không thể kết nối tới máy chủ. Vui lòng thử lại.",
+      "connectionError": "Không thể kết nối tới máy chủ. Vui lòng thử lại.",
+      "sendingInstructions": "Đang gửi hướng dẫn, vui lòng chờ...",
+      "updatingPassword": "Đang cập nhật mật khẩu...",
+      "invalidResetLink": "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.",
+      "passwordMinLength": "Mật khẩu mới phải có ít nhất 6 ký tự.",
+      "resetPasswordError": "Không thể đặt lại mật khẩu.",
+      "resetPasswordSuccess": "Đặt lại mật khẩu thành công. Đang chuyển hướng...",
+      "resetSuccess": "Đặt lại mật khẩu thành công. Đang chuyển hướng...",
+      "emailNotVerified": "Tài khoản chưa được xác thực!",
+      "accountNotVerifiedTitle": "Tài khoản chưa được xác thực!",
+      "checkEmailVerify": "Vui lòng kiểm tra hộp thư email",
+      "clickLinkToActivate": "và nhấp vào liên kết xác thực để kích hoạt tài khoản.",
+      "checkEmailVerification": "Vui lòng kiểm tra hộp thư email và nhấp vào liên kết xác thực để kích hoạt tài khoản.",
+      "noEmailReceived": "Không nhận được email? Kiểm tra thư mục spam hoặc",
+      "resendHint": "Không nhận được email? Kiểm tra thư mục spam hoặc",
+      "resendVerification": "Gửi lại email xác thực",
+      "resendVerificationBtn": "Gửi lại email xác thực",
+      "resendVerificationError": "Không thể gửi lại email xác thực.",
+      "verificationEmailSent": "Email xác thực đã được gửi lại. Vui lòng kiểm tra hộp thư của bạn.",
+      "resetPasswordAction": "đặt lại mật khẩu",
+      "verifyEmailAction": "xác thực email",
+      "resendResetBtn": "Gửi lại liên kết đặt lại mật khẩu",
+      "resendResetError": "Không thể gửi lại email đặt lại mật khẩu.",
+      "resetEmailSent": "Email đặt lại mật khẩu đã được gửi lại. Vui lòng kiểm tra hộp thư của bạn.",
+      "linkExpiredTitle": "Liên kết",
+      "hasExpired": "đã hết hạn!",
+      "linkExpired": "đã hết hạn!",
+      "linkExpiredDesc": "Liên kết chỉ có hiệu lực trong 15 phút. Vui lòng yêu cầu gửi lại email.",
+      "resendPasswordReset": "Gửi lại liên kết đặt lại mật khẩu",
+      "sending": "Đang gửi...",
+      "resending": "Đang gửi...",
+      "resendAfter": "Gửi lại sau",
+      "resendSuccess": "Email đã được gửi lại. Vui lòng kiểm tra hộp thư của bạn.",
+      "resendError": "Không thể gửi lại email. Vui lòng thử lại.",
+      "forgotPasswordSuccess": "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu sẽ được gửi."
+    }
+  },
+  "landing": {
+    "nav": {
+      "features": "Tính năng",
+      "beamshareLive": "BeamShare Live",
+      "pricing": "Bảng giá",
+      "faq": "FAQ",
+      "login": "Đăng nhập",
+      "register": "Đăng ký ngay"
+    },
+    "hero": {
+      "badge": "🚀 Dự án Lập trình mạng",
+      "title": "Lưu trữ thông minh",
+      "titleHighlight": "Chia sẻ tức thì",
+      "description": "Trải nghiệm tốc độ truyền tải vượt trội với công nghệ WebRTC. Lưu trữ an toàn, quản lý dễ dàng và chia sẻ không giới hạn.",
+      "ctaPrimary": "Bắt đầu miễn phí",
+      "ctaSecondary": "Thử BeamShare Live",
+      "stats": {
+        "storage": "5GB+",
+        "storageLabel": "Lưu trữ miễn phí",
+        "speed": "Nhanh chóng",
+        "speedLabel": "Chia sẻ tức thì",
+        "easy": "Dễ dàng",
+        "easyLabel": "Quản lý tập trung"
+      }
+    },
+    "features": {
+      "title": "Tính năng nổi bật",
+      "subtitle": "Mọi thứ bạn cần để quản lý dữ liệu hiệu quả",
+      "cloud": {
+        "title": "Lưu trữ Đám mây",
+        "description": "Không gian lưu trữ an toàn, truy cập mọi lúc mọi nơi. Tự động đồng bộ hóa dữ liệu của bạn."
+      },
+      "share": {
+        "title": "Chia sẻ Linh hoạt",
+        "description": "Tạo liên kết chia sẻ công khai hoặc riêng tư. Kiểm soát quyền truy cập file dễ dàng."
+      },
+      "recycle": {
+        "title": "Thùng rác Thông minh",
+        "description": "Khôi phục file đã xóa trong vòng 30 ngày. Không lo mất dữ liệu quan trọng do nhầm lẫn."
+      }
+    },
+    "beamshareLive": {
+      "badge": "✨ Tính năng độc quyền",
+      "title": "BeamShare Live",
+      "description": "Chia sẻ file trực tiếp giữa các thiết bị một cách nhanh chóng. Trải nghiệm sự tiện lợi khi truyền tải dữ liệu.",
+      "feature1": "Tốc độ cao",
+      "feature2": "Hỗ trợ đa nền tảng",
+      "feature3": "Đơn giản & Dễ dùng",
+      "cta": "Trải nghiệm ngay"
+    },
+    "pricing": {
+      "title": "Bảng giá đơn giản",
+      "subtitle": "Chọn gói phù hợp với nhu cầu của bạn",
+      "basic": {
+        "name": "Cơ bản",
+        "price": "0đ",
+        "period": "/tháng",
+        "description": "Dành cho người dùng cá nhân",
+        "feature1": "5GB Lưu trữ",
+        "feature2": "BeamShare: Tối đa 200MB/file",
+        "feature3": "Gửi file không giới hạn số lượng",
+        "cta": "Đăng ký miễn phí"
+      },
+      "premium": {
+        "badge": "Khuyên dùng",
+        "name": "Premium",
+        "price": "50.000đ",
+        "period": "/tháng",
+        "description": "Dành cho người dùng chuyên nghiệp",
+        "feature1": "15GB Lưu trữ",
+        "feature2": "BeamShare: Không giới hạn dung lượng",
+        "feature3": "Hỗ trợ ưu tiên",
+        "cta": "Nâng cấp ngay"
+      }
+    },
+    "faq": {
+      "title": "Câu hỏi thường gặp",
+      "q1": {
+        "question": "BeamShare Drive có miễn phí không?",
+        "answer": "Có! Chúng tôi cung cấp gói Cơ bản miễn phí trọn đời với 5GB dung lượng lưu trữ và các tính năng chia sẻ cơ bản."
+      },
+      "q2": {
+        "question": "BeamShare Live hoạt động như thế nào?",
+        "answer": "BeamShare Live giúp bạn kết nối và chia sẻ file trực tiếp giữa các thiết bị một cách nhanh chóng và thuận tiện nhất."
+      }
+    },
+    "footer": {
+      "description": "Giải pháp lưu trữ và chia sẻ file hiện đại, nhanh chóng.",
+      "product": "Sản phẩm",
+      "support": "Hỗ trợ",
+      "contact": "Liên hệ",
+      "connect": "Kết nối",
+      "terms": "Điều khoản"
     }
   },
   "pages": {
@@ -110,6 +360,37 @@
         "averageSize": "Dung lượng trung bình",
         "maxSize": "Tệp lớn nhất",
         "minSize": "Tệp nhỏ nhất"
+      },
+      "greeting": "Xin chào, {{name}}",
+      "noData": "Chưa có dữ liệu để hiển thị",
+      "noFiles": "Chưa có tệp nào được tải lên",
+      "noFilesUploaded": "Chưa có tệp nào được tải lên",
+      "noDataAnalytics": "Hiện chưa có dữ liệu để hiển thị",
+      "loadError": "Không thể tải dữ liệu.",
+      "recentError": "Không thể tải danh sách tệp gần đây.",
+      "loadErrorRecent": "Không thể tải danh sách tệp gần đây.",
+      "analyticsError": "Không thể tải dữ liệu phân tích.",
+      "loadErrorAnalytics": "Không thể tải dữ liệu phân tích.",
+      "quotaLabel": "Dung lượng gói {{plan}}: {{limit}}",
+      "usedLabel": "Đang dùng {{used}} / {{limit}}",
+      "typeCount": "{{count}} loại",
+      "typeLabel": "{{count}} loại",
+      "filesCount": "tệp",
+      "notUpdated": "Chưa cập nhật",
+      "updatedAt": "Cập nhật {{time}}",
+      "imageFiles": "tệp hình ảnh",
+      "documentFiles": "tệp tài liệu",
+      "videoFiles": "tệp video",
+      "otherFiles": "tệp khác",
+      "refreshing": "Đang làm mới dữ liệu dashboard...",
+      "refreshed": "Đã cập nhật dữ liệu dashboard.",
+      "refreshError": "Không thể tải dữ liệu dashboard:",
+      "refreshErrorToast": "Lỗi tải dữ liệu dashboard.",
+      "fileTypes": {
+        "images": "{{count}} tệp hình ảnh",
+        "documents": "{{count}} tệp tài liệu",
+        "videos": "{{count}} tệp video",
+        "others": "{{count}} tệp khác"
       }
     },
     "myfiles": {
@@ -151,6 +432,89 @@
         "title": "Không có tệp tin nào",
         "description": "Bạn chưa tải lên tệp tin nào. Hãy bắt đầu bằng cách tải lên tệp đầu tiên của bạn.",
         "cta": "Tải lên tệp"
+      },
+      "share": {
+        "error": "Không thể xác định tệp để chia sẻ.",
+        "privateWarning": "Tệp đang ở chế độ riêng tư hoặc chưa có liên kết chia sẻ.",
+        "popupBlocked": "Trình duyệt đã chặn cửa sổ chia sẻ. Vui lòng cho phép cửa sổ bật lên.",
+        "opening": "Đang mở trang chia sẻ cho: {{name}}",
+        "linkPlaceholder": "Liên kết chia sẻ",
+        "privatePlaceholder": "Tệp đang ở chế độ riêng tư",
+        "publicHint": "Chia sẻ liên kết này với mọi người bạn muốn cấp quyền truy cập. Tạo liên kết mới để thu hồi liên kết cũ.",
+        "privateHint": "Tệp đang ở chế độ riêng tư. Bật chế độ công khai để tạo liên kết chia sẻ.",
+        "publicStatus": "Đang công khai",
+        "privateStatus": "Đang riêng tư",
+        "manageTitle": "Đang công khai - quản lý chia sẻ",
+        "manageLabel": "Quản lý chia sẻ",
+        "shareTitle": "Chia sẻ tệp",
+        "shareLabel": "Chia sẻ tệp",
+        "updateError": "Không thể cập nhật quyền chia sẻ.",
+        "invalidOption": "Tùy chọn chia sẻ không hợp lệ.",
+        "missingInfo": "Thiếu thông tin tệp cần cập nhật.",
+        "statePublic": "công khai",
+        "statePrivate": "riêng tư",
+        "linkCreated": "(đã tạo liên kết chia sẻ)"
+      },
+      "beamshare": {
+        "error": "Không thể xác định tệp để gửi qua BeamShare.",
+        "popupBlocked": "Trình duyệt đã chặn cửa sổ BeamShare. Vui lòng cho phép cửa sổ bật lên.",
+        "opening": "Đang mở BeamShare Live để gửi {{name}}. Hãy chọn thiết bị nhận trong danh sách.",
+        "selectedFile": "tệp đã chọn"
+      },
+      "refresh": {
+        "loading": "Đang làm mới danh sách tệp...",
+        "success": "Đã cập nhật danh sách tệp."
+      },
+      "dragDrop": {
+        "filesDropped": "Đã thả {{count}} tệp. Chuyển đến trang tải lên..."
+      },
+      "viewMode": {
+        "grid": "Đang hiển thị dạng lưới",
+        "list": "Đang hiển thị dạng danh sách"
+      },
+      "shareToggle": {
+        "success": "Đã chuyển \"{{name}}\" sang chế độ {{state}}{{extra}}"
+      },
+      "fileTypes": {
+        "default": "Tệp",
+        "pdf": "Tài liệu PDF",
+        "wordDoc": "Tài liệu Word",
+        "excel": "Bảng tính Excel",
+        "powerpoint": "Bản trình chiếu PowerPoint",
+        "openDocument": "Tài liệu OpenDocument",
+        "openSpreadsheet": "Bảng tính OpenDocument",
+        "openPresentation": "Bản trình chiếu OpenDocument",
+        "rtf": "Tệp Rich Text",
+        "text": "Tệp văn bản",
+        "csv": "Tệp CSV",
+        "imageJpeg": "Hình ảnh JPEG",
+        "imagePng": "Hình ảnh PNG",
+        "imageGif": "Hình ảnh GIF",
+        "imageWebp": "Hình ảnh WebP",
+        "imageSvg": "Hình ảnh SVG",
+        "imageBmp": "Hình ảnh BMP",
+        "imageTiff": "Hình ảnh TIFF",
+        "videoMp4": "Video MP4",
+        "videoWebm": "Video WebM",
+        "videoMov": "Video MOV",
+        "videoAvi": "Video AVI",
+        "videoMkv": "Video MKV",
+        "audioMp3": "Tệp âm thanh MP3",
+        "audioWav": "Tệp âm thanh WAV",
+        "audioOgg": "Tệp âm thanh OGG",
+        "audioFlac": "Tệp âm thanh FLAC",
+        "archiveZip": "Tệp nén ZIP",
+        "archiveRar": "Tệp nén RAR",
+        "archive7z": "Tệp nén 7z",
+        "archiveTar": "Tệp nén TAR",
+        "json": "Tệp JSON",
+        "html": "Tệp HTML",
+        "script": "Tệp mã nguồn",
+        "iso": "Tệp ảnh đĩa ISO",
+        "genericImage": "Hình ảnh",
+        "genericVideo": "Video",
+        "genericAudio": "Tệp âm thanh",
+        "genericArchive": "Tệp nén"
       }
     },
     "upload": {
@@ -164,7 +528,46 @@
       "info": {
         "maxFiles": "Không giới hạn số lượng"
       },
-      "selectButton": "Chọn Tệp"
+      "selectButton": "Chọn Tệp",
+      "status": {
+        "insufficientStorage": "⚠️ Không đủ dung lượng lưu trữ",
+        "storageFull": "📦 Dung lượng sắp đầy",
+        "inProgress": "Hệ thống đang tải lên, vui lòng đợi hoàn tất trước khi thử lại.",
+        "noFiles": "Không có file nào được chọn!",
+        "checking": "Đang kiểm tra...",
+        "checkError": "Lỗi kiểm tra",
+        "skipped": "Đã bỏ qua",
+        "uploading": "Đang tải lên...",
+        "uploadError": "Lỗi tải lên",
+        "complete": "Tải lên hoàn tất",
+        "noFilesUploaded": "Không có tệp nào được tải lên",
+        "noFilesSuccess": "Không có tệp nào được tải lên thành công.",
+        "processComplete": "Quy trình tải lên đã kết thúc",
+        "someSkipped": "Một số tệp đã bị bỏ qua theo lựa chọn của bạn.",
+        "redirecting": "Chuyển đến trang quản lý file...",
+        "replacing": "Sẽ thay thế tệp hiện có",
+        "renameReady": "Tên mới đã sẵn sàng",
+        "serverError": "Không thể đọc phản hồi từ máy chủ.",
+        "checkConflictError": "Không thể kiểm tra tên tệp, vui lòng thử lại.",
+        "checkFileError": "Lỗi khi kiểm tra tệp \"{{name}}\"",
+        "uploadFileError": "Không thể tải lên \"{{name}}\"",
+        "successCount": "Đã tải lên thành công {{count}} tệp.",
+        "processing": "Đang xử lý \"{{name}}\" ({{current}}/{{total}})",
+        "done": "Hoàn tất",
+        "error": "Lỗi"
+      },
+      "conflict": {
+        "title": "Đã phát hiện tệp trùng tên",
+        "prompt": "Nhập tên mới cho tệp (hoặc để trống để bỏ qua):",
+        "unknownSize": "Không rõ",
+        "recommendation": "Bạn muốn xử lý tệp trùng tên như thế nào?",
+        "renamePlaceholder": "Nhập tên mới...",
+        "skip": "Bỏ qua tệp này",
+        "replace": "Thay thế tệp hiện có",
+        "rename": "Đổi tên và tải lên",
+        "renameSameError": "Tên mới phải khác với tên hiện có.",
+        "nameInUse": "Tên này vẫn đang được sử dụng. Vui lòng chọn tên khác."
+      }
     },
     "recycle": {
       "title": "Thùng rác",
@@ -183,6 +586,7 @@
         "cancel": "Bỏ chọn",
         "count": "{{count}} mục đã chọn",
         "selectAll": "Chọn tất cả",
+        "deselectAll": "Bỏ chọn tất cả",
         "restore": "Khôi phục",
         "delete": "Xóa vĩnh viễn"
       },
@@ -197,7 +601,46 @@
           "remaining": "Thời gian còn lại",
           "actions": "Thao tác"
         }
-      }
+      },
+      "status": {
+        "unknown": "Không xác định",
+        "expiring": "Sắp xóa",
+        "summaryItems": "{{count}} mục",
+        "loadError": "Không thể tải thùng rác",
+        "loadErrorToast": "Không thể tải danh sách thùng rác. Vui lòng thử lại.",
+        "operationError": "Thao tác không thành công",
+        "operationFailed": "Không thể hoàn tất thao tác.",
+        "deleting": "Đang xóa",
+        "restoring": "Đang khôi phục"
+      },
+      "bulkRestore": {
+        "title": "Khôi phục hàng loạt",
+        "confirm": "Khôi phục",
+        "messageSingle": "Khôi phục mục đã chọn về thư mục My Files?",
+        "messageMultiple": "Khôi phục {{count}} mục đã chọn về thư mục My Files?"
+      },
+      "bulkDelete": {
+        "title": "Xóa vĩnh viễn hàng loạt",
+        "confirm": "Xóa vĩnh viễn",
+        "messageSingle": "Xóa vĩnh viễn mục đã chọn? Hành động này không thể hoàn tác.",
+        "messageMultiple": "Xóa vĩnh viễn {{count}} mục đã chọn? Hành động này không thể hoàn tác."
+      },
+      "singleRestore": {
+        "title": "Khôi phục tệp",
+        "confirm": "Khôi phục",
+        "success": "Đã khôi phục \"{{name}}\".",
+        "error": "Không thể khôi phục tệp",
+        "errorToast": "Không thể khôi phục tệp."
+      },
+      "singleDelete": {
+        "title": "Xóa vĩnh viễn",
+        "confirm": "Xóa vĩnh viễn",
+        "message": "Xóa vĩnh viễn \"{{name}}\"? Hành động này không thể hoàn tác.",
+        "success": "Đã xóa vĩnh viễn \"{{name}}\".",
+        "error": "Không thể xóa vĩnh viễn tệp",
+        "errorToast": "Không thể xóa vĩnh viễn tệp."
+      },
+      "confirmCancel": "Hủy"
     },
     "subscription": {
       "title": "BeamShare Subscription",
@@ -494,6 +937,260 @@
         "confirm": "Nhập lại mật khẩu mới",
         "cancel": "Hủy",
         "submit": "Đổi mật khẩu"
+      },
+      "validation": {
+        "allRequired": "Vui lòng nhập đầy đủ thông tin.",
+        "minLength": "Mật khẩu mới phải có tối thiểu 6 ký tự.",
+        "mismatch": "Mật khẩu mới và nhập lại chưa trùng khớp.",
+        "sameAsCurrent": "Mật khẩu mới phải khác mật khẩu hiện tại.",
+        "defaultError": "Không thể đổi mật khẩu."
+      },
+      "loading": "Đang cập nhật...",
+      "success": "Đổi mật khẩu thành công.",
+      "errorLog": "Đổi mật khẩu thất bại:"
+    },
+    "changeProfile": {
+      "title": "Thông tin tài khoản",
+      "subtitle": "Cập nhật tên hiển thị để đồng bộ avatar và lời chào trên mọi trang.",
+      "back": "Quay lại Dashboard",
+      "section": {
+        "title": "Thông tin cá nhân",
+        "description": "Đảm bảo tên hiển thị phản ánh chính xác người dùng của bạn."
+      },
+      "summary": {
+        "email": "Email đăng nhập",
+        "currentName": "Tên đang hiển thị"
+      },
+      "form": {
+        "label": "Tên hiển thị mới",
+        "placeholder": "Nhập tên hiển thị",
+        "hint": "Tên này được dùng cho chữ cái avatar và lời chào.",
+        "cancel": "Hủy",
+        "submit": "Lưu thay đổi"
+      },
+      "validation": {
+        "empty": "Vui lòng nhập tên hiển thị.",
+        "minLength": "Tên hiển thị phải có tối thiểu 2 ký tự.",
+        "maxLength": "Tên hiển thị không được vượt quá 80 ký tự.",
+        "loadError": "Không thể tải thông tin người dùng.",
+        "loadErrorLog": "Không thể tải thông tin người dùng:",
+        "defaultError": "Không thể cập nhật thông tin người dùng.",
+        "updateError": "Cập nhật thông tin thất bại:"
+      },
+      "loading": "Đang lưu...",
+      "success": "Đã cập nhật tên hiển thị."
+    },
+    "thankYou": {
+      "title": {
+        "success": "BeamShare Drive | Cảm ơn bạn!",
+        "failed": "BeamShare Drive | Cập nhật thanh toán"
+      },
+      "badge": {
+        "success": "Thanh toán thành công",
+        "failed": "Cập nhật thanh toán"
+      },
+      "message": {
+        "success": "Giao dịch của bạn đã được xác nhận. Chúc bạn có trải nghiệm tuyệt vời cùng BeamShare.",
+        "failed": "Chúng tôi chưa thể xác nhận giao dịch. Vui lòng kiểm tra lại trạng thái thanh toán hoặc liên hệ hỗ trợ."
+      },
+      "plans": {
+        "premium": {
+          "label": "BeamShare Premium",
+          "description": "Không giới hạn BeamShare Live, dung lượng mở rộng và hỗ trợ ưu tiên."
+        },
+        "basic": {
+          "label": "BeamShare Basic",
+          "description": "Tiếp tục trải nghiệm BeamShare cùng giới hạn 200MB mỗi file gửi."
+        },
+        "default": {
+          "label": "BeamShare",
+          "description": "Trải nghiệm chia sẻ file tức thì giữa các thiết bị của bạn."
+        }
+      }
+    },
+    "share": {
+      "errorInvalidLink": "Liên kết chia sẻ không hợp lệ.",
+      "errorLoadFile": "Không thể tải thông tin file.",
+      "errorConnection": "Không thể kết nối tới máy chủ. Vui lòng thử lại sau.",
+      "statusActive": "Liên kết chia sẻ đang hoạt động.",
+      "description": "Liên kết từ BeamShare Drive",
+      "updatedAt": "Cập nhật {{date}}",
+      "owner": "Chủ sở hữu {{name}}"
+    },
+    "logout": {
+      "inProgress": "Đang đăng xuất...",
+      "errorLog": "Đăng xuất thất bại:",
+      "errorToast": "Không thể đăng xuất. Vui lòng thử lại."
+    },
+    "preview": {
+      "disclaimer": "Xem trước có thể khác với file gốc, vui lòng tải về để xem chính xác.",
+      "imagePreviewAlt": "Xem trước hình ảnh",
+      "audioTrack": "Bản nhạc",
+      "unsupportedGeneric": "Không thể tạo bản xem trước. Vui lòng tải xuống để xem chi tiết.",
+      "unsupportedInit": "Không thể khởi tạo trình xem trước. Vui lòng tải xuống để xem chi tiết.",
+      "videoLoadError": "Không thể tải Video.js để phát video này. Vui lòng tải xuống để xem.",
+      "videoInitError": "Không thể khởi tạo trình phát video. Vui lòng tải xuống để xem.",
+      "pdfLoadError": "Không thể tải thư viện xem trước PDF. Vui lòng tải về để xem đầy đủ.",
+      "pdfLoading": "Đang tải xem trước PDF…",
+      "pdfDisplayError": "Không thể hiển thị xem trước PDF. Vui lòng tải về để xem chính xác.",
+      "wordLoadError": "Không thể tải thư viện xem trước Word. Vui lòng tải về để xem đầy đủ.",
+      "wordLoading": "Đang tải nội dung tài liệu…",
+      "wordFetchError": "Không thể tải tệp Word",
+      "wordNoContent": "Không có nội dung để hiển thị.",
+      "wordDisplayError": "Không thể hiển thị nội dung tài liệu. Vui lòng tải xuống để xem chi tiết.",
+      "excelLoadError": "Không thể tải thư viện xem trước Excel. Vui lòng tải về để xem đầy đủ.",
+      "excelLoading": "Đang tải dữ liệu bảng tính…",
+      "excelFetchError": "Không thể tải tệp Excel",
+      "excelNoData": "Không tìm thấy dữ liệu bảng tính",
+      "excelEmptySheet": "Bảng tính không có dữ liệu",
+      "excelDisplayError": "Không thể hiển thị dữ liệu bảng tính. Vui lòng tải về để xem chi tiết.",
+      "docUnsupported": "Định dạng Word (.doc) chưa được hỗ trợ xem trước. Vui lòng tải về để xem đầy đủ.",
+      "pptUnsupported": "Không hỗ trợ xem trước với file PowerPoint. Vui lòng tải về để xem đầy đủ.",
+      "genericUnsupported": "Không có bản xem trước cho loại tệp này. Hãy tải xuống để mở bằng ứng dụng tương ứng."
+    },
+    "fileTypes": {
+      "pdf": "Tệp PDF",
+      "word": "Tài liệu Word",
+      "excel": "Bảng tính Excel",
+      "powerpoint": "Trình chiếu PowerPoint",
+      "text": "Tệp văn bản",
+      "json": "Tệp JSON",
+      "csv": "Tệp CSV",
+      "imageJpeg": "Ảnh JPEG",
+      "imagePng": "Ảnh PNG",
+      "imageGif": "Ảnh GIF",
+      "imageSvg": "Ảnh SVG",
+      "videoMp4": "Video MP4",
+      "videoMov": "Video MOV",
+      "videoAvi": "Video AVI",
+      "videoMkv": "Video MKV",
+      "audioMp3": "Âm thanh MP3",
+      "audioWav": "Âm thanh WAV",
+      "audioFlac": "Âm thanh FLAC",
+      "zipArchive": "Tệp nén ZIP",
+      "rarArchive": "Tệp nén RAR",
+      "archive7z": "Tệp nén 7z",
+      "image": "Hình ảnh",
+      "video": "Video",
+      "audio": "Âm thanh",
+      "presentation": "Trình chiếu",
+      "spreadsheet": "Bảng tính",
+      "document": "Tài liệu",
+      "compressed": "Tệp nén"
+    }
+  },
+  "backend": {
+    "auth": {
+      "emailRequired": "Email là bắt buộc.",
+      "emailPasswordRequired": "Email và mật khẩu là bắt buộc.",
+      "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự.",
+      "emailAlreadyRegistered": "Email đã được đăng ký.",
+      "invalidCredentials": "Thông tin đăng nhập không đúng, vui lòng kiểm tra lại.",
+      "emailNotVerified": "Tài khoản chưa được xác thực. Vui lòng kiểm tra email để xác thực.",
+      "loginSuccess": "Đăng nhập thành công.",
+      "logoutSuccess": "Đăng xuất thành công.",
+      "forgotPasswordSuccess": "Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.",
+      "forgotPasswordError": "Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau.",
+      "forgotPasswordProcessError": "Không thể xử lý yêu cầu đặt lại mật khẩu.",
+      "tokenPasswordRequired": "Token và mật khẩu mới là bắt buộc.",
+      "newPasswordMinLength": "Mật khẩu mới phải có ít nhất 6 ký tự.",
+      "invalidResetLink": "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.",
+      "passwordSameAsCurrent": "Mật khẩu mới phải khác mật khẩu hiện tại.",
+      "resetPasswordSuccess": "Đặt lại mật khẩu thành công.",
+      "resetPasswordError": "Không thể đặt lại mật khẩu.",
+      "verificationSuccess": "Email của bạn đã được xác thực thành công.",
+      "verificationFailed": "Liên kết xác thực không hợp lệ hoặc đã hết hạn.",
+      "resendVerificationSuccess": "Email xác thực đã được gửi lại.",
+      "resendVerificationError": "Không thể gửi lại email xác thực.",
+      "resendResetSuccess": "Nếu email tồn tại, chúng tôi đã gửi liên kết đặt lại mật khẩu mới.",
+      "resendResetError": "Không thể gửi lại email đặt lại mật khẩu.",
+      "rateLimitExceeded": "Vui lòng đợi trước khi yêu cầu gửi lại email.",
+      "userNotFound": "Không tìm thấy người dùng.",
+      "alreadyVerified": "Email đã được xác thực.",
+      "tokenRequired": "Token là bắt buộc.",
+      "invalidToken": "Token không hợp lệ.",
+      "currentPasswordRequired": "Mật khẩu hiện tại là bắt buộc.",
+      "currentPasswordIncorrect": "Mật khẩu hiện tại không đúng.",
+      "passwordChangeSuccess": "Đổi mật khẩu thành công.",
+      "passwordChangeError": "Không thể đổi mật khẩu.",
+      "profileUpdateSuccess": "Cập nhật thông tin thành công.",
+      "profileUpdateError": "Không thể cập nhật thông tin.",
+      "goToLogin": "Đi tới trang đăng nhập",
+      "successTitle": "Xác thực thành công",
+      "failedTitle": "Xác thực thất bại",
+      "linkExpiredHint": "Liên kết chỉ có hiệu lực trong 15 phút.",
+      "resendBtn": "Gửi lại email xác thực",
+      "sending": "Đang gửi...",
+      "resendError": "Không thể gửi lại email.",
+      "registerSuccess": "Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.",
+      "registerSuccessNoEmail": "Đăng ký thành công. Không thể gửi email xác thực, vui lòng thử lại sau.",
+      "registerSuccessSimple": "Đăng ký thành công.",
+      "registerError": "Không thể đăng ký tài khoản.",
+      "verifyLinkExpired": "Liên kết xác thực đã hết hạn. Vui lòng yêu cầu gửi lại email xác thực.",
+      "verifySuccess": "Email của bạn đã được xác thực thành công. Bạn có thể tiếp tục sử dụng BeamShare Drive.",
+      "verifyLinkInvalid": "Liên kết xác thực không hợp lệ.",
+      "loginError": "Không thể đăng nhập.",
+      "getProfileError": "Không thể lấy thông tin người dùng.",
+      "displayNameEmpty": "Tên hiển thị không được để trống.",
+      "displayNameMinLength": "Tên hiển thị phải có ít nhất 2 ký tự.",
+      "displayNameMaxLength": "Tên hiển thị không được vượt quá 80 ký tự.",
+      "passwordBothRequired": "Vui lòng cung cấp đầy đủ mật khẩu hiện tại và mật khẩu mới.",
+      "accountExistsNotVerified": "Nếu tài khoản tồn tại và chưa được xác thực, chúng tôi đã gửi email xác thực mới.",
+      "accountAlreadyVerified": "Tài khoản đã được xác thực.",
+      "waitSecondsBeforeResend": "Vui lòng đợi {{seconds}} giây trước khi yêu cầu gửi lại email.",
+      "sendVerificationError": "Không thể gửi email xác thực. Vui lòng thử lại sau.",
+      "sendVerificationGenericError": "Không thể gửi email xác thực.",
+      "sendResetLinkGeneric": "Nếu email tồn tại, chúng tôi đã gửi liên kết đặt lại mật khẩu mới.",
+      "sendResetError": "Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau.",
+      "sendResetGenericError": "Không thể gửi email đặt lại mật khẩu.",
+      "tokenTypeRequired": "Token và loại token là bắt buộc.",
+      "tokenTypeInvalid": "Loại token không hợp lệ.",
+      "linkInvalid": "Liên kết không hợp lệ.",
+      "linkExpired": "Liên kết đã hết hạn. Vui lòng yêu cầu gửi lại email.",
+      "checkTokenError": "Không thể kiểm tra token.",
+      "resendSuccess": "Email đã được gửi lại. Vui lòng kiểm tra hộp thư của bạn.",
+      "connectionError": "Không thể kết nối tới máy chủ.",
+      "resendAfter": "Gửi lại sau"
+    },
+    "email": {
+      "greeting": "Xin chào {{name}}",
+      "greetingDefault": "Xin chào bạn",
+      "regards": "Trân trọng,\nBeamShare – một sản phẩm của Quý Đặng Blog.",
+      "supportNote": "Nếu bạn cần hỗ trợ, vui lòng phản hồi email này hoặc liên hệ lại khi cần.",
+      "notAvailable": "Không có",
+      "notSpecified": "Chưa xác định",
+      "passwordReset": {
+        "subject": "BeamShare Drive - Đặt lại mật khẩu",
+        "received": "Hệ thống đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản BeamShare Drive của bạn.",
+        "clickButton": "Để tạo mật khẩu mới, vui lòng nhấp vào nút bên dưới:",
+        "buttonText": "Đặt lại mật khẩu",
+        "cantClick": "Nếu bạn không thể nhấp vào nút, hãy sao chép và dán liên kết sau vào trình duyệt của bạn:",
+        "expiry": "Liên kết này sẽ hết hạn sau 15 phút. Nếu bạn không yêu cầu đặt lại mật khẩu, xin vui lòng bỏ qua email này."
+      },
+      "emailVerification": {
+        "subject": "BeamShare Drive - Xác thực email đăng ký",
+        "thankYou": "Cảm ơn bạn đã đăng ký BeamShare Drive. Để hoàn tất việc tạo tài khoản, vui lòng xác thực email của bạn.",
+        "buttonText": "Xác thực email",
+        "cantClick": "Nếu bạn không thể nhấp vào nút, hãy sao chép và dán liên kết sau vào trình duyệt của bạn:",
+        "expiry": "Liên kết xác thực sẽ hết hạn sau 15 phút. Nếu bạn không tạo tài khoản BeamShare Drive, vui lòng bỏ qua email này."
+      },
+      "payment": {
+        "successSubject": "BeamShare Drive - Thanh toán thành công",
+        "failedSubject": "BeamShare Drive - Thanh toán không thành công",
+        "statusSuccess": "thành công",
+        "statusFailed": "không thành công",
+        "yourPayment": "Thanh toán của bạn",
+        "thankYouUpgrade": "Cảm ơn bạn đã nâng cấp gói <strong>{{planTitle}}</strong>. Tài khoản của bạn đã được cập nhật quyền lợi tương ứng.",
+        "sorryFailed": "Rất tiếc, thanh toán cho gói <strong>{{planTitle}}</strong> chưa thể hoàn tất.",
+        "thankYouUpgradeText": "Cảm ơn bạn đã nâng cấp gói {{planTitle}}. Tài khoản đã được cập nhật.",
+        "sorryFailedText": "Rất tiếc, thanh toán cho gói {{planTitle}} chưa thể hoàn tất.",
+        "paymentInfo": "Thông tin thanh toán",
+        "plan": "Gói",
+        "amount": "Số tiền",
+        "processedAt": "Thời gian xử lý",
+        "transactionId": "Mã giao dịch ngân hàng",
+        "reference": "Mã tham chiếu BeamShare",
+        "reason": "Lý do"
       }
     }
   }

@@ -8,6 +8,16 @@ const PREVIEW_MODAL_ID = 'file-preview-modal';
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']);
 const VIDEO_EXTENSIONS = new Set(['.mp4', '.avi', '.mov', '.webm', '.mkv']);
 const AUDIO_EXTENSIONS = new Set(['.mp3', '.wav', '.flac', '.ogg', '.m4a']);
+
+// Translation helper function
+const t = (key, fallback = '') => {
+    const lang = window.LanguageManager;
+    if (lang && typeof lang.translate === 'function') {
+        return lang.translate(key) || fallback;
+    }
+    return fallback;
+};
+
 let allFiles = [];
 let filteredFiles = [];
 let activeSortOption = DEFAULT_SORT_OPTION;
@@ -92,7 +102,7 @@ function normalizeFileId(fileOrId) {
 function openShareTabForFile(fileId, displayName, options = {}) {
     if (!fileId) {
         if (window.toastSystem) {
-            window.toastSystem.error('Không thể xác định tệp để chia sẻ.', {
+            window.toastSystem.error(t('pages.myfiles.share.error', 'Không thể xác định tệp để chia sẻ.'), {
                 duration: 4000
             });
         }
@@ -106,7 +116,7 @@ function openShareTabForFile(fileId, displayName, options = {}) {
 
     if (effectiveState !== 'public' || !shareUrl) {
         if (window.toastSystem) {
-            window.toastSystem.warning('Tệp đang ở chế độ riêng tư hoặc chưa có liên kết chia sẻ.', {
+            window.toastSystem.warning(t('pages.myfiles.share.privateWarning', 'Tệp đang ở chế độ riêng tư hoặc chưa có liên kết chia sẻ.'), {
                 duration: 4000
             });
         }
@@ -117,7 +127,7 @@ function openShareTabForFile(fileId, displayName, options = {}) {
 
     if (!shareWindow) {
         if (window.toastSystem) {
-            window.toastSystem.error('Trình duyệt đã chặn cửa sổ chia sẻ. Vui lòng cho phép cửa sổ bật lên.', {
+            window.toastSystem.error(t('pages.myfiles.share.popupBlocked', 'Trình duyệt đã chặn cửa sổ chia sẻ. Vui lòng cho phép cửa sổ bật lên.'), {
                 duration: 5000
             });
         }
@@ -125,7 +135,7 @@ function openShareTabForFile(fileId, displayName, options = {}) {
     }
 
     if (window.toastSystem && displayName) {
-        window.toastSystem.info(`Đang mở trang chia sẻ cho: ${displayName}`, {
+        window.toastSystem.info(t('pages.myfiles.share.opening', 'Đang mở trang chia sẻ cho: {{name}}').replace('{{name}}', displayName), {
             duration: 3500
         });
     }
@@ -133,7 +143,7 @@ function openShareTabForFile(fileId, displayName, options = {}) {
 
 function openBeamShareWorkspace(fileId, displayName) {
     if (!fileId) {
-        window.toastSystem?.error('Không thể xác định tệp để gửi qua BeamShare.', {
+        window.toastSystem?.error(t('pages.myfiles.beamshare.error', 'Không thể xác định tệp để gửi qua BeamShare.'), {
             duration: 4000
         });
         return;
@@ -143,14 +153,14 @@ function openBeamShareWorkspace(fileId, displayName) {
     const beamshareWindow = window.open(beamshareUrl, '_blank', 'noopener');
 
     if (!beamshareWindow) {
-        window.toastSystem?.error('Trình duyệt đã chặn cửa sổ BeamShare. Vui lòng cho phép cửa sổ bật lên.', {
+        window.toastSystem?.error(t('pages.myfiles.beamshare.popupBlocked', 'Trình duyệt đã chặn cửa sổ BeamShare. Vui lòng cho phép cửa sổ bật lên.'), {
             duration: 5000
         });
         return;
     }
 
-    const targetName = displayName || 'tệp đã chọn';
-    window.toastSystem?.info(`Đang mở BeamShare Live để gửi ${targetName}. Hãy chọn thiết bị nhận trong danh sách.`, {
+    const targetName = displayName || t('pages.myfiles.beamshare.selectedFile', 'tệp đã chọn');
+    window.toastSystem?.info(t('pages.myfiles.beamshare.opening', 'Đang mở BeamShare Live để gửi {{name}}. Hãy chọn thiết bị nhận trong danh sách.').replace('{{name}}', targetName), {
         duration: 5000
     });
 }
@@ -429,21 +439,21 @@ function updateShareButtonState(button, state) {
     button.setAttribute('data-share-state', normalizedState);
     if (normalizedState === 'public') {
         button.classList.add('is-public');
-        button.title = 'Đang công khai - quản lý chia sẻ';
+        button.title = t('pages.myfiles.share.manageTitle', 'Đang công khai - quản lý chia sẻ');
         if (icon) {
             icon.className = 'fas fa-share-square';
         }
         if (label) {
-            label.textContent = 'Quản lý chia sẻ';
+            label.textContent = t('pages.myfiles.share.manageLabel', 'Quản lý chia sẻ');
         }
     } else {
         button.classList.remove('is-public');
-        button.title = 'Chia sẻ tệp';
+        button.title = t('pages.myfiles.share.shareTitle', 'Chia sẻ tệp');
         if (icon) {
             icon.className = 'fas fa-share-alt';
         }
         if (label) {
-            label.textContent = 'Chia sẻ tệp';
+            label.textContent = t('pages.myfiles.share.shareLabel', 'Chia sẻ tệp');
         }
     }
 }
@@ -499,15 +509,18 @@ function updateShareControlsUI(fileId, options = {}) {
     const helper = findShareElement('.file-share-helper', fileId);
     if (helper) {
         helper.textContent = isPublic
-            ? 'Chia sẻ liên kết này với mọi người bạn muốn cấp quyền truy cập. Tạo liên kết mới để thu hồi liên kết cũ.'
-            : 'Tệp đang ở chế độ riêng tư. Bật chế độ công khai để tạo liên kết chia sẻ.';
+            ? t('pages.myfiles.share.publicHint', 'Chia sẻ liên kết này với mọi người bạn muốn cấp quyền truy cập. Tạo liên kết mới để thu hồi liên kết cũ.')
+            : t('pages.myfiles.share.privateHint', 'Tệp đang ở chế độ riêng tư. Bật chế độ công khai để tạo liên kết chia sẻ.');
     }
 
     const stateChip = findShareElement('.share-state-chip', fileId);
     if (stateChip) {
         stateChip.classList.toggle('is-public', isPublic);
         stateChip.classList.toggle('is-private', !isPublic);
-        stateChip.innerHTML = `<i class="fas ${isPublic ? 'fa-lock-open' : 'fa-lock'}"></i>${isPublic ? 'Đang công khai' : 'Đang riêng tư'}`;
+        const stateText = isPublic 
+            ? t('pages.myfiles.share.publicStatus', 'Đang công khai')
+            : t('pages.myfiles.share.privateStatus', 'Đang riêng tư');
+        stateChip.innerHTML = `<i class="fas ${isPublic ? 'fa-lock-open' : 'fa-lock'}"></i>${stateText}`;
     }
 
     // Store the latest link in overrides for downstream usage
@@ -557,7 +570,7 @@ async function changeFileVisibility(fileId, targetState, options = {}) {
         const result = await response.json().catch(() => ({}));
 
         if (!response.ok || result.success !== true) {
-            throw new Error(result.error || 'Không thể cập nhật quyền chia sẻ.');
+            throw new Error(result.error || t('pages.myfiles.share.updateError', 'Không thể cập nhật quyền chia sẻ.'));
         }
 
         const nextState = result.visibility || targetState;
@@ -589,10 +602,18 @@ async function changeFileVisibility(fileId, targetState, options = {}) {
         updateFileInsights(allFiles);
 
         if (showToast) {
-            const fileName = fileItem?.getAttribute('data-file-name') || 'tệp đã chọn';
-            const stateLabel = nextState === 'public' ? 'công khai' : 'riêng tư';
-            const extra = nextState === 'public' && shareUrl ? ' (đã tạo liên kết chia sẻ)' : '';
-            window.toastSystem?.success(`Đã chuyển "${fileName}" sang chế độ ${stateLabel}${extra}`, {
+            const fileName = fileItem?.getAttribute('data-file-name') || t('pages.myfiles.beamshare.selectedFile', 'tệp đã chọn');
+            const stateLabel = nextState === 'public' 
+                ? t('pages.myfiles.share.statePublic', 'công khai')
+                : t('pages.myfiles.share.statePrivate', 'riêng tư');
+            const extra = nextState === 'public' && shareUrl 
+                ? ' ' + t('pages.myfiles.share.linkCreated', '(đã tạo liên kết chia sẻ)')
+                : '';
+            const msg = t('pages.myfiles.shareToggle.success', 'Đã chuyển "{{name}}" sang chế độ {{state}}{{extra}}')
+                .replace('{{name}}', fileName)
+                .replace('{{state}}', stateLabel)
+                .replace('{{extra}}', extra);
+            window.toastSystem?.success(msg, {
                 duration: 3000
             });
         }
@@ -603,7 +624,7 @@ async function changeFileVisibility(fileId, targetState, options = {}) {
             shareUrl
         };
     } catch (error) {
-        throw error instanceof Error ? error : new Error('Không thể cập nhật quyền chia sẻ.');
+        throw error instanceof Error ? error : new Error(t('pages.myfiles.share.updateError', 'Không thể cập nhật quyền chia sẻ.'));
     }
 }
 
@@ -935,8 +956,10 @@ function createTimelineItems(fileDetails, snapshot = {}) {
         items.push({
             icon: shareState === 'public' ? 'fa-unlock' : 'fa-lock',
             iconClass: shareState === 'public' ? 'icon-unlock' : 'icon-lock',
-            title: shareState === 'public' ? 'Đang công khai' : 'Đang riêng tư',
-            subtitle: shareUpdatedAt ? formatRelativeDate(shareUpdatedAt) : 'Cập nhật ngay'
+            title: shareState === 'public' 
+                ? t('pages.myfiles.share.publicStatus', 'Đang công khai')
+                : t('pages.myfiles.share.privateStatus', 'Đang riêng tư'),
+            subtitle: shareUpdatedAt ? formatRelativeDate(shareUpdatedAt) : t('common.updateNow', 'Cập nhật ngay')
         });
     }
 
@@ -992,7 +1015,7 @@ window.refreshFiles = function() {
 
     // Use new toast system directly
     if (window.toastSystem) {
-        window.toastSystem.info('Đang làm mới danh sách tệp...', {
+        window.toastSystem.info(t('pages.myfiles.refresh.loading', 'Đang làm mới danh sách tệp...'), {
             duration: 2000,
             dismissible: false
         });
@@ -1053,7 +1076,7 @@ function initDragAndDrop() {
         
         if (files.length > 0) {
             if (window.toastSystem) {
-                window.toastSystem.success(`Đã thả ${files.length} tệp. Chuyển đến trang tải lên...`, {
+                window.toastSystem.success(t('pages.myfiles.dragDrop.filesDropped', 'Đã thả {{count}} tệp. Chuyển đến trang tải lên...').replace('{{count}}', files.length), {
                     duration: 3000
                 });
             }
@@ -1123,7 +1146,10 @@ function setupViewToggles() {
             renderFileList(filteredFiles);
 
             if (window.toastSystem) {
-                window.toastSystem.info(`Đang hiển thị dạng ${mode === 'grid' ? 'lưới' : 'danh sách'}`, {
+                const viewMsg = mode === 'grid' 
+                    ? t('pages.myfiles.viewMode.grid', 'Đang hiển thị dạng lưới')
+                    : t('pages.myfiles.viewMode.list', 'Đang hiển thị dạng danh sách');
+                window.toastSystem.info(viewMsg, {
                     duration: 2000
                 });
             }

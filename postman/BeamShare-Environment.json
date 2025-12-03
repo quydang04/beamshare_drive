@@ -1,0 +1,16 @@
+{
+  "id": "beamshare-drive-local",
+  "name": "BeamShare Local",
+  "values": [
+    { "key": "base_url", "value": "http://localhost:8080", "enabled": true },
+    { "key": "login_email", "value": "test@example.com", "enabled": true },
+    { "key": "login_password", "value": "Test@123456", "type": "secret", "enabled": true },
+    { "key": "test_file_id", "value": "6904061a65d2c1f410a39325", "enabled": true },
+    { "key": "uploaded_file_id", "value": "6904061a65d2c1f410a39325", "enabled": true },
+    { "key": "share_token", "value": "", "enabled": true },
+    { "key": "share_url", "value": "", "enabled": true },
+    { "key": "sample_file_path", "value": "postman/fixtures/sample.txt", "enabled": true },
+    { "key": "sample_display_name", "value": "postman-sample.txt", "enabled": true }
+  ],
+  "_postman_variable_scope": "environment"
+}

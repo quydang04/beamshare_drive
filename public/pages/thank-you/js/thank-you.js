@@ -11,22 +11,30 @@
     const messageParam = params.get('message');
     const planParam = (params.get('plan') || 'premium').toLowerCase();
 
+    const t = (key, fallback = '') => {
+        const lang = window.LanguageManager;
+        if (lang && typeof lang.translate === 'function') {
+            return lang.translate(key) || fallback;
+        }
+        return fallback;
+    };
+
     function getPlanCopy(plan) {
         if (plan === 'premium') {
             return {
-                label: 'BeamShare Premium',
-                description: 'Không giới hạn BeamShare Live, dung lượng mở rộng và hỗ trợ ưu tiên.'
+                label: t('info.thankYou.plans.premium.label', 'BeamShare Premium'),
+                description: t('info.thankYou.plans.premium.description', 'Không giới hạn BeamShare Live, dung lượng mở rộng và hỗ trợ ưu tiên.')
             };
         }
         if (plan === 'basic') {
             return {
-                label: 'BeamShare Basic',
-                description: 'Tiếp tục trải nghiệm BeamShare cùng giới hạn 200MB mỗi file gửi.'
+                label: t('info.thankYou.plans.basic.label', 'BeamShare Basic'),
+                description: t('info.thankYou.plans.basic.description', 'Tiếp tục trải nghiệm BeamShare cùng giới hạn 200MB mỗi file gửi.')
             };
         }
         return {
-            label: 'BeamShare',
-            description: 'Trải nghiệm chia sẻ file tức thì giữa các thiết bị của bạn.'
+            label: t('info.thankYou.plans.default.label', 'BeamShare'),
+            description: t('info.thankYou.plans.default.description', 'Trải nghiệm chia sẻ file tức thì giữa các thiết bị của bạn.')
         };
     }
 
@@ -38,13 +46,15 @@
                 messageElement.textContent = messageParam;
             } else {
                 messageElement.textContent = paymentStatus === 'success'
-                    ? 'Giao dịch của bạn đã được xác nhận. Chúc bạn có trải nghiệm tuyệt vời cùng BeamShare.'
-                    : 'Chúng tôi chưa thể xác nhận giao dịch. Vui lòng kiểm tra lại trạng thái thanh toán hoặc liên hệ hỗ trợ.';
+                    ? t('info.thankYou.message.success', 'Giao dịch của bạn đã được xác nhận. Chúc bạn có trải nghiệm tuyệt vời cùng BeamShare.')
+                    : t('info.thankYou.message.failed', 'Chúng tôi chưa thể xác nhận giao dịch. Vui lòng kiểm tra lại trạng thái thanh toán hoặc liên hệ hỗ trợ.');
             }
         }
 
         if (badge) {
-            badge.textContent = paymentStatus === 'success' ? 'Thanh toán thành công' : 'Cập nhật thanh toán';
+            badge.textContent = paymentStatus === 'success' 
+                ? t('info.thankYou.badge.success', 'Thanh toán thành công') 
+                : t('info.thankYou.badge.failed', 'Cập nhật thanh toán');
         }
 
         if (highlightLabel) {
@@ -60,9 +70,9 @@
         }
 
         if (paymentStatus === 'success') {
-            document.title = 'BeamShare Drive | Cảm ơn bạn!';
+            document.title = t('info.thankYou.title.success', 'BeamShare Drive | Cảm ơn bạn!');
         } else {
-            document.title = 'BeamShare Drive | Cập nhật thanh toán';
+            document.title = t('info.thankYou.title.failed', 'BeamShare Drive | Cập nhật thanh toán');
         }
     }
 

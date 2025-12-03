@@ -30,6 +30,9 @@ const userSchema = new mongoose.Schema({
 	emailVerificationExpires: {
 		type: Date
 	},
+	lastVerificationEmailSent: {
+		type: Date
+	},
 	plan: {
 		type: String,
 		enum: ['basic', 'premium'],
@@ -46,6 +49,9 @@ const userSchema = new mongoose.Schema({
 		sparse: true
 	},
 	passwordResetExpires: {
+		type: Date
+	},
+	lastPasswordResetEmailSent: {
 		type: Date
 	}
 }, {

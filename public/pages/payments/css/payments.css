@@ -72,7 +72,6 @@
 .payments-header .btn-icon:hover {
     color: var(--theme-accent);
     border-color: var(--theme-accent);
-    transform: rotate(180deg);
 }
 
 .payments-header .btn-secondary {

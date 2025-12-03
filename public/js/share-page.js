@@ -12,9 +12,17 @@
     const previewEl = document.getElementById('preview');
     const downloadBtn = document.getElementById('download-button');
 
+    const t = (key, fallback = '') => {
+        const lang = window.LanguageManager;
+        if (lang && typeof lang.translate === 'function') {
+            return lang.translate(key) || fallback;
+        }
+        return fallback;
+    };
+
     const pathMatch = window.location.pathname.match(/\/files\/d\/([^/]+)/);
     if (!pathMatch || !pathMatch[1]) {
-        setError('Liên kết chia sẻ không hợp lệ.');
+        setError(t('info.share.errorInvalidLink', 'Liên kết chia sẻ không hợp lệ.'));
         return;
     }
 
@@ -37,7 +45,7 @@
             const payload = await response.json().catch(() => null);
 
             if (!response.ok) {
-                const message = payload?.error || 'Không thể tải thông tin file.';
+                const message = payload?.error || t('info.share.errorLoadFile', 'Không thể tải thông tin file.');
                 setError(message);
 
                 if (response.status === 403) {
@@ -49,7 +57,7 @@
             renderDetails(payload || {});
         })
         .catch(() => {
-            setError('Không thể kết nối tới máy chủ. Vui lòng thử lại sau.');
+            setError(t('info.share.errorConnection', 'Không thể kết nối tới máy chủ. Vui lòng thử lại sau.'));
         });
 
     function setError(message) {
@@ -63,11 +71,11 @@
     }
 
     function renderDetails(metadata) {
-        document.title = `${metadata.displayName || metadata.originalName || 'Tệp được chia sẻ'} | BeamShare Drive`;
+        document.title = `${metadata.displayName || metadata.originalName || t('common.sharedFile', 'Tệp được chia sẻ')} | BeamShare Drive`;
         statusEl.classList.remove('share-banner--neutral', 'share-banner--error');
         statusEl.classList.add('share-banner--success');
         if (statusTextEl) {
-            statusTextEl.textContent = 'Liên kết chia sẻ đang hoạt động.';
+            statusTextEl.textContent = t('info.share.statusActive', 'Liên kết chia sẻ đang hoạt động.');
         }
 
         if (nameEl) {
@@ -80,11 +88,11 @@
         }
 
         if (sizeEl) {
-            sizeEl.textContent = metadata.formattedSize || 'Không xác định';
+            sizeEl.textContent = metadata.formattedSize || t('common.unknownValue', 'Không xác định');
         }
 
         if (ownerEl) {
-            ownerEl.textContent = metadata.owner || 'Không xác định';
+            ownerEl.textContent = metadata.owner || t('common.unknownValue', 'Không xác định');
         }
 
         if ((updatedEl || descriptionEl) && (metadata.lastModified || metadata.uploadDate)) {
@@ -113,7 +121,7 @@
                 }
             } else {
                 if (updatedEl) {
-                    updatedEl.textContent = 'Không xác định';
+                    updatedEl.textContent = t('common.unknownValue', 'Không xác định');
                 }
                 if (descriptionEl) {
                     descriptionEl.textContent = buildDescription(metadata, null);
@@ -132,7 +140,7 @@
             } else if (extension) {
                 formatEl.textContent = extension;
             } else {
-                formatEl.textContent = 'Không xác định';
+                formatEl.textContent = t('common.unknownValue', 'Không xác định');
             }
         }
 
@@ -155,7 +163,7 @@
         const previewUrl = `/api/share/${encodedId}/preview${tokenSuffix}`;
         window.BeamPreview.render(previewEl, metadata, {
             previewUrl,
-            ownerName: metadata.owner || 'Không xác định',
+            ownerName: metadata.owner || t('common.unknownValue', 'Không xác định'),
             pdfWithCredentials: !token,
             showDisclaimer: true
         });
@@ -174,7 +182,7 @@
 
     function buildTypeLabel(metadata) {
         if (!metadata) {
-            return 'Tệp BeamShare';
+            return t('common.beamshareFile', 'Tệp BeamShare');
         }
 
         if (metadata.extension) {
@@ -185,7 +193,7 @@
             return metadata.mimeType.split('/')[0].toUpperCase();
         }
 
-        return 'Tệp BeamShare';
+        return t('common.beamshareFile', 'Tệp BeamShare');
     }
 
     function buildDescription(metadata, formattedDate) {
@@ -199,7 +207,7 @@
         if (metadata.owner) {
             parts.push(`Chủ sở hữu ${metadata.owner}`);
         }
-        return parts.join(' | ') || 'Liên kết từ BeamShare Drive';
+        return parts.join(' | ') || t('info.share.description', 'Liên kết từ BeamShare Drive');
     }
 
     function redirectToLogin(delayMs) {

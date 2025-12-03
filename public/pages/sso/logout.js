@@ -7,6 +7,14 @@
 
     const LOGOUT_ENDPOINT = '/api/auth/logout';
 
+    const t = (key, fallback = '') => {
+        const lang = globalScope.LanguageManager;
+        if (lang && typeof lang.translate === 'function') {
+            return lang.translate(key) || fallback;
+        }
+        return fallback;
+    };
+
     async function callLogoutApi(fetchImpl) {
         const fetchFn = typeof fetchImpl === 'function' ? fetchImpl : globalScope.fetch;
         if (typeof fetchFn !== 'function') {
@@ -45,10 +53,11 @@
             triggerButton.setAttribute('aria-busy', 'true');
         }
 
+        const inProgressText = t('info.logout.inProgress', 'Đang đăng xuất...');
         if (labelElement) {
-            labelElement.textContent = 'Đang đăng xuất...';
+            labelElement.textContent = inProgressText;
         } else if (origin === 'menu' && toastSystem && typeof toastSystem.info === 'function') {
-            toastSystem.info('Đang đăng xuất...', { duration: 2000 });
+            toastSystem.info(inProgressText, { duration: 2000 });
         }
 
         let logoutSucceeded = false;
@@ -60,9 +69,9 @@
                 onSuccess();
             }
         } catch (error) {
-            console.error('Đăng xuất thất bại:', error);
+            console.error(t('info.logout.errorLog', 'Đăng xuất thất bại:'), error);
             if (toastSystem && typeof toastSystem.error === 'function') {
-                toastSystem.error('Không thể đăng xuất. Vui lòng thử lại.', { duration: 3200 });
+                toastSystem.error(t('info.logout.errorToast', 'Không thể đăng xuất. Vui lòng thử lại.'), { duration: 3200 });
             }
             throw error;
         } finally {

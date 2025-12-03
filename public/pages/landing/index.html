@@ -35,35 +35,52 @@
 
             <nav class="nav-menu" id="navMenu">
                 <ul class="nav-list">
-                    <li><a href="#features" class="nav-link">Tính năng</a></li>
+                    <li><a href="#features" class="nav-link" data-i18n="landing.nav.features">Tính năng</a></li>
                     <li><a href="#beamshare-live" class="nav-link">BeamShare Live</a></li>
-                    <li><a href="#pricing" class="nav-link">Bảng giá</a></li>
+                    <li><a href="#pricing" class="nav-link" data-i18n="landing.nav.pricing">Bảng giá</a></li>
                     <li><a href="#faq" class="nav-link">FAQ</a></li>
                 </ul>
                 <div class="nav-actions">
+                    <div class="lang-toggle-wrapper" id="langWrapper">
+                        <button class="lang-toggle" id="langToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Chuyển ngôn ngữ">
+                            <i class="fas fa-globe"></i>
+                            <span class="lang-toggle__label" id="langLabel">VI</span>
+                            <i class="fas fa-caret-down lang-toggle__caret"></i>
+                        </button>
+                        <div class="lang-menu" id="langMenu" role="menu">
+                            <button class="lang-option" type="button" data-lang="vi" role="menuitemradio" aria-checked="true">
+                                <span>🇻🇳</span>
+                                <span>Tiếng Việt</span>
+                            </button>
+                            <button class="lang-option" type="button" data-lang="en" role="menuitemradio" aria-checked="false">
+                                <span>🇺🇸</span>
+                                <span>English</span>
+                            </button>
+                        </div>
+                    </div>
                     <div class="theme-toggle-wrapper">
                         <button class="theme-toggle" id="themeToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Chuyển đổi giao diện">
                             <i class="fas fa-sun theme-toggle__icon"></i>
-                            <span class="theme-toggle__label">Sáng</span>
+                            <span class="theme-toggle__label" data-i18n="theme.light">Sáng</span>
                             <i class="fas fa-caret-down theme-toggle__caret"></i>
                         </button>
                         <div class="theme-menu" id="themeMenu" role="menu">
                             <button class="theme-option" type="button" data-theme="light" role="menuitemradio">
                                 <i class="fas fa-sun"></i>
-                                <span>Sáng</span>
+                                <span data-i18n="theme.light">Sáng</span>
                             </button>
                             <button class="theme-option" type="button" data-theme="dark" role="menuitemradio">
                                 <i class="fas fa-moon"></i>
-                                <span>Tối</span>
+                                <span data-i18n="theme.dark">Tối</span>
                             </button>
                             <button class="theme-option" type="button" data-theme="system" role="menuitemradio">
                                 <i class="fas fa-desktop"></i>
-                                <span>Hệ thống</span>
+                                <span data-i18n="theme.system">Hệ thống</span>
                             </button>
                         </div>
                     </div>
-                    <a href="/auth/login" class="btn btn-text">Đăng nhập</a>
-                    <a href="/auth/register" class="btn btn-primary">Đăng ký ngay</a>
+                    <a href="/auth/login" class="btn btn-text" data-i18n="landing.nav.login">Đăng nhập</a>
+                    <a href="/auth/register" class="btn btn-primary" data-i18n="landing.nav.register">Đăng ký ngay</a>
                 </div>
             </nav>
         </div>
@@ -74,34 +91,34 @@
         <section class="hero">
             <div class="container hero-container">
                 <div class="hero-content" data-aos="fade-up">
-                    <div class="badge">🚀 Dự án Lập trình mạng</div>
-                    <h1 class="hero-title">Lưu trữ thông minh <br> <span class="text-gradient">Chia sẻ tức thì</span></h1>
-                    <p class="hero-desc">
+                    <div class="badge" data-i18n="landing.hero.badge">🚀 Dự án Lập trình mạng</div>
+                    <h1 class="hero-title" data-i18n="landing.hero.title">Lưu trữ thông minh <br> <span class="text-gradient">Chia sẻ tức thì</span></h1>
+                    <p class="hero-desc" data-i18n="landing.hero.desc">
                         Trải nghiệm tốc độ truyền tải vượt trội với công nghệ WebRTC. 
                         Lưu trữ an toàn, quản lý dễ dàng và chia sẻ không giới hạn.
                     </p>
                     <div class="hero-btns">
-                        <a href="/auth/register" class="btn btn-primary btn-lg">
+                        <a href="/auth/register" class="btn btn-primary btn-lg" data-i18n="landing.hero.startFree">
                             Bắt đầu miễn phí <i class="fa-solid fa-arrow-right"></i>
                         </a>
-                        <a href="/beamshare" class="btn btn-secondary btn-lg">
+                        <a href="/beamshare" class="btn btn-secondary btn-lg" data-i18n="landing.hero.tryLive">
                             <i class="fa-solid fa-bolt"></i> Thử BeamShare Live
                         </a>
                     </div>
                     <div class="hero-stats">
                         <div class="stat-item">
-                            <span class="stat-num">5GB+</span>
-                            <span class="stat-label">Lưu trữ miễn phí</span>
+                            <span class="stat-num" data-i18n="landing.hero.stats.storage">5GB+</span>
+                            <span class="stat-label" data-i18n="landing.hero.stats.storageLabel">Lưu trữ miễn phí</span>
                         </div>
                         <div class="stat-divider"></div>
                         <div class="stat-item">
-                            <span class="stat-num">Nhanh chóng</span>
-                            <span class="stat-label">Chia sẻ tức thì</span>
+                            <span class="stat-num" data-i18n="landing.hero.stats.fast">Nhanh chóng</span>
+                            <span class="stat-label" data-i18n="landing.hero.stats.fastLabel">Chia sẻ tức thì</span>
                         </div>
                         <div class="stat-divider"></div>
                         <div class="stat-item">
-                            <span class="stat-num">Dễ dàng</span>
-                            <span class="stat-label">Quản lý tập trung</span>
+                            <span class="stat-num" data-i18n="landing.hero.stats.easy">Dễ dàng</span>
+                            <span class="stat-label" data-i18n="landing.hero.stats.easyLabel">Quản lý tập trung</span>
                         </div>
                     </div>
                 </div>
@@ -194,30 +211,30 @@
         <section id="features" class="features">
             <div class="container">
                 <div class="section-header text-center">
-                    <h2 class="section-title">Tính năng nổi bật</h2>
-                    <p class="section-subtitle">Mọi thứ bạn cần để quản lý dữ liệu hiệu quả</p>
+                    <h2 class="section-title" data-i18n="landing.features.title">Tính năng nổi bật</h2>
+                    <p class="section-subtitle" data-i18n="landing.features.subtitle">Mọi thứ bạn cần để quản lý dữ liệu hiệu quả</p>
                 </div>
                 <div class="features-grid">
                     <div class="feature-card glass-card">
                         <div class="feature-icon icon-blue">
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                         </div>
-                        <h3>Lưu trữ Đám mây</h3>
-                        <p>Không gian lưu trữ an toàn, truy cập mọi lúc mọi nơi. Tự động đồng bộ hóa dữ liệu của bạn.</p>
+                        <h3 data-i18n="landing.features.cloud.title">Lưu trữ Đám mây</h3>
+                        <p data-i18n="landing.features.cloud.desc">Không gian lưu trữ an toàn, truy cập mọi lúc mọi nơi. Tự động đồng bộ hóa dữ liệu của bạn.</p>
                     </div>
                     <div class="feature-card glass-card">
                         <div class="feature-icon icon-purple">
                             <i class="fa-solid fa-share-nodes"></i>
                         </div>
-                        <h3>Chia sẻ Linh hoạt</h3>
-                        <p>Tạo liên kết chia sẻ công khai hoặc riêng tư. Kiểm soát quyền truy cập file dễ dàng.</p>
+                        <h3 data-i18n="landing.features.share.title">Chia sẻ Linh hoạt</h3>
+                        <p data-i18n="landing.features.share.desc">Tạo liên kết chia sẻ công khai hoặc riêng tư. Kiểm soát quyền truy cập file dễ dàng.</p>
                     </div>
                     <div class="feature-card glass-card">
                         <div class="feature-icon icon-green">
                             <i class="fa-solid fa-recycle"></i>
                         </div>
-                        <h3>Thùng rác Thông minh</h3>
-                        <p>Khôi phục file đã xóa trong vòng 30 ngày. Không lo mất dữ liệu quan trọng do nhầm lẫn.</p>
+                        <h3 data-i18n="landing.features.trash.title">Thùng rác Thông minh</h3>
+                        <p data-i18n="landing.features.trash.desc">Khôi phục file đã xóa trong vòng 30 ngày. Không lo mất dữ liệu quan trọng do nhầm lẫn.</p>
                     </div>
                 </div>
             </div>
@@ -227,18 +244,18 @@
         <section id="beamshare-live" class="beamshare-live">
             <div class="container live-container">
                 <div class="live-content">
-                    <div class="badge badge-live">✨ Tính năng độc quyền</div>
+                    <div class="badge badge-live" data-i18n="landing.beamshare.badge">✨ Tính năng độc quyền</div>
                     <h2 class="section-title">BeamShare Live</h2>
-                    <p class="live-desc">
+                    <p class="live-desc" data-i18n="landing.beamshare.desc">
                         Chia sẻ file trực tiếp giữa các thiết bị một cách nhanh chóng. 
                         Trải nghiệm sự tiện lợi khi truyền tải dữ liệu.
                     </p>
                     <ul class="live-features">
-                        <li><i class="fa-solid fa-bolt"></i> <span>Tốc độ cao</span></li>
-                        <li><i class="fa-solid fa-mobile-screen"></i> <span>Hỗ trợ đa nền tảng</span></li>
-                        <li><i class="fa-solid fa-check"></i> <span>Đơn giản & Dễ dùng</span></li>
+                        <li><i class="fa-solid fa-bolt"></i> <span data-i18n="landing.beamshare.fast">Tốc độ cao</span></li>
+                        <li><i class="fa-solid fa-mobile-screen"></i> <span data-i18n="landing.beamshare.multiPlatform">Hỗ trợ đa nền tảng</span></li>
+                        <li><i class="fa-solid fa-check"></i> <span data-i18n="landing.beamshare.simple">Đơn giản & Dễ dùng</span></li>
                     </ul>
-                    <a href="/beamshare" class="btn btn-primary">Trải nghiệm ngay</a>
+                    <a href="/beamshare" class="btn btn-primary" data-i18n="landing.beamshare.tryNow">Trải nghiệm ngay</a>
                 </div>
                 <div class="live-visual">
                     <div class="connection-anim">
@@ -258,39 +275,39 @@
         <section id="pricing" class="pricing">
             <div class="container">
                 <div class="section-header text-center">
-                    <h2 class="section-title">Bảng giá đơn giản</h2>
-                    <p class="section-subtitle">Chọn gói phù hợp với nhu cầu của bạn</p>
+                    <h2 class="section-title" data-i18n="landing.pricing.title">Bảng giá đơn giản</h2>
+                    <p class="section-subtitle" data-i18n="landing.pricing.subtitle">Chọn gói phù hợp với nhu cầu của bạn</p>
                 </div>
                 <div class="pricing-grid">
                     <!-- Basic Plan -->
                     <div class="pricing-card glass-card">
                         <div class="plan-header">
-                            <h3>Cơ bản</h3>
-                            <div class="price">0đ<span>/tháng</span></div>
-                            <p>Dành cho người dùng cá nhân</p>
+                            <h3 data-i18n="landing.pricing.basic.name">Cơ bản</h3>
+                            <div class="price" data-i18n="landing.pricing.basic.price">0đ<span>/tháng</span></div>
+                            <p data-i18n="landing.pricing.basic.desc">Dành cho người dùng cá nhân</p>
                         </div>
                         <ul class="plan-features">
-                            <li><i class="fa-solid fa-check"></i> <strong>5GB</strong> Lưu trữ</li>
-                            <li><i class="fa-solid fa-check"></i> BeamShare: Tối đa <strong>200MB/file</strong></li>
-                            <li><i class="fa-solid fa-check"></i> Gửi file không giới hạn số lượng</li>
+                            <li><i class="fa-solid fa-check"></i> <span data-i18n="landing.pricing.basic.storage"><strong>5GB</strong> Lưu trữ</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span data-i18n="landing.pricing.basic.beamshare">BeamShare: Tối đa <strong>200MB/file</strong></span></li>
+                            <li><i class="fa-solid fa-check"></i> <span data-i18n="landing.pricing.basic.unlimited">Gửi file không giới hạn số lượng</span></li>
                         </ul>
-                        <a href="/auth/register" class="btn btn-outline full-width">Đăng ký miễn phí</a>
+                        <a href="/auth/register" class="btn btn-outline full-width" data-i18n="landing.pricing.basic.cta">Đăng ký miễn phí</a>
                     </div>
 
                     <!-- Premium Plan -->
                     <div class="pricing-card glass-card popular">
-                        <div class="popular-badge">Khuyên dùng</div>
+                        <div class="popular-badge" data-i18n="landing.pricing.premium.badge">Khuyên dùng</div>
                         <div class="plan-header">
                             <h3>Premium</h3>
-                            <div class="price">50.000đ<span>/tháng</span></div>
-                            <p>Dành cho người dùng chuyên nghiệp</p>
+                            <div class="price" data-i18n="landing.pricing.premium.price">50.000đ<span>/tháng</span></div>
+                            <p data-i18n="landing.pricing.premium.desc">Dành cho người dùng chuyên nghiệp</p>
                         </div>
                         <ul class="plan-features">
-                            <li><i class="fa-solid fa-check"></i> <strong>15GB</strong> Lưu trữ</li>
-                            <li><i class="fa-solid fa-check"></i> BeamShare: <strong>Không giới hạn</strong> dung lượng</li>
-                            <li><i class="fa-solid fa-check"></i> Hỗ trợ ưu tiên</li>
+                            <li><i class="fa-solid fa-check"></i> <span data-i18n="landing.pricing.premium.storage"><strong>15GB</strong> Lưu trữ</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span data-i18n="landing.pricing.premium.beamshare">BeamShare: <strong>Không giới hạn</strong> dung lượng</span></li>
+                            <li><i class="fa-solid fa-check"></i> <span data-i18n="landing.pricing.premium.support">Hỗ trợ ưu tiên</span></li>
                         </ul>
-                        <a href="/auth/register?plan=premium" class="btn btn-primary full-width">Nâng cấp ngay</a>
+                        <a href="/auth/register?plan=premium" class="btn btn-primary full-width" data-i18n="landing.pricing.premium.cta">Nâng cấp ngay</a>
                     </div>
                 </div>
             </div>
@@ -300,25 +317,25 @@
         <section id="faq" class="faq">
             <div class="container">
                 <div class="section-header text-center">
-                    <h2 class="section-title">Câu hỏi thường gặp</h2>
+                    <h2 class="section-title" data-i18n="landing.faq.title">Câu hỏi thường gặp</h2>
                 </div>
                 <div class="faq-list">
                     <div class="faq-item glass-card">
                         <button class="faq-question">
-                            BeamShare Drive có miễn phí không?
+                            <span data-i18n="landing.faq.q1.question">BeamShare Drive có miễn phí không?</span>
                             <i class="fa-solid fa-chevron-down"></i>
                         </button>
                         <div class="faq-answer">
-                            <p>Có! Chúng tôi cung cấp gói Cơ bản miễn phí trọn đời với 5GB dung lượng lưu trữ và các tính năng chia sẻ cơ bản.</p>
+                            <p data-i18n="landing.faq.q1.answer">Có! Chúng tôi cung cấp gói Cơ bản miễn phí trọn đời với 5GB dung lượng lưu trữ và các tính năng chia sẻ cơ bản.</p>
                         </div>
                     </div>
                     <div class="faq-item glass-card">
                         <button class="faq-question">
-                            BeamShare Live hoạt động như thế nào?
+                            <span data-i18n="landing.faq.q2.question">BeamShare Live hoạt động như thế nào?</span>
                             <i class="fa-solid fa-chevron-down"></i>
                         </button>
                         <div class="faq-answer">
-                            <p>BeamShare Live giúp bạn kết nối và chia sẻ file trực tiếp giữa các thiết bị một cách nhanh chóng và thuận tiện nhất.</p>
+                            <p data-i18n="landing.faq.q2.answer">BeamShare Live giúp bạn kết nối và chia sẻ file trực tiếp giữa các thiết bị một cách nhanh chóng và thuận tiện nhất.</p>
                         </div>
                     </div>
                 </div>
@@ -334,26 +351,26 @@
                         <img src="/public/img/favicon.png" alt="BeamShare Logo" class="brand-logo-img">
                         <span class="brand-name">BeamShare</span>
                     </a>
-                    <p>Giải pháp lưu trữ và chia sẻ file hiện đại, nhanh chóng.</p>
+                    <p data-i18n="landing.footer.description">Giải pháp lưu trữ và chia sẻ file hiện đại, nhanh chóng.</p>
                 </div>
                 <div class="footer-links">
-                    <h4>Sản phẩm</h4>
+                    <h4 data-i18n="landing.footer.product">Sản phẩm</h4>
                     <ul>
-                        <li><a href="#features">Tính năng</a></li>
-                        <li><a href="#pricing">Bảng giá</a></li>
+                        <li><a href="#features" data-i18n="landing.nav.features">Tính năng</a></li>
+                        <li><a href="#pricing" data-i18n="landing.nav.pricing">Bảng giá</a></li>
                         <li><a href="/beamshare">BeamShare Live</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
-                    <h4>Hỗ trợ</h4>
+                    <h4 data-i18n="landing.footer.support">Hỗ trợ</h4>
                     <ul>
                         <li><a href="#faq">FAQ</a></li>
-                        <li><a href="mailto:webmaster@quydang.name.vn">Liên hệ</a></li>
-                        <li><a href="#">Điều khoản</a></li>
+                        <li><a href="mailto:webmaster@quydang.name.vn" data-i18n="landing.footer.contact">Liên hệ</a></li>
+                        <li><a href="#" data-i18n="landing.footer.terms">Điều khoản</a></li>
                     </ul>
                 </div>
                 <div class="footer-social">
-                    <h4>Kết nối</h4>
+                    <h4 data-i18n="landing.footer.connect">Kết nối</h4>
                     <div class="social-icons">
                         <a href="https://github.com/quydang04/beamshare"><i class="fa-brands fa-github"></i></a>
                     </div>
@@ -365,6 +382,7 @@
         </div>
     </footer>
 
+    <script src="/public/pages/sso/js/auth-translate.js"></script>
     <script src="/assets/landing/js/main.js"></script>
 </body>
 </html>

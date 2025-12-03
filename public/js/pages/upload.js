@@ -1,4 +1,16 @@
 // Simple Upload Page JavaScript - Working Version
+(function() {
+'use strict';
+
+// Translation helper function
+const t = (key, fallback = '') => {
+    const lang = window.LanguageManager;
+    if (lang && typeof lang.translate === 'function') {
+        return lang.translate(key) || fallback;
+    }
+    return fallback;
+};
+
 window.initUpload = function() {
     console.log('=== INITIALIZING UPLOAD PAGE ===');
     
@@ -307,14 +319,14 @@ async function handleFiles(fileList, options = {}) {
     console.log('Handling files:', fileList.length);
 
     if (isUploading) {
-        showMessage('Hệ thống đang tải lên, vui lòng đợi hoàn tất trước khi thử lại.', 'warning');
+        showMessage(t('pages.upload.status.inProgress', 'Hệ thống đang tải lên, vui lòng đợi hoàn tất trước khi thử lại.'), 'warning');
         return;
     }
 
     const files = Array.from(fileList || []);
 
     if (!files.length) {
-        showMessage('Không có file nào được chọn!', 'error');
+        showMessage(t('pages.upload.status.noFiles', 'Không có file nào được chọn!'), 'error');
         return;
     }
 
@@ -391,22 +403,22 @@ async function uploadFilesSequential(files) {
             const originalFile = files[index];
             let currentFile = originalFile;
 
-            setProgressHeaderText(`Đang xử lý "${originalFile.name}" (${index + 1}/${files.length})`);
+            setProgressHeaderText(t('pages.upload.status.processing', 'Đang xử lý "{{name}}" ({{current}}/{{total}})').replace('{{name}}', originalFile.name).replace('{{current}}', index + 1).replace('{{total}}', files.length));
 
-            updateProgressItem(index, { percent: 5, text: 'Đang kiểm tra...', state: 'active' });
+            updateProgressItem(index, { percent: 5, text: t('pages.upload.status.checking', 'Đang kiểm tra...'), state: 'active' });
 
             let preparation;
             try {
                 preparation = await prepareFileForUpload(currentFile, index);
             } catch (prepError) {
                 console.error('Preparation error:', prepError);
-                markProgressError(index, prepError.message || 'Lỗi kiểm tra');
-                showMessage(prepError.message || `Lỗi khi kiểm tra tệp "${originalFile.name}"`, 'error');
+                markProgressError(index, prepError.message || t('pages.upload.status.checkError', 'Lỗi kiểm tra'));
+                showMessage(prepError.message || t('pages.upload.status.checkFileError', 'Lỗi khi kiểm tra tệp "{{name}}"').replace('{{name}}', originalFile.name), 'error');
                 continue;
             }
 
             if (!preparation) {
-                markProgressSkipped(index, 'Đã bỏ qua');
+                markProgressSkipped(index, t('pages.upload.status.skipped', 'Đã bỏ qua'));
                 skippedUploads.push(originalFile.name);
                 continue;
             }
@@ -414,7 +426,7 @@ async function uploadFilesSequential(files) {
             currentFile = preparation.file;
             const uploadMeta = preparation.meta || {};
 
-            updateProgressItem(index, { percent: 35, text: 'Đang tải lên...', state: 'active' });
+            updateProgressItem(index, { percent: 35, text: t('pages.upload.status.uploading', 'Đang tải lên...'), state: 'active' });
 
             try {
                 const result = await uploadSingleFile(currentFile, uploadMeta);
@@ -422,8 +434,8 @@ async function uploadFilesSequential(files) {
                 successfulUploads.push(result.file || { displayName: uploadMeta.customName || currentFile.name });
             } catch (uploadError) {
                 console.error('Upload error:', uploadError);
-                markProgressError(index, uploadError.message || 'Lỗi tải lên');
-                showMessage(uploadError.message || `Không thể tải lên "${currentFile.name}"`, 'error');
+                markProgressError(index, uploadError.message || t('pages.upload.status.uploadError', 'Lỗi tải lên'));
+                showMessage(uploadError.message || t('pages.upload.status.uploadFileError', 'Không thể tải lên "{{name}}"').replace('{{name}}', currentFile.name), 'error');
             }
         }
     } finally {
@@ -431,10 +443,10 @@ async function uploadFilesSequential(files) {
     }
 
     if (successfulUploads.length) {
-        setProgressHeaderText('Tải lên hoàn tất');
-        showMessage(`Đã tải lên thành công ${successfulUploads.length} tệp.`, 'success');
+        setProgressHeaderText(t('pages.upload.status.complete', 'Tải lên hoàn tất'));
+        showMessage(t('pages.upload.status.successCount', 'Đã tải lên thành công {{count}} tệp.').replace('{{count}}', successfulUploads.length), 'success');
         setTimeout(() => {
-            showMessage('Chuyển đến trang quản lý file...', 'info');
+            showMessage(t('pages.upload.status.redirecting', 'Chuyển đến trang quản lý file...'), 'info');
             window.loadPage('myfiles');
         }, 1500);
     } else if (!skippedUploads.length) {
@@ -514,7 +526,7 @@ async function uploadSingleFile(file, meta = {}) {
     try {
         result = await response.json();
     } catch (error) {
-        throw new Error('Không thể đọc phản hồi từ máy chủ.');
+        throw new Error(t('pages.upload.status.serverError', 'Không thể đọc phản hồi từ máy chủ.'));
     }
 
     if (!response.ok || !result.success) {
@@ -539,7 +551,7 @@ async function requestFileConflict(filename, fileSize, fileType) {
         });
 
         if (!response.ok) {
-            throw new Error('Không thể kiểm tra tên tệp, vui lòng thử lại.');
+            throw new Error(t('pages.upload.status.checkConflictError', 'Không thể kiểm tra tên tệp, vui lòng thử lại.'));
         }
 
         return await response.json();
@@ -584,11 +596,11 @@ function markProgressSuccess(index) {
 }
 
 function markProgressError(index, message) {
-    updateProgressItem(index, { percent: 0, text: message || 'Lỗi', state: 'error' });
+    updateProgressItem(index, { percent: 0, text: message || t('pages.upload.status.error', 'Lỗi'), state: 'error' });
 }
 
 function markProgressSkipped(index, message) {
-    updateProgressItem(index, { percent: 0, text: message || 'Đã bỏ qua', state: 'skipped' });
+    updateProgressItem(index, { percent: 0, text: message || t('pages.upload.status.skipped', 'Đã bỏ qua'), state: 'skipped' });
 }
 
 function updateProgressFileName(index, name, options = {}) {
@@ -741,22 +753,22 @@ async function showConflictResolutionModal(conflictInfo, incomingFile) {
         container.appendChild(renameSection);
 
         const modal = modalSystem.createModal({
-            title: 'Đã phát hiện tệp trùng tên',
+            title: t('pages.upload.conflict.title', 'Đã phát hiện tệp trùng tên'),
             content: container,
             autoFocus: '#conflict-rename-input',
             buttons: [
                 {
-                    text: 'Bỏ qua tệp này',
+                    text: t('pages.upload.conflict.skip', 'Bỏ qua tệp này'),
                     className: 'btn-secondary',
                     onclick: () => finalize({ action: 'skip' })
                 },
                 {
-                    text: 'Thay thế tệp hiện có',
+                    text: t('pages.upload.conflict.replace', 'Thay thế tệp hiện có'),
                     className: 'btn-danger',
                     onclick: () => finalize({ action: 'replace' })
                 },
                 {
-                    text: 'Đổi tên và tải lên',
+                    text: t('pages.upload.conflict.rename', 'Đổi tên và tải lên'),
                     className: 'btn-primary',
                     onclick: async () => {
                         const proposedName = ensureExtension(renameInput.value.trim(), extension);
@@ -776,14 +788,14 @@ async function showConflictResolutionModal(conflictInfo, incomingFile) {
                             modalSystem.setProcessing(true);
                             const check = await requestFileConflict(proposedName, incomingFile.size, incomingFile.type);
                             if (check && check.hasConflict) {
-                                showRenameError('Tên này vẫn đang được sử dụng. Vui lòng chọn tên khác.');
+                                showRenameError(t('pages.upload.conflict.nameInUse', 'Tên này vẫn đang được sử dụng. Vui lòng chọn tên khác.'));
                                 modalSystem.setProcessing(false);
                                 return;
                             }
                             finalize({ action: 'rename', newName: proposedName });
                         } catch (error) {
                             console.error('Rename validation failed:', error);
-                            showRenameError(error.message || 'Không thể kiểm tra tên tệp.');
+                            showRenameError(error.message || t('pages.upload.status.checkConflictError', 'Không thể kiểm tra tên tệp.'));
                             modalSystem.setProcessing(false);
                         }
                     }
@@ -977,3 +989,5 @@ window.testUpload = function() {
 };
 
 console.log('Upload script loaded successfully');
+
+})(); // End of IIFE

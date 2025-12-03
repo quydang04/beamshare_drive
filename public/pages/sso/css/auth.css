@@ -356,6 +356,126 @@ body {
     border-color: rgba(29, 78, 216, 0.3);
 }
 
+/* Language toggle dropdown */
+.lang-toggle-wrapper {
+    position: fixed;
+    top: 20px;
+    right: 120px;
+    z-index: 100;
+}
+
+.lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--auth-border);
+    background: var(--auth-card-bg);
+    color: var(--auth-text);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.lang-toggle:hover {
+    border-color: var(--auth-primary);
+    background: var(--auth-primary-soft);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.lang-toggle i:first-child {
+    font-size: 14px;
+    color: var(--auth-primary);
+}
+
+.lang-toggle__label {
+    font-weight: 600;
+}
+
+.lang-toggle__caret {
+    font-size: 10px;
+    opacity: 0.7;
+    transition: transform 0.3s ease;
+}
+
+.lang-toggle-wrapper.is-open .lang-toggle__caret {
+    transform: rotate(180deg);
+}
+
+.lang-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: #ffffff;
+    border: 1px solid var(--auth-border);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.15);
+    padding: 6px;
+    min-width: 160px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lang-toggle-wrapper.is-open .lang-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.lang-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    color: #1f2937;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.lang-option span:first-child {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.lang-option:hover {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.lang-option.is-active {
+    background: var(--auth-gradient);
+    color: white;
+    border-color: transparent;
+}
+
+[data-theme="dark"] .lang-menu {
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(20px);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .lang-option {
+    color: #e5e7eb;
+}
+
 /* Theme toggle dropdown */
 .theme-toggle-wrapper {
     position: fixed;
@@ -531,4 +651,63 @@ body {
 
 .back-home i {
     font-size: 12px;
+}
+
+/* Verification required and token expired styles */
+.verification-required,
+.token-expired {
+    text-align: center;
+}
+
+.verification-required p,
+.token-expired p {
+    margin: 0 0 8px 0;
+    line-height: 1.5;
+}
+
+.verification-required p:last-of-type,
+.token-expired p:last-of-type {
+    margin-bottom: 12px;
+}
+
+.resend-hint {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.btn-resend {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    background: var(--auth-gradient);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    margin-top: 4px;
+}
+
+.btn-resend:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.btn-resend:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Dark mode for verification/token expired */
+[data-theme="dark"] .btn-resend {
+    box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+}
+
+[data-theme="dark"] .btn-resend:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(167, 139, 250, 0.4);
 }

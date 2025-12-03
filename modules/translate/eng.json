@@ -33,13 +33,76 @@
     "logout": "Sign out"
   },
   "theme": {
-    "light": "Light theme",
-    "dark": "Dark theme",
-    "system": "System default"
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
   },
   "common": {
     "userFallbackName": "User",
-    "userFallbackInitials": "U"
+    "userFallbackInitials": "U",
+    "backHome": "Home",
+    "passwordToggle": {
+      "show": "Show",
+      "hide": "Hide"
+    },
+    "unknownValue": "Unknown",
+    "unknownName": "Unknown name",
+    "unknown": "Unknown",
+    "other": "Other",
+    "beamshareFile": "BeamShare File",
+    "sharedFile": "Shared file",
+    "inFuture": "In the future",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} minutes ago",
+    "hoursAgo": "{{count}} hours ago",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago",
+    "notUpdated": "Not updated",
+    "updated": "Updated {{time}}",
+    "updateNow": "Update now",
+    "loading": "Loading...",
+    "processing": "Processing...",
+    "genericError": "An error occurred. Please try again later.",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "saveChanges": "Save changes",
+    "saving": "Saving...",
+    "updating": "Updating...",
+    "contactSupport": "Contact Support",
+    "confirmDefault": "Are you sure?"
+  },
+  "modal": {
+    "profile": {
+      "title": "Edit Profile",
+      "nameLabel": "Display name",
+      "nameError": "Please enter a display name.",
+      "nameMinError": "Display name must be at least 2 characters.",
+      "updateError": "Unable to update user information.",
+      "updateSuccess": "Display name updated."
+    },
+    "password": {
+      "title": "Change Password",
+      "currentLabel": "Current password",
+      "newLabel": "New password",
+      "confirmLabel": "Confirm new password",
+      "newHint": "New password must be at least 6 characters.",
+      "submit": "Change Password",
+      "allFieldsRequired": "Please fill in all fields.",
+      "minLengthError": "New password must be at least 6 characters.",
+      "mismatchError": "New password and confirmation do not match.",
+      "sameAsCurrentError": "New password must be different from current password.",
+      "updateError": "Unable to change password.",
+      "updateSuccess": "Password changed successfully."
+    },
+    "paymentFailed": {
+      "title": "Payment Failed",
+      "defaultMessage": "The transaction was cancelled or unsuccessful.",
+      "statusLabel": "Status",
+      "statusValue": "Failed",
+      "planLabel": "Subscription plan",
+      "timeLabel": "Time",
+      "hint": "If you were charged but the transaction failed, please contact support."
+    }
   },
   "auth": {
     "logout": {
@@ -49,6 +112,193 @@
       "confirmMessage": "Are you sure you want to sign out of BeamShare?",
       "confirmYes": "Sign out",
       "confirmNo": "Cancel"
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to manage and share your files.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign in",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Sign up now"
+    },
+    "register": {
+      "title": "Create new account",
+      "subtitle": "Sign up quickly to start storing and sharing.",
+      "nameLabel": "Full name",
+      "namePlaceholder": "John Doe",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 6 characters",
+      "confirmLabel": "Confirm password",
+      "confirmPlaceholder": "Re-enter password",
+      "submit": "Sign up",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Sign in"
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "subtitle": "Enter your email to receive password reset instructions.",
+      "emailLabel": "Registered email",
+      "emailPlaceholder": "name@email.com",
+      "submit": "Send instructions",
+      "backToLogin": "Back to login"
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "subtitle": "Enter a new password for your BeamShare account.",
+      "passwordLabel": "New password",
+      "passwordPlaceholder": "At least 6 characters",
+      "confirmLabel": "Confirm new password",
+      "confirmPlaceholder": "Re-enter password",
+      "submit": "Update password",
+      "backToLogin": "Back to login"
+    },
+    "messages": {
+      "processing": "Processing...",
+      "checkInfo": "Please check your information.",
+      "loginSuccess": "Login successful. Redirecting...",
+      "registerSuccess": "Registration successful. Redirecting...",
+      "emailRequired": "Email is required.",
+      "emailPasswordRequired": "Email and password are required.",
+      "passwordMismatch": "Passwords do not match.",
+      "invalidCredentials": "Invalid credentials, please check again.",
+      "serverError": "Cannot connect to server. Please try again.",
+      "connectionError": "Could not connect to server. Please try again.",
+      "sendingInstructions": "Sending instructions, please wait...",
+      "updatingPassword": "Updating password...",
+      "invalidResetLink": "Password reset link is invalid or has expired.",
+      "passwordMinLength": "New password must be at least 6 characters.",
+      "resetPasswordError": "Could not reset password.",
+      "resetPasswordSuccess": "Password reset successful. Redirecting...",
+      "resetSuccess": "Password reset successful. Redirecting...",
+      "emailNotVerified": "Account not verified!",
+      "accountNotVerifiedTitle": "Account not verified!",
+      "checkEmailVerify": "Please check your email",
+      "clickLinkToActivate": "and click the verification link to activate your account.",
+      "checkEmailVerification": "Please check your email inbox and click the verification link to activate your account.",
+      "noEmailReceived": "Didn't receive the email? Check spam folder or",
+      "resendHint": "Didn't receive the email? Check your spam folder or",
+      "resendVerification": "Resend verification email",
+      "resendVerificationBtn": "Resend verification email",
+      "resendVerificationError": "Could not resend verification email.",
+      "verificationEmailSent": "Verification email has been resent. Please check your inbox.",
+      "resetPasswordAction": "password reset",
+      "verifyEmailAction": "email verification",
+      "resendResetBtn": "Resend password reset link",
+      "resendResetError": "Could not resend password reset email.",
+      "resetEmailSent": "Password reset email has been resent. Please check your inbox.",
+      "linkExpiredTitle": "Link for",
+      "hasExpired": "has expired!",
+      "linkExpired": "has expired!",
+      "linkExpiredDesc": "The link is only valid for 15 minutes. Please request a new email.",
+      "resendPasswordReset": "Resend password reset link",
+      "sending": "Sending...",
+      "resending": "Sending...",
+      "resendAfter": "Resend in",
+      "resendSuccess": "Email has been resent. Please check your inbox.",
+      "resendError": "Cannot resend email. Please try again.",
+      "forgotPasswordSuccess": "If the email exists, password reset instructions will be sent."
+    }
+  },
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "beamshareLive": "BeamShare Live",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "login": "Sign in",
+      "register": "Sign up now"
+    },
+    "hero": {
+      "badge": "🚀 Network Programming Project",
+      "title": "Smart storage",
+      "titleHighlight": "Instant sharing",
+      "description": "Experience superior transfer speeds with WebRTC technology. Secure storage, easy management, and unlimited sharing.",
+      "ctaPrimary": "Start for free",
+      "ctaSecondary": "Try BeamShare Live",
+      "stats": {
+        "storage": "5GB+",
+        "storageLabel": "Free storage",
+        "speed": "Fast",
+        "speedLabel": "Instant sharing",
+        "easy": "Easy",
+        "easyLabel": "Centralized management"
+      }
+    },
+    "features": {
+      "title": "Outstanding features",
+      "subtitle": "Everything you need to manage your data efficiently",
+      "cloud": {
+        "title": "Cloud Storage",
+        "description": "Secure storage space, accessible anytime, anywhere. Automatically sync your data."
+      },
+      "share": {
+        "title": "Flexible Sharing",
+        "description": "Create public or private sharing links. Easily control file access permissions."
+      },
+      "recycle": {
+        "title": "Smart Recycle Bin",
+        "description": "Restore deleted files within 30 days. Never worry about losing important data by mistake."
+      }
+    },
+    "beamshareLive": {
+      "badge": "✨ Exclusive feature",
+      "title": "BeamShare Live",
+      "description": "Share files directly between devices quickly. Experience the convenience of data transfer.",
+      "feature1": "High speed",
+      "feature2": "Multi-platform support",
+      "feature3": "Simple & Easy to use",
+      "cta": "Try it now"
+    },
+    "pricing": {
+      "title": "Simple pricing",
+      "subtitle": "Choose the plan that fits your needs",
+      "basic": {
+        "name": "Basic",
+        "price": "Free",
+        "period": "/month",
+        "description": "For personal users",
+        "feature1": "5GB Storage",
+        "feature2": "BeamShare: Max 200MB/file",
+        "feature3": "Unlimited file sends",
+        "cta": "Sign up free"
+      },
+      "premium": {
+        "badge": "Recommended",
+        "name": "Premium",
+        "price": "50,000₫",
+        "period": "/month",
+        "description": "For professional users",
+        "feature1": "15GB Storage",
+        "feature2": "BeamShare: Unlimited size",
+        "feature3": "Priority support",
+        "cta": "Upgrade now"
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "q1": {
+        "question": "Is BeamShare Drive free?",
+        "answer": "Yes! We offer a lifetime free Basic plan with 5GB storage and basic sharing features."
+      },
+      "q2": {
+        "question": "How does BeamShare Live work?",
+        "answer": "BeamShare Live helps you connect and share files directly between devices quickly and conveniently."
+      }
+    },
+    "footer": {
+      "description": "Modern, fast file storage and sharing solution.",
+      "product": "Product",
+      "support": "Support",
+      "contact": "Contact",
+      "connect": "Connect",
+      "terms": "Terms"
     }
   },
   "pages": {
@@ -110,6 +360,37 @@
         "averageSize": "Average file size",
         "maxSize": "Largest file",
         "minSize": "Smallest file"
+      },
+      "greeting": "Hello, {{name}}",
+      "noData": "No data to display",
+      "noFiles": "No files have been uploaded yet",
+      "noFilesUploaded": "No files have been uploaded yet",
+      "noDataAnalytics": "No data available yet",
+      "loadError": "Could not load data.",
+      "recentError": "Could not load recent files.",
+      "loadErrorRecent": "Could not load recent files.",
+      "analyticsError": "Could not load analytics data.",
+      "loadErrorAnalytics": "Could not load analytics data.",
+      "quotaLabel": "{{plan}} plan capacity: {{limit}}",
+      "usedLabel": "Using {{used}} / {{limit}}",
+      "typeCount": "{{count}} types",
+      "typeLabel": "{{count}} types",
+      "filesCount": "files",
+      "notUpdated": "Not updated",
+      "updatedAt": "Updated {{time}}",
+      "imageFiles": "image files",
+      "documentFiles": "document files",
+      "videoFiles": "video files",
+      "otherFiles": "other files",
+      "refreshing": "Refreshing dashboard data...",
+      "refreshed": "Dashboard data updated.",
+      "refreshError": "Could not load dashboard data:",
+      "refreshErrorToast": "Error loading dashboard data.",
+      "fileTypes": {
+        "images": "{{count}} image files",
+        "documents": "{{count}} document files",
+        "videos": "{{count}} video files",
+        "others": "{{count}} other files"
       }
     },
     "myfiles": {
@@ -151,6 +432,89 @@
         "title": "No files yet",
         "description": "Your library is empty. Upload your first file to get started.",
         "cta": "Upload files"
+      },
+      "share": {
+        "error": "Unable to identify file for sharing.",
+        "privateWarning": "File is private or has no share link.",
+        "popupBlocked": "Browser blocked the share window. Please allow pop-ups.",
+        "opening": "Opening share page for: {{name}}",
+        "linkPlaceholder": "Share link",
+        "privatePlaceholder": "File is private",
+        "publicHint": "Share this link with anyone you want to grant access. Create a new link to revoke the old one.",
+        "privateHint": "File is private. Enable public access to create a share link.",
+        "publicStatus": "Public",
+        "privateStatus": "Private",
+        "manageTitle": "Public - manage sharing",
+        "manageLabel": "Manage sharing",
+        "shareTitle": "Share file",
+        "shareLabel": "Share file",
+        "updateError": "Unable to update share permissions.",
+        "invalidOption": "Invalid share option.",
+        "missingInfo": "Missing file information.",
+        "statePublic": "public",
+        "statePrivate": "private",
+        "linkCreated": "(share link created)"
+      },
+      "beamshare": {
+        "error": "Unable to identify file for BeamShare.",
+        "popupBlocked": "Browser blocked the BeamShare window. Please allow pop-ups.",
+        "opening": "Opening BeamShare Live to send {{name}}. Select a recipient from the list.",
+        "selectedFile": "selected file"
+      },
+      "refresh": {
+        "loading": "Refreshing file list...",
+        "success": "File list updated."
+      },
+      "dragDrop": {
+        "filesDropped": "Dropped {{count}} files. Redirecting to upload page..."
+      },
+      "viewMode": {
+        "grid": "Showing grid view",
+        "list": "Showing list view"
+      },
+      "shareToggle": {
+        "success": "Changed \"{{name}}\" to {{state}}{{extra}}"
+      },
+      "fileTypes": {
+        "default": "File",
+        "pdf": "PDF Document",
+        "wordDoc": "Word Document",
+        "excel": "Excel Spreadsheet",
+        "powerpoint": "PowerPoint Presentation",
+        "openDocument": "OpenDocument Text",
+        "openSpreadsheet": "OpenDocument Spreadsheet",
+        "openPresentation": "OpenDocument Presentation",
+        "rtf": "Rich Text File",
+        "text": "Text File",
+        "csv": "CSV File",
+        "imageJpeg": "JPEG Image",
+        "imagePng": "PNG Image",
+        "imageGif": "GIF Image",
+        "imageWebp": "WebP Image",
+        "imageSvg": "SVG Image",
+        "imageBmp": "BMP Image",
+        "imageTiff": "TIFF Image",
+        "videoMp4": "MP4 Video",
+        "videoWebm": "WebM Video",
+        "videoMov": "MOV Video",
+        "videoAvi": "AVI Video",
+        "videoMkv": "MKV Video",
+        "audioMp3": "MP3 Audio",
+        "audioWav": "WAV Audio",
+        "audioOgg": "OGG Audio",
+        "audioFlac": "FLAC Audio",
+        "archiveZip": "ZIP Archive",
+        "archiveRar": "RAR Archive",
+        "archive7z": "7z Archive",
+        "archiveTar": "TAR Archive",
+        "json": "JSON File",
+        "html": "HTML File",
+        "script": "Script File",
+        "iso": "ISO Disc Image",
+        "genericImage": "Image",
+        "genericVideo": "Video",
+        "genericAudio": "Audio File",
+        "genericArchive": "Archive"
       }
     },
     "upload": {
@@ -164,7 +528,46 @@
       "info": {
         "maxFiles": "Unlimited files"
       },
-      "selectButton": "Select Files"
+      "selectButton": "Select Files",
+      "status": {
+        "insufficientStorage": "⚠️ Insufficient storage space",
+        "storageFull": "📦 Storage almost full",
+        "inProgress": "Upload in progress, please wait for completion before retrying.",
+        "noFiles": "No files selected!",
+        "checking": "Checking...",
+        "checkError": "Check error",
+        "skipped": "Skipped",
+        "uploading": "Uploading...",
+        "uploadError": "Upload error",
+        "complete": "Upload complete",
+        "noFilesUploaded": "No files were uploaded",
+        "noFilesSuccess": "No files were successfully uploaded.",
+        "processComplete": "Upload process finished",
+        "someSkipped": "Some files were skipped as per your choice.",
+        "redirecting": "Redirecting to file manager...",
+        "replacing": "Will replace existing file",
+        "renameReady": "New name ready",
+        "serverError": "Unable to read server response.",
+        "checkConflictError": "Unable to check file name, please try again.",
+        "checkFileError": "Error checking file \"{{name}}\"",
+        "uploadFileError": "Unable to upload \"{{name}}\"",
+        "successCount": "Successfully uploaded {{count}} files.",
+        "processing": "Processing \"{{name}}\" ({{current}}/{{total}})",
+        "done": "Done",
+        "error": "Error"
+      },
+      "conflict": {
+        "title": "Duplicate file detected",
+        "prompt": "Enter a new name for the file (or leave empty to skip):",
+        "unknownSize": "Unknown",
+        "recommendation": "How would you like to handle the duplicate file?",
+        "renamePlaceholder": "Enter new name...",
+        "skip": "Skip this file",
+        "replace": "Replace existing file",
+        "rename": "Rename and upload",
+        "renameSameError": "New name must be different from the existing one.",
+        "nameInUse": "This name is already in use. Please choose a different name."
+      }
     },
     "recycle": {
       "title": "Recycle Bin",
@@ -183,6 +586,7 @@
         "cancel": "Cancel selection",
         "count": "{{count}} selected",
         "selectAll": "Select all",
+        "deselectAll": "Deselect all",
         "restore": "Restore",
         "delete": "Delete forever"
       },
@@ -197,7 +601,46 @@
           "remaining": "Time remaining",
           "actions": "Actions"
         }
-      }
+      },
+      "status": {
+        "unknown": "Unknown",
+        "expiring": "Expiring soon",
+        "summaryItems": "{{count}} items",
+        "loadError": "Unable to load recycle bin",
+        "loadErrorToast": "Could not load recycle bin. Please try again.",
+        "operationError": "Operation failed",
+        "operationFailed": "Could not complete the operation.",
+        "deleting": "Deleting",
+        "restoring": "Restoring"
+      },
+      "bulkRestore": {
+        "title": "Bulk Restore",
+        "confirm": "Restore",
+        "messageSingle": "Restore selected item to My Files?",
+        "messageMultiple": "Restore {{count}} selected items to My Files?"
+      },
+      "bulkDelete": {
+        "title": "Permanently Delete",
+        "confirm": "Delete forever",
+        "messageSingle": "Permanently delete selected item? This cannot be undone.",
+        "messageMultiple": "Permanently delete {{count}} selected items? This cannot be undone."
+      },
+      "singleRestore": {
+        "title": "Restore File",
+        "confirm": "Restore",
+        "success": "Restored \"{{name}}\".",
+        "error": "Unable to restore file",
+        "errorToast": "Could not restore file."
+      },
+      "singleDelete": {
+        "title": "Delete Forever",
+        "confirm": "Delete forever",
+        "message": "Permanently delete \"{{name}}\"? This cannot be undone.",
+        "success": "Permanently deleted \"{{name}}\".",
+        "error": "Unable to permanently delete file",
+        "errorToast": "Could not permanently delete file."
+      },
+      "confirmCancel": "Cancel"
     },
     "subscription": {
       "title": "BeamShare Subscription",
@@ -494,6 +937,260 @@
         "confirm": "Confirm new password",
         "cancel": "Cancel",
         "submit": "Change password"
+      },
+      "validation": {
+        "allRequired": "Please fill in all fields.",
+        "minLength": "New password must be at least 6 characters.",
+        "mismatch": "New password and confirmation do not match.",
+        "sameAsCurrent": "New password must be different from current password.",
+        "defaultError": "Could not change password."
+      },
+      "loading": "Updating...",
+      "success": "Password changed successfully.",
+      "errorLog": "Password change failed:"
+    },
+    "changeProfile": {
+      "title": "Account details",
+      "subtitle": "Update your display name to keep greetings and avatars in sync across pages.",
+      "back": "Back to Dashboard",
+      "section": {
+        "title": "Personal information",
+        "description": "Make sure your display name represents you correctly."
+      },
+      "summary": {
+        "email": "Sign-in email",
+        "currentName": "Current display name"
+      },
+      "form": {
+        "label": "New display name",
+        "placeholder": "Enter a display name",
+        "hint": "Used for avatar initials and greetings across the site.",
+        "cancel": "Cancel",
+        "submit": "Save changes"
+      },
+      "validation": {
+        "empty": "Please enter a display name.",
+        "minLength": "Display name must be at least 2 characters.",
+        "maxLength": "Display name must not exceed 80 characters.",
+        "loadError": "Could not load user profile.",
+        "loadErrorLog": "Could not load user profile:",
+        "defaultError": "Could not update profile.",
+        "updateError": "Profile update failed:"
+      },
+      "loading": "Saving...",
+      "success": "Display name updated."
+    },
+    "thankYou": {
+      "title": {
+        "success": "BeamShare Drive | Thank you!",
+        "failed": "BeamShare Drive | Payment Update"
+      },
+      "badge": {
+        "success": "Payment successful",
+        "failed": "Payment update"
+      },
+      "message": {
+        "success": "Your transaction has been confirmed. Enjoy your BeamShare experience.",
+        "failed": "We could not confirm your transaction. Please check your payment status or contact support."
+      },
+      "plans": {
+        "premium": {
+          "label": "BeamShare Premium",
+          "description": "Unlimited BeamShare Live, expanded storage, and priority support."
+        },
+        "basic": {
+          "label": "BeamShare Basic",
+          "description": "Continue enjoying BeamShare with a 200MB per file limit."
+        },
+        "default": {
+          "label": "BeamShare",
+          "description": "Experience instant file sharing between your devices."
+        }
+      }
+    },
+    "share": {
+      "errorInvalidLink": "Invalid share link.",
+      "errorLoadFile": "Could not load file information.",
+      "errorConnection": "Could not connect to server. Please try again later.",
+      "statusActive": "Share link is active.",
+      "description": "Link from BeamShare Drive",
+      "updatedAt": "Updated {{date}}",
+      "owner": "Owner: {{name}}"
+    },
+    "logout": {
+      "inProgress": "Signing out...",
+      "errorLog": "Sign out failed:",
+      "errorToast": "Could not sign out. Please try again."
+    },
+    "preview": {
+      "disclaimer": "Preview may differ from the original file. Download to view accurately.",
+      "imagePreviewAlt": "Image preview",
+      "audioTrack": "Audio track",
+      "unsupportedGeneric": "Unable to create preview. Please download to view details.",
+      "unsupportedInit": "Unable to initialise preview. Please download to view details.",
+      "videoLoadError": "Could not load Video.js to play this video. Please download to view.",
+      "videoInitError": "Could not initialise video player. Please download to view.",
+      "pdfLoadError": "Could not load PDF preview library. Please download to view.",
+      "pdfLoading": "Loading PDF preview…",
+      "pdfDisplayError": "Could not display PDF preview. Please download to view accurately.",
+      "wordLoadError": "Could not load Word preview library. Please download to view.",
+      "wordLoading": "Loading document content…",
+      "wordFetchError": "Could not load Word file",
+      "wordNoContent": "No content to display.",
+      "wordDisplayError": "Could not display document content. Please download to view details.",
+      "excelLoadError": "Could not load Excel preview library. Please download to view.",
+      "excelLoading": "Loading spreadsheet data…",
+      "excelFetchError": "Could not load Excel file",
+      "excelNoData": "No spreadsheet data found",
+      "excelEmptySheet": "Spreadsheet has no data",
+      "excelDisplayError": "Could not display spreadsheet data. Please download to view details.",
+      "docUnsupported": "Word (.doc) format is not supported for preview. Please download to view.",
+      "pptUnsupported": "PowerPoint files are not supported for preview. Please download to view.",
+      "genericUnsupported": "No preview available for this file type. Download to open with the appropriate application."
+    },
+    "fileTypes": {
+      "pdf": "PDF File",
+      "word": "Word Document",
+      "excel": "Excel Spreadsheet",
+      "powerpoint": "PowerPoint Presentation",
+      "text": "Text File",
+      "json": "JSON File",
+      "csv": "CSV File",
+      "imageJpeg": "JPEG Image",
+      "imagePng": "PNG Image",
+      "imageGif": "GIF Image",
+      "imageSvg": "SVG Image",
+      "videoMp4": "MP4 Video",
+      "videoMov": "MOV Video",
+      "videoAvi": "AVI Video",
+      "videoMkv": "MKV Video",
+      "audioMp3": "MP3 Audio",
+      "audioWav": "WAV Audio",
+      "audioFlac": "FLAC Audio",
+      "zipArchive": "ZIP Archive",
+      "rarArchive": "RAR Archive",
+      "archive7z": "7z Archive",
+      "image": "Image",
+      "video": "Video",
+      "audio": "Audio",
+      "presentation": "Presentation",
+      "spreadsheet": "Spreadsheet",
+      "document": "Document",
+      "compressed": "Compressed"
+    }
+  },
+  "backend": {
+    "auth": {
+      "emailRequired": "Email is required.",
+      "emailPasswordRequired": "Email and password are required.",
+      "passwordMinLength": "Password must be at least 6 characters.",
+      "emailAlreadyRegistered": "Email is already registered.",
+      "invalidCredentials": "Invalid credentials, please check again.",
+      "emailNotVerified": "Account not verified. Please check your email to verify.",
+      "loginSuccess": "Login successful.",
+      "logoutSuccess": "Logged out successfully.",
+      "forgotPasswordSuccess": "If the email exists, we have sent password reset instructions.",
+      "forgotPasswordError": "Could not send password reset email. Please try again later.",
+      "forgotPasswordProcessError": "Could not process password reset request.",
+      "tokenPasswordRequired": "Token and new password are required.",
+      "newPasswordMinLength": "New password must be at least 6 characters.",
+      "invalidResetLink": "Password reset link is invalid or has expired.",
+      "passwordSameAsCurrent": "New password must be different from current password.",
+      "resetPasswordSuccess": "Password reset successful.",
+      "resetPasswordError": "Could not reset password.",
+      "verificationSuccess": "Your email has been verified successfully.",
+      "verificationFailed": "Verification link is invalid or has expired.",
+      "resendVerificationSuccess": "Verification email has been resent.",
+      "resendVerificationError": "Could not resend verification email.",
+      "resendResetSuccess": "If the email exists, we have sent a new password reset link.",
+      "resendResetError": "Could not resend password reset email.",
+      "rateLimitExceeded": "Please wait before requesting another email.",
+      "userNotFound": "User not found.",
+      "alreadyVerified": "Email is already verified.",
+      "tokenRequired": "Token is required.",
+      "invalidToken": "Invalid token.",
+      "currentPasswordRequired": "Current password is required.",
+      "currentPasswordIncorrect": "Current password is incorrect.",
+      "passwordChangeSuccess": "Password changed successfully.",
+      "passwordChangeError": "Could not change password.",
+      "profileUpdateSuccess": "Profile updated successfully.",
+      "profileUpdateError": "Could not update profile.",
+      "goToLogin": "Go to login page",
+      "successTitle": "Verification Successful",
+      "failedTitle": "Verification Failed",
+      "linkExpiredHint": "The link is only valid for 15 minutes.",
+      "resendBtn": "Resend verification email",
+      "sending": "Sending...",
+      "resendError": "Could not resend email.",
+      "registerSuccess": "Registration successful. Please check your email to verify your account.",
+      "registerSuccessNoEmail": "Registration successful. Could not send verification email, please try again later.",
+      "registerSuccessSimple": "Registration successful.",
+      "registerError": "Could not register account.",
+      "verifyLinkExpired": "Verification link has expired. Please request a new verification email.",
+      "verifySuccess": "Your email has been verified successfully. You can now use BeamShare Drive.",
+      "verifyLinkInvalid": "Verification link is invalid.",
+      "loginError": "Could not sign in.",
+      "getProfileError": "Could not get user information.",
+      "displayNameEmpty": "Display name cannot be empty.",
+      "displayNameMinLength": "Display name must be at least 2 characters.",
+      "displayNameMaxLength": "Display name must not exceed 80 characters.",
+      "passwordBothRequired": "Please provide both current and new password.",
+      "accountExistsNotVerified": "If the account exists and is not verified, we have sent a new verification email.",
+      "accountAlreadyVerified": "Account is already verified.",
+      "waitSecondsBeforeResend": "Please wait {{seconds}} seconds before requesting a new email.",
+      "sendVerificationError": "Could not send verification email. Please try again later.",
+      "sendVerificationGenericError": "Could not send verification email.",
+      "sendResetLinkGeneric": "If the email exists, we have sent a new password reset link.",
+      "sendResetError": "Could not send password reset email. Please try again later.",
+      "sendResetGenericError": "Could not send password reset email.",
+      "tokenTypeRequired": "Token and token type are required.",
+      "tokenTypeInvalid": "Invalid token type.",
+      "linkInvalid": "Link is invalid.",
+      "linkExpired": "Link has expired. Please request a new email.",
+      "checkTokenError": "Could not check token.",
+      "resendSuccess": "Email has been resent. Please check your inbox.",
+      "connectionError": "Could not connect to server.",
+      "resendAfter": "Resend in"
+    },
+    "email": {
+      "greeting": "Hello {{name}}",
+      "greetingDefault": "Hello there",
+      "regards": "Best regards,\nBeamShare – a product of Quý Đặng Blog.",
+      "supportNote": "If you need assistance, please reply to this email or contact us when needed.",
+      "notAvailable": "Not available",
+      "notSpecified": "Not specified",
+      "passwordReset": {
+        "subject": "BeamShare Drive - Reset your password",
+        "received": "We received a request to reset the password for your BeamShare Drive account.",
+        "clickButton": "To create a new password, please click the button below:",
+        "buttonText": "Reset Password",
+        "cantClick": "If you can't click the button, copy and paste the following link into your browser:",
+        "expiry": "This link will expire in 15 minutes. If you did not request a password reset, please ignore this email."
+      },
+      "emailVerification": {
+        "subject": "BeamShare Drive - Verify your email",
+        "thankYou": "Thank you for signing up for BeamShare Drive. To complete your account setup, please verify your email.",
+        "buttonText": "Verify Email",
+        "cantClick": "If you can't click the button, copy and paste the following link into your browser:",
+        "expiry": "The verification link will expire in 15 minutes. If you did not create a BeamShare Drive account, please ignore this email."
+      },
+      "payment": {
+        "successSubject": "BeamShare Drive - Payment successful",
+        "failedSubject": "BeamShare Drive - Payment unsuccessful",
+        "statusSuccess": "successful",
+        "statusFailed": "unsuccessful",
+        "yourPayment": "Your payment was",
+        "thankYouUpgrade": "Thank you for upgrading to <strong>{{planTitle}}</strong> plan. Your account benefits have been updated accordingly.",
+        "sorryFailed": "Unfortunately, the payment for <strong>{{planTitle}}</strong> plan could not be completed.",
+        "thankYouUpgradeText": "Thank you for upgrading to {{planTitle}} plan. Your account has been updated.",
+        "sorryFailedText": "Unfortunately, the payment for {{planTitle}} plan could not be completed.",
+        "paymentInfo": "Payment Information",
+        "plan": "Plan",
+        "amount": "Amount",
+        "processedAt": "Processed at",
+        "transactionId": "Bank transaction ID",
+        "reference": "BeamShare reference",
+        "reason": "Reason"
       }
     }
   }

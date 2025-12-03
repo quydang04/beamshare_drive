@@ -3,6 +3,26 @@ let redirectTarget = DEFAULT_AUTH_REDIRECT;
 let hasRedirectParam = false;
 let redirectQuery = '';
 let loginUrlWithRedirect = '/auth/login';
+let resendCooldown = 0;
+let resendTimer = null;
+
+// Get translation from authTranslate if available
+function t(key, fallbackVi, fallbackEn) {
+    if (window.authTranslate && typeof window.authTranslate.t === 'function') {
+        const translated = window.authTranslate.t(key);
+        if (translated && translated !== key) {
+            return translated;
+        }
+    }
+    // Fallback based on current language
+    const lang = window.authTranslate?.getCurrentLang?.() || 'vi';
+    return lang === 'en' ? (fallbackEn || fallbackVi) : fallbackVi;
+}
+
+// Get current language for API calls
+function getCurrentLang() {
+    return window.authTranslate?.getCurrentLang?.() || 'vi';
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     // Check if user is already logged in and redirect to dashboard
@@ -49,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function handleSubmit(form, alertBox) {
     if (!form.checkValidity()) {
         form.reportValidity();
-        showAlert(alertBox, 'error', 'Vui lòng kiểm tra lại thông tin.');
+        showAlert(alertBox, 'error', t('auth.messages.checkInfo', 'Vui lòng kiểm tra lại thông tin.', 'Please check your information.'));
         return;
     }
 
@@ -72,7 +92,7 @@ async function handleSubmit(form, alertBox) {
 
     const endpoint = formType === 'register' ? '/api/auth/register' : '/api/auth/login';
 
-    showAlert(alertBox, 'info', 'Đang xử lý, vui lòng chờ...');
+    showAlert(alertBox, 'info', t('auth.messages.processing', 'Đang xử lý, vui lòng chờ...', 'Processing, please wait...'));
     setSubmitting(form, true);
 
     try {
@@ -82,18 +102,26 @@ async function handleSubmit(form, alertBox) {
                 'Content-Type': 'application/json'
             },
             credentials: 'include',
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ ...payload, lang: getCurrentLang() })
         });
 
         const data = await parseJsonSafely(response);
         if (!response.ok) {
             const isLoginForm = formType === 'login';
             const isAuthError = response.status === 401 || response.status === 400;
-            const fallbackLoginMessage = 'Thông tin đăng nhập không đúng, vui lòng kiểm tra lại';
+            const fallbackLoginMessage = t('auth.messages.invalidCredentials', 
+                'Thông tin đăng nhập không đúng, vui lòng kiểm tra lại', 
+                'Invalid credentials, please check again');
+
+            // Check if email is not verified
+            if (isLoginForm && response.status === 403 && data?.code === 'EMAIL_NOT_VERIFIED') {
+                showEmailVerificationRequired(alertBox, data?.email);
+                return;
+            }
 
             const message = isLoginForm && isAuthError
                 ? fallbackLoginMessage
-                : data?.error || 'Không thể hoàn tất yêu cầu.';
+                : data?.error || t('auth.messages.serverError', 'Không thể hoàn tất yêu cầu.', 'Could not complete request.');
 
             showAlert(alertBox, 'error', message);
             return;
@@ -112,7 +140,7 @@ async function handleSubmit(form, alertBox) {
         }
     } catch (error) {
         console.error('Auth request error:', error);
-        showAlert(alertBox, 'error', 'Không thể kết nối tới máy chủ. Vui lòng thử lại.');
+        showAlert(alertBox, 'error', t('auth.messages.serverError', 'Không thể kết nối tới máy chủ. Vui lòng thử lại.', 'Cannot connect to server. Please try again.'));
     } finally {
         setSubmitting(form, false);
     }
@@ -122,32 +150,35 @@ async function submitForgotPassword(form, alertBox) {
     const email = sanitizeInput(formData.get('email'));
 
     if (!email) {
-        showAlert(alertBox, 'error', 'Email là bắt buộc.');
+        showAlert(alertBox, 'error', t('auth.messages.emailRequired', 'Email là bắt buộc.', 'Email is required.'));
         return;
     }
 
-    showAlert(alertBox, 'info', 'Đang gửi hướng dẫn, vui lòng chờ...');
+    showAlert(alertBox, 'info', t('auth.messages.sendingInstructions', 'Đang gửi hướng dẫn, vui lòng chờ...', 'Sending instructions, please wait...'));
     setSubmitting(form, true);
 
     try {
         const response = await fetch('/api/auth/forgot-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
+            body: JSON.stringify({ email, lang: getCurrentLang() })
         });
 
         const data = await parseJsonSafely(response);
         if (!response.ok) {
-            const message = data?.error || 'Không thể gửi email đặt lại mật khẩu.';
+            const message = data?.error || t('auth.messages.serverError', 'Không thể gửi email đặt lại mật khẩu.', 'Could not send password reset email.');
             showAlert(alertBox, 'error', message);
             return;
         }
 
-        showAlert(alertBox, 'success', data?.message || 'Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.');
+        const successMessage = data?.message || t('auth.forgotPassword.successMessage', 
+            'Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.', 
+            'If the email exists, we have sent password reset instructions.');
+        showAlert(alertBox, 'success', successMessage);
         form.reset();
     } catch (error) {
         console.error('Forgot password request error:', error);
-        showAlert(alertBox, 'error', 'Không thể kết nối tới máy chủ. Vui lòng thử lại.');
+        showAlert(alertBox, 'error', t('auth.messages.serverError', 'Không thể kết nối tới máy chủ. Vui lòng thử lại.', 'Cannot connect to server. Please try again.'));
     } finally {
         setSubmitting(form, false);
     }
@@ -160,21 +191,21 @@ async function submitResetPassword(form, alertBox) {
     const confirm = sanitizeInput(formData.get('confirm'));
 
     if (!token) {
-        showAlert(alertBox, 'error', 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.');
+        showAlert(alertBox, 'error', t('auth.messages.invalidResetLink', 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.', 'Password reset link is invalid or expired.'));
         return;
     }
 
     if (!password || password.length < 6) {
-        showAlert(alertBox, 'error', 'Mật khẩu mới phải có ít nhất 6 ký tự.');
+        showAlert(alertBox, 'error', t('auth.messages.passwordMinLength', 'Mật khẩu mới phải có ít nhất 6 ký tự.', 'New password must be at least 6 characters.'));
         return;
     }
 
     if (password !== confirm) {
-        showAlert(alertBox, 'error', 'Mật khẩu xác nhận chưa trùng khớp.');
+        showAlert(alertBox, 'error', t('auth.messages.passwordMismatch', 'Mật khẩu xác nhận chưa trùng khớp.', 'Passwords do not match.'));
         return;
     }
 
-    showAlert(alertBox, 'info', 'Đang cập nhật mật khẩu...');
+    showAlert(alertBox, 'info', t('auth.messages.updatingPassword', 'Đang cập nhật mật khẩu...', 'Updating password...'));
     setSubmitting(form, true);
 
     try {
@@ -187,16 +218,16 @@ async function submitResetPassword(form, alertBox) {
 
         const data = await parseJsonSafely(response);
         if (!response.ok) {
-            const message = data?.error || 'Không thể đặt lại mật khẩu.';
+            const message = data?.error || t('auth.messages.resetPasswordError', 'Không thể đặt lại mật khẩu.', 'Could not reset password.');
             showAlert(alertBox, 'error', message);
             return;
         }
 
-        showAlert(alertBox, 'success', data?.message || 'Đặt lại mật khẩu thành công. Đang chuyển hướng...');
+        showAlert(alertBox, 'success', data?.message || t('auth.messages.resetPasswordSuccess', 'Đặt lại mật khẩu thành công. Đang chuyển hướng...', 'Password reset successful. Redirecting...'));
         redirectAfterAuth();
     } catch (error) {
         console.error('Reset password request error:', error);
-        showAlert(alertBox, 'error', 'Không thể kết nối tới máy chủ. Vui lòng thử lại.');
+        showAlert(alertBox, 'error', t('auth.messages.connectionError', 'Không thể kết nối tới máy chủ. Vui lòng thử lại.', 'Could not connect to server. Please try again.'));
     } finally {
         setSubmitting(form, false);
     }
@@ -210,14 +241,14 @@ function buildPayload(form, alertBox) {
     const password = sanitizeInput(formData.get('password'));
 
     if (!email || !password) {
-        showAlert(alertBox, 'error', 'Email và mật khẩu là bắt buộc.');
+        showAlert(alertBox, 'error', t('auth.messages.emailPasswordRequired', 'Email và mật khẩu là bắt buộc.', 'Email and password are required.'));
         return null;
     }
 
     if (formType === 'register') {
         const confirmPassword = sanitizeInput(formData.get('confirm'));
         if (password !== confirmPassword) {
-            showAlert(alertBox, 'error', 'Mật khẩu xác nhận chưa trùng khớp.');
+            showAlert(alertBox, 'error', t('auth.messages.passwordMismatch', 'Mật khẩu xác nhận chưa trùng khớp.', 'Passwords do not match.'));
             return null;
         }
 
@@ -261,8 +292,12 @@ function setupResetForm(form, alertBox, token) {
         if (submitButton) {
             submitButton.disabled = true;
         }
-        showAlert(alertBox, 'error', 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.');
+        showAlert(alertBox, 'error', t('auth.messages.invalidResetLink', 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.', 'Password reset link is invalid or has expired.'));
+        return;
     }
+
+    // Check token validity with server
+    checkResetTokenValidity(form, alertBox, token);
 }
 function redirectAfterAuth() {
     setTimeout(() => {
@@ -336,13 +371,13 @@ function setSubmitting(form, isSubmitting) {
     }
 
     submitButton.disabled = isSubmitting;
-    submitButton.textContent = isSubmitting ? 'Đang xử lý...' : submitButton.dataset.originalLabel;
+    submitButton.textContent = isSubmitting ? t('auth.messages.processing', 'Đang xử lý...', 'Processing...') : submitButton.dataset.originalLabel;
 }
 
 function getDefaultSuccessMessage(type) {
     return type === 'register'
-        ? 'Đăng ký thành công. Đang chuyển hướng...'
-        : 'Đăng nhập thành công. Đang chuyển hướng...';
+        ? t('auth.messages.registerSuccess', 'Đăng ký thành công. Đang chuyển hướng...', 'Registration successful. Redirecting...')
+        : t('auth.messages.loginSuccess', 'Đăng nhập thành công. Đang chuyển hướng...', 'Login successful. Redirecting...');
 }
 
 function togglePasswordVisibility(button) {
@@ -409,5 +444,215 @@ async function checkAuthAndRedirect() {
     } catch (error) {
         // User not logged in, continue with auth page
         console.log('User not authenticated, showing auth form');
+    }
+}
+
+// Check reset token validity with server
+async function checkResetTokenValidity(form, alertBox, token) {
+    try {
+        const response = await fetch('/api/auth/check-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, type: 'password-reset' })
+        });
+
+        const data = await parseJsonSafely(response);
+
+        if (!data?.valid) {
+            const submitButton = form.querySelector('[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+
+            if (data?.expired && data?.email) {
+                showTokenExpiredWithResend(alertBox, data.email, 'password-reset');
+            } else {
+                showAlert(alertBox, 'error', data?.error || t('auth.messages.invalidResetLink', 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.', 'Password reset link is invalid or has expired.'));
+            }
+        }
+    } catch (error) {
+        console.error('Error checking token validity:', error);
+    }
+}
+
+// Show email verification required message with resend button
+function showEmailVerificationRequired(alertBox, email) {
+    if (!alertBox) return;
+
+    const lang = getLang();
+    const title = t('auth.messages.accountNotVerifiedTitle', 'Tài khoản chưa được xác thực!', 'Account not verified!');
+    const checkEmail = t('auth.messages.checkEmailVerify', 'Vui lòng kiểm tra hộp thư email', 'Please check your email');
+    const clickLink = t('auth.messages.clickLinkToActivate', 'và nhấp vào liên kết xác thực để kích hoạt tài khoản.', 'and click the verification link to activate your account.');
+    const resendHint = t('auth.messages.resendHint', 'Không nhận được email? Kiểm tra thư mục spam hoặc', 'Didn\'t receive the email? Check your spam folder or');
+    const resendBtn = t('auth.messages.resendVerificationBtn', 'Gửi lại email xác thực', 'Resend verification email');
+
+    alertBox.innerHTML = `
+        <div class="verification-required">
+            <p><strong>${title}</strong></p>
+            <p>${checkEmail} <strong>${email || ''}</strong> ${clickLink}</p>
+            <p class="resend-hint">${resendHint}</p>
+            <button type="button" class="btn-resend" onclick="resendVerificationEmail('${email}', this.closest('.auth-alert'))">
+                ${resendBtn}
+            </button>
+        </div>
+    `;
+    alertBox.classList.remove('is-success', 'is-info');
+    alertBox.classList.add('is-error');
+}
+
+// Show token expired message with resend button
+function showTokenExpiredWithResend(alertBox, email, type) {
+    if (!alertBox) return;
+
+    const isPasswordReset = type === 'password-reset';
+    const actionText = isPasswordReset 
+        ? t('auth.messages.resetPasswordAction', 'đặt lại mật khẩu', 'password reset')
+        : t('auth.messages.verifyEmailAction', 'xác thực email', 'email verification');
+    const buttonText = isPasswordReset 
+        ? t('auth.messages.resendResetBtn', 'Gửi lại liên kết đặt lại mật khẩu', 'Resend password reset link')
+        : t('auth.messages.resendVerificationBtn', 'Gửi lại email xác thực', 'Resend verification email');
+    const resendFunction = isPasswordReset ? 'resendPasswordResetEmail' : 'resendVerificationEmail';
+    
+    const expiredTitle = t('auth.messages.linkExpiredTitle', 'Liên kết', 'Link for') + ' ' + actionText + ' ' + t('auth.messages.hasExpired', 'đã hết hạn!', 'has expired!');
+    const expiredDesc = t('auth.messages.linkExpiredDesc', 'Liên kết chỉ có hiệu lực trong 15 phút. Vui lòng yêu cầu gửi lại email.', 'The link is only valid for 15 minutes. Please request a new email.');
+
+    alertBox.innerHTML = `
+        <div class="token-expired">
+            <p><strong>${expiredTitle}</strong></p>
+            <p>${expiredDesc}</p>
+            <button type="button" class="btn-resend" id="resend-btn" onclick="${resendFunction}('${email}', this.closest('.auth-alert'))">
+                ${buttonText}
+            </button>
+        </div>
+    `;
+    alertBox.classList.remove('is-success', 'is-info');
+    alertBox.classList.add('is-error');
+}
+
+// Resend verification email
+async function resendVerificationEmail(email, alertBox) {
+    if (!email || resendCooldown > 0) return;
+
+    const resendBtn = alertBox?.querySelector('.btn-resend');
+    if (resendBtn) {
+        resendBtn.disabled = true;
+        resendBtn.textContent = t('auth.messages.sending', 'Đang gửi...', 'Sending...');
+    }
+
+    try {
+        const lang = getLang();
+        const response = await fetch('/api/auth/resend-verification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, lang })
+        });
+
+        const data = await parseJsonSafely(response);
+
+        if (response.status === 429) {
+            // Rate limited
+            startResendCooldown(data?.remainingSeconds || 90, resendBtn);
+            return;
+        }
+
+        if (!response.ok) {
+            showAlert(alertBox, 'error', data?.error || t('auth.messages.resendVerificationError', 'Không thể gửi lại email xác thực.', 'Could not resend verification email.'));
+            return;
+        }
+
+        showAlert(alertBox, 'success', t('auth.messages.verificationEmailSent', 'Email xác thực đã được gửi lại. Vui lòng kiểm tra hộp thư của bạn.', 'Verification email has been resent. Please check your inbox.'));
+        startResendCooldown(90, resendBtn);
+    } catch (error) {
+        console.error('Resend verification email error:', error);
+        showAlert(alertBox, 'error', t('auth.messages.connectionError', 'Không thể kết nối tới máy chủ. Vui lòng thử lại.', 'Could not connect to server. Please try again.'));
+        if (resendBtn) {
+            resendBtn.disabled = false;
+            resendBtn.textContent = t('auth.messages.resendVerificationBtn', 'Gửi lại email xác thực', 'Resend verification email');
+        }
+    }
+}
+
+// Resend password reset email
+async function resendPasswordResetEmail(email, alertBox) {
+    if (!email || resendCooldown > 0) return;
+
+    const resendBtn = alertBox?.querySelector('.btn-resend');
+    if (resendBtn) {
+        resendBtn.disabled = true;
+        resendBtn.textContent = t('auth.messages.sending', 'Đang gửi...', 'Sending...');
+    }
+
+    try {
+        const lang = getLang();
+        const response = await fetch('/api/auth/resend-password-reset', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, lang })
+        });
+
+        const data = await parseJsonSafely(response);
+
+        if (response.status === 429) {
+            // Rate limited
+            startResendCooldown(data?.remainingSeconds || 90, resendBtn);
+            return;
+        }
+
+        if (!response.ok) {
+            showAlert(alertBox, 'error', data?.error || t('auth.messages.resendResetError', 'Không thể gửi lại email đặt lại mật khẩu.', 'Could not resend password reset email.'));
+            return;
+        }
+
+        showAlert(alertBox, 'success', t('auth.messages.resetEmailSent', 'Email đặt lại mật khẩu đã được gửi lại. Vui lòng kiểm tra hộp thư của bạn.', 'Password reset email has been resent. Please check your inbox.'));
+        startResendCooldown(90, resendBtn);
+    } catch (error) {
+        console.error('Resend password reset email error:', error);
+        showAlert(alertBox, 'error', t('auth.messages.connectionError', 'Không thể kết nối tới máy chủ. Vui lòng thử lại.', 'Could not connect to server. Please try again.'));
+        if (resendBtn) {
+            resendBtn.disabled = false;
+            resendBtn.textContent = t('auth.messages.resendResetBtn', 'Gửi lại liên kết đặt lại mật khẩu', 'Resend password reset link');
+        }
+    }
+}
+
+// Start resend cooldown timer
+function startResendCooldown(seconds, button) {
+    resendCooldown = seconds;
+    
+    if (resendTimer) {
+        clearInterval(resendTimer);
+    }
+
+    updateResendButtonText(button);
+
+    resendTimer = setInterval(() => {
+        resendCooldown--;
+        updateResendButtonText(button);
+
+        if (resendCooldown <= 0) {
+            clearInterval(resendTimer);
+            resendTimer = null;
+            if (button) {
+                button.disabled = false;
+            }
+        }
+    }, 1000);
+}
+
+// Update resend button text with countdown
+function updateResendButtonText(button) {
+    if (!button) return;
+
+    if (resendCooldown > 0) {
+        button.disabled = true;
+        const resendAfter = t('auth.messages.resendAfter', 'Gửi lại sau', 'Resend in');
+        button.textContent = `${resendAfter} ${resendCooldown}s`;
+    } else {
+        button.disabled = false;
+        // Restore original button text based on context
+        const isPasswordReset = button.closest('.token-expired') !== null;
+        button.textContent = isPasswordReset 
+            ? t('auth.messages.resendResetBtn', 'Gửi lại liên kết đặt lại mật khẩu', 'Resend password reset link')
+            : t('auth.messages.resendVerificationBtn', 'Gửi lại email xác thực', 'Resend verification email');
     }
 }

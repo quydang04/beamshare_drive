@@ -1,0 +1,734 @@
+{
+  "info": {
+    "_postman_id": "6785bd70-5a9e-4446-9a6c-313e5e07ec09",
+    "name": "BeamShare Drive API",
+    "description": "Automated Postman collection for BeamShare Drive APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "login_email", "value": "test@example.com" },
+    { "key": "login_password", "value": "Test@123456" },
+    { "key": "user_id", "value": "" },
+    { "key": "test_file_id", "value": "692e4cfc4c9cfc36f0b2f183" },
+    { "key": "uploaded_file_id", "value": "692e4cfc4c9cfc36f0b2f183" },
+    { "key": "share_token", "value": "" },
+    { "key": "share_url", "value": "" },
+    { "key": "sample_file_path", "value": "postman/fixtures/sample.txt" },
+    { "key": "sample_display_name", "value": "postman-sample.txt" }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication - Setup",
+      "item": [
+        {
+          "name": "1.1 Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{login_email}}\",\n  \"password\": \"{{login_password}}\",\n  \"fullName\": \"Postman Test\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "auth", "register" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Register status is acceptable', function () {",
+                  "    pm.expect([201, 400, 409]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{login_email}}\",\n  \"password\": \"{{login_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "auth", "login" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Capture user context', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.user).to.exist;",
+                  "    if (jsonData.user && jsonData.user.userId) {",
+                  "        pm.collectionVariables.set('user_id', jsonData.user.userId);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.3 Get Current User",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "auth", "me" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Authenticated profile is available', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.user).to.exist;",
+                  "    pm.expect(jsonData.user.email).to.exist;",
+                  "    pm.expect(jsonData.user.userId).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Files (Owner)",
+      "item": [
+        {
+          "name": "2.1 List Files",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/files",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "files" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('File list request', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    if (Array.isArray(jsonData) && jsonData.length > 0) {",
+                  "        const firstId = jsonData[0].id || jsonData[0].internalName;",
+                  "        if (firstId) {",
+                  "            pm.collectionVariables.set('test_file_id', firstId);",
+                  "            pm.collectionVariables.set('uploaded_file_id', firstId);",
+                  "        }",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Upload Sample File",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "{{sample_file_path}}" },
+                { "key": "customName", "type": "text", "value": "{{sample_display_name}}" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upload-single",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "upload-single" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Upload response status', function () {",
+                  "    pm.expect([200, 400]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    const uploaded = jsonData && Array.isArray(jsonData.files) ? jsonData.files[0] : null;",
+                  "    const newId = uploaded && (uploaded.id || uploaded.internalName);",
+                  "    if (newId) {",
+                  "        pm.collectionVariables.set('uploaded_file_id', newId);",
+                  "        pm.collectionVariables.set('test_file_id', newId);",
+                  "    }",
+                  "    if (uploaded && uploaded.shareToken) {",
+                  "        pm.collectionVariables.set('share_token', uploaded.shareToken);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Get File Details",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/files/{{uploaded_file_id}}/details",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "files", "{{uploaded_file_id}}", "details" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Details response status', function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.displayName).to.exist;",
+                  "    if (jsonData.shareToken) {",
+                  "        pm.collectionVariables.set('share_token', jsonData.shareToken);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Update Share State",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visibility\": \"public\",\n  \"regenerateToken\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/files/{{uploaded_file_id}}/share",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "files", "{{uploaded_file_id}}", "share" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Share update status', function () {",
+                  "    pm.expect([200, 404, 410]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.shareToken) {",
+                  "        pm.collectionVariables.set('share_token', jsonData.shareToken);",
+                  "    }",
+                  "    if (jsonData.shareUrl) {",
+                  "        pm.collectionVariables.set('share_url', jsonData.shareUrl);",
+                  "    }",
+                  "}",
+                  "if (pm.response.code === 404) {",
+                  "    pm.collectionVariables.set('share_token', pm.collectionVariables.get('share_token') || '');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.5 Preview File",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/preview/{{uploaded_file_id}}",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "preview", "{{uploaded_file_id}}" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Preview response status', function () {",
+                  "    pm.expect([200, 404, 410]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Download File",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/download/{{uploaded_file_id}}",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "download", "{{uploaded_file_id}}" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Download response status', function () {",
+                  "    pm.expect([200, 404, 410]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Download has attachment header', function () {",
+                  "        pm.expect(pm.response.headers.get('Content-Disposition')).to.exist;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Share Access",
+      "item": [
+        {
+          "name": "3.1 Public Metadata",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/share/{{uploaded_file_id}}/metadata?token={{share_token}}",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "share", "{{uploaded_file_id}}", "metadata" ],
+              "query": [
+                { "key": "token", "value": "{{share_token}}" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Share metadata status', function () {",
+                  "    pm.expect([200, 403, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.displayName).to.exist;",
+                  "}",
+                  "if (pm.response.code === 200 && pm.request.url.getQueryString().includes('token=')) {",
+                  "    pm.collectionVariables.set('share_token', pm.request.url.query.find(q => q.key === 'token').value);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Public Preview",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/share/{{uploaded_file_id}}/preview?token={{share_token}}",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "share", "{{uploaded_file_id}}", "preview" ],
+              "query": [
+                { "key": "token", "value": "{{share_token}}" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Share preview status', function () {",
+                  "    pm.expect([200, 403, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Public Download",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/share/{{uploaded_file_id}}/download?token={{share_token}}",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "share", "{{uploaded_file_id}}", "download" ],
+              "query": [
+                { "key": "token", "value": "{{share_token}}" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Share download status', function () {",
+                  "    pm.expect([200, 403, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. BeamShare",
+      "item": [
+        {
+          "name": "4.1 BeamShare Metadata",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/beamshare/files/{{uploaded_file_id}}/metadata",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "beamshare", "files", "{{uploaded_file_id}}", "metadata" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('BeamShare metadata status', function () {",
+                  "    pm.expect([200, 404, 413]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.2 BeamShare Download",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/beamshare/files/{{uploaded_file_id}}/download",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "beamshare", "files", "{{uploaded_file_id}}", "download" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('BeamShare download status', function () {",
+                  "    pm.expect([200, 404, 413]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Cleanup & Recycle Bin",
+      "item": [
+        {
+          "name": "5.1 Delete File",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/files/{{uploaded_file_id}}",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "files", "{{uploaded_file_id}}" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Delete file status', function () {",
+                  "    pm.expect([200, 404, 410]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('deleted_file_id', pm.collectionVariables.get('uploaded_file_id'));",
+                  "}",
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData && jsonData.recycle && jsonData.recycle.id) {",
+                  "        pm.collectionVariables.set('recycle_entry_id', jsonData.recycle.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.2 List Recycle Bin",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/recycle-bin",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "recycle-bin" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Recycle bin list status', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.files).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.3 Permanently Delete",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/recycle-bin/{{uploaded_file_id}}",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "recycle-bin", "{{uploaded_file_id}}" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Permanent delete status', function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Subscriptions",
+      "item": [
+        {
+          "name": "6.1 Subscription Overview",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/subscriptions/overview",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "subscriptions", "overview" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Subscription overview status', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Plan list present', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.plans).to.be.an('array');",
+                  "    pm.expect(jsonData.currentPlan).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.2 Payment History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/subscriptions/payments/history",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "subscriptions", "payments", "history" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Payment history status', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Payments payload present', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.payments).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.3 Create VNPay Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"premium\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/subscriptions/payments/vnpay",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "subscriptions", "payments", "vnpay" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('VNPay creation status', function () {",
+                  "    pm.expect([201, 400, 409]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.paymentUrl).to.exist;",
+                  "}",
+                  "if (pm.response.code === 400) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error || jsonData.message).to.exist;",
+                  "}",
+                  "if (pm.response.code === 409) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error || jsonData.message).to.exist;",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Authentication - Cleanup",
+      "item": [
+        {
+          "name": "7.1 Logout",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "auth", "logout" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Logout status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.2 Verify Logged Out",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": [ "{{base_url}}" ],
+              "path": [ "api", "auth", "me" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Logged out state enforced', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

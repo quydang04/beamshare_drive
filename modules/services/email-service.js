@@ -1,4 +1,5 @@
 const { Resend } = require('resend');
+const { t, interpolate } = require('../translate/i18n');
 
 class EmailService {
     constructor() {
@@ -8,13 +9,13 @@ class EmailService {
         this.enabled = Boolean(this.apiKey);
     }
 
-    formatCurrency(amount, currency = 'VND') {
+    formatCurrency(amount, currency = 'VND', lang = 'vi') {
         if (typeof amount !== 'number' || !Number.isFinite(amount)) {
             return `${amount || 0} ${currency}`;
         }
 
         try {
-            const locale = currency === 'VND' ? 'vi-VN' : 'en-US';
+            const locale = lang === 'en' ? 'en-US' : 'vi-VN';
             return new Intl.NumberFormat(locale, {
                 style: 'currency',
                 currency,
@@ -27,16 +28,17 @@ class EmailService {
         }
     }
 
-    formatDate(date) {
+    formatDate(date, lang = 'vi') {
         if (!date) {
-            return 'Chưa xác định';
+            return t(lang, 'backend.email.notSpecified');
         }
 
         try {
-            return new Intl.DateTimeFormat('vi-VN', {
+            const locale = lang === 'en' ? 'en-US' : 'vi-VN';
+            return new Intl.DateTimeFormat(locale, {
                 dateStyle: 'medium',
                 timeStyle: 'short',
-                hour12: false
+                hour12: lang === 'en'
             }).format(date);
         } catch (error) {
             console.warn('Date formatting fallback triggered:', error?.message || error);
@@ -57,6 +59,14 @@ class EmailService {
         return this.resendClient;
     }
 
+    // Helper to get greeting with name
+    getGreeting(name, lang = 'vi') {
+        if (name) {
+            return interpolate(t(lang, 'backend.email.greeting'), { name });
+        }
+        return t(lang, 'backend.email.greetingDefault');
+    }
+
     buildPaymentResultContent({
         success,
         planTitle,
@@ -67,132 +77,172 @@ class EmailService {
         reference,
         failureReason,
         fullName,
-        email
+        email,
+        lang = 'vi'
     }) {
         const safeName = fullName || email;
-        const statusLabel = success ? 'thành công' : 'không thành công';
+        const subject = success 
+            ? t(lang, 'backend.email.payment.successSubject')
+            : t(lang, 'backend.email.payment.failedSubject');
+        const statusLabel = success 
+            ? t(lang, 'backend.email.payment.statusSuccess')
+            : t(lang, 'backend.email.payment.statusFailed');
         const statusColor = success ? '#16a34a' : '#dc2626';
-        const subject = `BeamShare Drive - Thanh toán ${statusLabel}`;
-        const formattedAmount = this.formatCurrency(amount, currency);
-        const processedLabel = this.formatDate(processedAt);
+        const formattedAmount = this.formatCurrency(amount, currency, lang);
+        const processedLabel = this.formatDate(processedAt, lang);
         const failureNote = failureReason ? String(failureReason).trim() : '';
+
+        const greeting = this.getGreeting(safeName, lang);
+        const regards = t(lang, 'backend.email.regards');
+        const supportNote = t(lang, 'backend.email.supportNote');
+        const notAvailable = t(lang, 'backend.email.notAvailable');
+        
+        const yourPayment = t(lang, 'backend.email.payment.yourPayment');
+        const paymentInfo = t(lang, 'backend.email.payment.paymentInfo');
+        const planLabel = t(lang, 'backend.email.payment.plan');
+        const amountLabel = t(lang, 'backend.email.payment.amount');
+        const processedAtLabel = t(lang, 'backend.email.payment.processedAt');
+        const transactionIdLabel = t(lang, 'backend.email.payment.transactionId');
+        const referenceLabel = t(lang, 'backend.email.payment.reference');
+        const reasonLabel = t(lang, 'backend.email.payment.reason');
+
+        const messageBody = success
+            ? interpolate(t(lang, 'backend.email.payment.thankYouUpgrade'), { planTitle })
+            : interpolate(t(lang, 'backend.email.payment.sorryFailed'), { planTitle });
+
+        const messageBodyText = success
+            ? interpolate(t(lang, 'backend.email.payment.thankYouUpgradeText'), { planTitle })
+            : interpolate(t(lang, 'backend.email.payment.sorryFailedText'), { planTitle });
 
         const html = `
 <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
-    <p>Xin chào ${safeName || 'bạn'},</p>
-    <p style="color: ${statusColor}; font-weight: 600;">Thanh toán của bạn ${statusLabel}.</p>
-    <p>${success
-            ? `Cảm ơn bạn đã nâng cấp gói <strong>${planTitle}</strong>. Tài khoản của bạn đã được cập nhật quyền lợi tương ứng.`
-            : `Rất tiếc, thanh toán cho gói <strong>${planTitle}</strong> chưa thể hoàn tất.`}</p>
+    <p>${greeting},</p>
+    <p style="color: ${statusColor}; font-weight: 600;">${yourPayment} ${statusLabel}.</p>
+    <p>${messageBody}</p>
     <div style="margin: 16px 0; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb;">
-        <p style="margin: 0 0 8px 0; font-weight: 600;">Thông tin thanh toán</p>
-        <p style="margin: 4px 0;">Gói: <strong>${planTitle}</strong></p>
-        <p style="margin: 4px 0;">Số tiền: <strong>${formattedAmount}</strong></p>
-        <p style="margin: 4px 0;">Thời gian xử lý: <strong>${processedLabel}</strong></p>
-        <p style="margin: 4px 0;">Mã giao dịch ngân hàng: <strong>${transactionId || 'Không có'}</strong></p>
-        <p style="margin: 4px 0;">Mã tham chiếu BeamShare: <strong>${reference || 'Không có'}</strong></p>
+        <p style="margin: 0 0 8px 0; font-weight: 600;">${paymentInfo}</p>
+        <p style="margin: 4px 0;">${planLabel}: <strong>${planTitle}</strong></p>
+        <p style="margin: 4px 0;">${amountLabel}: <strong>${formattedAmount}</strong></p>
+        <p style="margin: 4px 0;">${processedAtLabel}: <strong>${processedLabel}</strong></p>
+        <p style="margin: 4px 0;">${transactionIdLabel}: <strong>${transactionId || notAvailable}</strong></p>
+        <p style="margin: 4px 0;">${referenceLabel}: <strong>${reference || notAvailable}</strong></p>
     </div>
-    ${failureNote ? `<p><strong>Lý do:</strong> ${failureNote}</p>` : ''}
-    <p>Nếu bạn cần hỗ trợ, vui lòng phản hồi email này hoặc liên hệ đội ngũ BeamShare Drive.</p>
-    <p>Trân trọng.</p>
+    ${failureNote ? `<p><strong>${reasonLabel}:</strong> ${failureNote}</p>` : ''}
+    <p>${supportNote}</p>
+    <p>${regards.replace(/\n/g, '<br>')}</p>
 </div>
         `;
 
         const textSections = [
-            `Xin chào ${safeName || 'bạn'},`,
-            `Thanh toán của bạn ${statusLabel}.`,
-            success
-                ? `Cảm ơn bạn đã nâng cấp gói ${planTitle}. Tài khoản đã được cập nhật.`
-                : `Rất tiếc, thanh toán cho gói ${planTitle} chưa thể hoàn tất.`,
-            'Thông tin thanh toán:',
-            `- Gói: ${planTitle}`,
-            `- Số tiền: ${formattedAmount}`,
-            `- Thời gian xử lý: ${processedLabel}`,
-            `- Mã giao dịch ngân hàng: ${transactionId || 'Không có'}`,
-            `- Mã tham chiếu BeamShare: ${reference || 'Không có'}`
+            `${greeting},`,
+            `${yourPayment} ${statusLabel}.`,
+            messageBodyText,
+            `${paymentInfo}:`,
+            `- ${planLabel}: ${planTitle}`,
+            `- ${amountLabel}: ${formattedAmount}`,
+            `- ${processedAtLabel}: ${processedLabel}`,
+            `- ${transactionIdLabel}: ${transactionId || notAvailable}`,
+            `- ${referenceLabel}: ${reference || notAvailable}`
         ];
 
         if (failureNote) {
-            textSections.push(`Lý do: ${failureNote}`);
+            textSections.push(`${reasonLabel}: ${failureNote}`);
         }
 
-        textSections.push('Nếu bạn cần hỗ trợ, hãy phản hồi email này hoặc liên hệ đội ngũ BeamShare Drive.', 'Trân trọng.');
+        textSections.push(supportNote, regards);
 
         const text = textSections.join('\n\n');
 
         return { subject, html, text };
     }
 
-    buildPasswordResetContent({ resetUrl, fullName, email }) {
+    buildPasswordResetContent({ resetUrl, fullName, email, lang = 'vi' }) {
         const safeName = fullName || email;
-        const subject = 'BeamShare Drive - Đặt lại mật khẩu';
+        const subject = t(lang, 'backend.email.passwordReset.subject');
+        const greeting = this.getGreeting(safeName, lang);
+        const regards = t(lang, 'backend.email.regards');
+        
+        const received = t(lang, 'backend.email.passwordReset.received');
+        const clickButton = t(lang, 'backend.email.passwordReset.clickButton');
+        const buttonText = t(lang, 'backend.email.passwordReset.buttonText');
+        const cantClick = t(lang, 'backend.email.passwordReset.cantClick');
+        const expiry = t(lang, 'backend.email.passwordReset.expiry');
+        
         const html = `
 <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
-    <p>Xin chào ${safeName || 'bạn'},</p>
-    <p>Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản BeamShare Drive của bạn.</p>
-    <p>Để tạo mật khẩu mới, vui lòng nhấp vào nút bên dưới:</p>
+    <p>${greeting},</p>
+    <p>${received}</p>
+    <p>${clickButton}</p>
     <p style="margin: 24px 0;">
         <a href="${resetUrl}" style="background: #2563eb; color: #fff; padding: 12px 20px; border-radius: 6px; text-decoration: none; display: inline-block;">
-            Đặt lại mật khẩu
+            ${buttonText}
         </a>
     </p>
-    <p>Nếu bạn không thể nhấp vào nút, hãy sao chép và dán liên kết sau vào trình duyệt của bạn:</p>
+    <p>${cantClick}</p>
     <p style="word-break: break-all;">${resetUrl}</p>
-    <p>Liên kết này sẽ hết hạn sau 60 phút. Nếu bạn không yêu cầu đặt lại mật khẩu, xin vui lòng bỏ qua email này.</p>
-    <p>Trân trọng.</p>
+    <p>${expiry}</p>
+    <p>${regards.replace(/\n/g, '<br>')}</p>
 </div>
         `;
 
         const text = [
-            `Xin chào ${safeName || 'bạn'},`,
-            'Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản BeamShare Drive của bạn.',
-            'Để tạo mật khẩu mới, vui lòng truy cập liên kết sau:',
+            `${greeting},`,
+            received,
+            clickButton,
             resetUrl,
-            'Liên kết này sẽ hết hạn sau 60 phút. Nếu bạn không yêu cầu đặt lại mật khẩu, xin vui lòng bỏ qua email này.',
-            'Trân trọng.'
+            expiry,
+            regards
         ].join('\n\n');
 
         return { subject, html, text };
     }
 
-    buildEmailVerificationContent({ verifyUrl, fullName, email }) {
+    buildEmailVerificationContent({ verifyUrl, fullName, email, lang = 'vi' }) {
         const safeName = fullName || email;
-        const subject = 'BeamShare Drive - Xác thực email đăng ký';
+        const subject = t(lang, 'backend.email.emailVerification.subject');
+        const greeting = this.getGreeting(safeName, lang);
+        const regards = t(lang, 'backend.email.regards');
+
+        const thankYou = t(lang, 'backend.email.emailVerification.thankYou');
+        const buttonText = t(lang, 'backend.email.emailVerification.buttonText');
+        const cantClick = t(lang, 'backend.email.emailVerification.cantClick');
+        const expiry = t(lang, 'backend.email.emailVerification.expiry');
+        
         const html = `
 <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
-    <p>Xin chào ${safeName || 'bạn'},</p>
-    <p>Cảm ơn bạn đã đăng ký BeamShare Drive. Để hoàn tất việc tạo tài khoản, vui lòng xác thực email của bạn.</p>
+    <p>${greeting},</p>
+    <p>${thankYou}</p>
     <p style="margin: 24px 0;">
         <a href="${verifyUrl}" style="background: #6366f1; color: #fff; padding: 12px 20px; border-radius: 6px; text-decoration: none; display: inline-block;">
-            Xác thực email
+            ${buttonText}
         </a>
     </p>
-    <p>Nếu bạn không thể nhấp vào nút, hãy sao chép và dán liên kết sau vào trình duyệt của bạn:</p>
+    <p>${cantClick}</p>
     <p style="word-break: break-all;">${verifyUrl}</p>
-    <p>Liên kết xác thực sẽ hết hạn sau 24 giờ. Nếu bạn không tạo tài khoản BeamShare Drive, vui lòng bỏ qua email này.</p>
-    <p>Trân trọng.</p>
+    <p>${expiry}</p>
+    <p>${regards.replace(/\n/g, '<br>')}</p>
 </div>
         `;
 
         const text = [
-            `Xin chào ${safeName || 'bạn'},`,
-            'Cảm ơn bạn đã đăng ký BeamShare Drive. Vui lòng xác thực email của bạn bằng cách truy cập liên kết sau:',
+            `${greeting},`,
+            thankYou,
             verifyUrl,
-            'Liên kết xác thực sẽ hết hạn sau 24 giờ. Nếu bạn không tạo tài khoản BeamShare Drive, vui lòng bỏ qua email này.',
-            'Trân trọng.'
+            expiry,
+            regards
         ].join('\n\n');
 
         return { subject, html, text };
     }
 
-    async sendPasswordResetEmail({ to, resetUrl, fullName }) {
+    async sendPasswordResetEmail({ to, resetUrl, fullName, lang = 'vi' }) {
         if (!to || !resetUrl) {
             throw new Error('Missing "to" or "resetUrl" when sending password reset email.');
         }
 
         const client = this.getClient();
         const normalizedRecipient = Array.isArray(to) ? to : [to];
-        const { subject, html, text } = this.buildPasswordResetContent({ resetUrl, fullName, email: normalizedRecipient[0] });
+        const { subject, html, text } = this.buildPasswordResetContent({ resetUrl, fullName, email: normalizedRecipient[0], lang });
 
         await client.emails.send({
             from: this.fromAddress,
@@ -203,7 +253,7 @@ class EmailService {
         });
     }
 
-    async sendEmailVerificationEmail({ to, verifyUrl, fullName }) {
+    async sendEmailVerificationEmail({ to, verifyUrl, fullName, lang = 'vi' }) {
         if (!to || !verifyUrl) {
             throw new Error('Missing "to" or "verifyUrl" when sending email verification.');
         }
@@ -214,7 +264,8 @@ class EmailService {
         const { subject, html, text } = this.buildEmailVerificationContent({
             verifyUrl,
             fullName,
-            email: primaryEmail
+            email: primaryEmail,
+            lang
         });
 
         await client.emails.send({
@@ -236,7 +287,8 @@ class EmailService {
         transactionId,
         reference,
         failureReason,
-        fullName
+        fullName,
+        lang = 'vi'
     }) {
         if (!to) {
             throw new Error('Missing "to" when sending payment result email.');
@@ -255,7 +307,8 @@ class EmailService {
             reference,
             failureReason,
             fullName,
-            email: primaryEmail
+            email: primaryEmail,
+            lang
         });
 
         await client.emails.send({

@@ -16,48 +16,57 @@
         }
     };
     const TYPE_COLORS = ['#6366f1', '#f97316', '#10b981', '#ec4899', '#0ea5e9'];
+
+    const t = (key, fallback = '') => {
+        const lang = window.LanguageManager;
+        if (lang && typeof lang.translate === 'function') {
+            return lang.translate(key) || fallback;
+        }
+        return fallback;
+    };
+
     const KNOWN_MIME_LABELS = {
-        'application/pdf': 'Tệp PDF',
-        'application/msword': 'Tài liệu Word',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Tài liệu Word',
-        'application/vnd.ms-excel': 'Bảng tính Excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Bảng tính Excel',
-        'application/vnd.ms-powerpoint': 'Trình chiếu PowerPoint',
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'Trình chiếu PowerPoint',
-        'text/plain': 'Tệp văn bản',
-        'application/json': 'Tệp JSON',
-        'image/jpeg': 'Ảnh JPEG',
-        'image/png': 'Ảnh PNG',
-        'image/gif': 'Ảnh GIF',
-        'video/mp4': 'Video MP4',
-        'audio/mpeg': 'Âm thanh MP3'
+        'application/pdf': () => t('pages.fileTypes.pdf', 'Tệp PDF'),
+        'application/msword': () => t('pages.fileTypes.word', 'Tài liệu Word'),
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': () => t('pages.fileTypes.word', 'Tài liệu Word'),
+        'application/vnd.ms-excel': () => t('pages.fileTypes.excel', 'Bảng tính Excel'),
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': () => t('pages.fileTypes.excel', 'Bảng tính Excel'),
+        'application/vnd.ms-powerpoint': () => t('pages.fileTypes.powerpoint', 'Trình chiếu PowerPoint'),
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': () => t('pages.fileTypes.powerpoint', 'Trình chiếu PowerPoint'),
+        'text/plain': () => t('pages.fileTypes.text', 'Tệp văn bản'),
+        'application/json': () => t('pages.fileTypes.json', 'Tệp JSON'),
+        'image/jpeg': () => t('pages.fileTypes.imageJpeg', 'Ảnh JPEG'),
+        'image/png': () => t('pages.fileTypes.imagePng', 'Ảnh PNG'),
+        'image/gif': () => t('pages.fileTypes.imageGif', 'Ảnh GIF'),
+        'video/mp4': () => t('pages.fileTypes.videoMp4', 'Video MP4'),
+        'audio/mpeg': () => t('pages.fileTypes.audioMp3', 'Âm thanh MP3')
     };
     const KNOWN_EXTENSION_LABELS = {
-        pdf: 'Tệp PDF',
-        doc: 'Tài liệu Word',
-        docx: 'Tài liệu Word',
-        xls: 'Bảng tính Excel',
-        xlsx: 'Bảng tính Excel',
-        ppt: 'Trình chiếu PowerPoint',
-        pptx: 'Trình chiếu PowerPoint',
-        txt: 'Tệp văn bản',
-        csv: 'Tệp CSV',
-        json: 'Tệp JSON',
-        jpg: 'Ảnh JPEG',
-        jpeg: 'Ảnh JPEG',
-        png: 'Ảnh PNG',
-        gif: 'Ảnh GIF',
-        svg: 'Ảnh SVG',
-        mp4: 'Video MP4',
-        mov: 'Video MOV',
-        avi: 'Video AVI',
-        mkv: 'Video MKV',
-        mp3: 'Âm thanh MP3',
-        wav: 'Âm thanh WAV',
-        flac: 'Âm thanh FLAC',
-        zip: 'Tệp nén ZIP',
-        rar: 'Tệp nén RAR',
-        '7z': 'Tệp nén 7z'
+        pdf: () => t('pages.fileTypes.pdf', 'Tệp PDF'),
+        doc: () => t('pages.fileTypes.word', 'Tài liệu Word'),
+        docx: () => t('pages.fileTypes.word', 'Tài liệu Word'),
+        xls: () => t('pages.fileTypes.excel', 'Bảng tính Excel'),
+        xlsx: () => t('pages.fileTypes.excel', 'Bảng tính Excel'),
+        ppt: () => t('pages.fileTypes.powerpoint', 'Trình chiếu PowerPoint'),
+        pptx: () => t('pages.fileTypes.powerpoint', 'Trình chiếu PowerPoint'),
+        txt: () => t('pages.fileTypes.text', 'Tệp văn bản'),
+        csv: () => t('pages.fileTypes.csv', 'Tệp CSV'),
+        json: () => t('pages.fileTypes.json', 'Tệp JSON'),
+        jpg: () => t('pages.fileTypes.imageJpeg', 'Ảnh JPEG'),
+        jpeg: () => t('pages.fileTypes.imageJpeg', 'Ảnh JPEG'),
+        png: () => t('pages.fileTypes.imagePng', 'Ảnh PNG'),
+        gif: () => t('pages.fileTypes.imageGif', 'Ảnh GIF'),
+        svg: () => t('pages.fileTypes.imageSvg', 'Ảnh SVG'),
+        mp4: () => t('pages.fileTypes.videoMp4', 'Video MP4'),
+        mov: () => t('pages.fileTypes.videoMov', 'Video MOV'),
+        avi: () => t('pages.fileTypes.videoAvi', 'Video AVI'),
+        mkv: () => t('pages.fileTypes.videoMkv', 'Video MKV'),
+        mp3: () => t('pages.fileTypes.audioMp3', 'Âm thanh MP3'),
+        wav: () => t('pages.fileTypes.audioWav', 'Âm thanh WAV'),
+        flac: () => t('pages.fileTypes.audioFlac', 'Âm thanh FLAC'),
+        zip: () => t('pages.fileTypes.zipArchive', 'Tệp nén ZIP'),
+        rar: () => t('pages.fileTypes.rarArchive', 'Tệp nén RAR'),
+        '7z': () => t('pages.fileTypes.archive7z', 'Tệp nén 7z')
     };
 
     const formatBytes = typeof window.formatFileSize === 'function'
@@ -95,13 +104,13 @@
         const diffDays = Math.floor(diffHours / 24);
 
         if (diffMs < 0) {
-            return 'Trong tương lai';
+            return t('common.inFuture', 'Trong tương lai');
         }
-        if (diffMinutes < 1) return 'Vừa xong';
-        if (diffMinutes < 60) return `${diffMinutes} phút trước`;
-        if (diffHours < 24) return `${diffHours} giờ trước`;
-        if (diffDays === 1) return 'Hôm qua';
-        if (diffDays < 7) return `${diffDays} ngày trước`;
+        if (diffMinutes < 1) return t('common.justNow', 'Vừa xong');
+        if (diffMinutes < 60) return `${diffMinutes} ${t('common.minutesAgo', 'phút trước').replace('{{count}} ', '')}`;
+        if (diffHours < 24) return `${diffHours} ${t('common.hoursAgo', 'giờ trước').replace('{{count}} ', '')}`;
+        if (diffDays === 1) return t('common.yesterday', 'Hôm qua');
+        if (diffDays < 7) return `${diffDays} ${t('common.daysAgo', 'ngày trước').replace('{{count}} ', '')}`;
         return date.toLocaleDateString('vi-VN');
     };
 
@@ -155,7 +164,7 @@
             icon: 'fa-file-lines',
             variant: 'generic',
             tone: 'file-icon-tone--generic',
-            label: 'Tệp BeamShare'
+            label: t('common.beamshareFile', 'Tệp BeamShare')
         };
     };
 
@@ -256,7 +265,7 @@
         elements.dashboardAvatar.setAttribute('title', displayName);
 
         if (elements.dashboardName) {
-            elements.dashboardName.textContent = `Xin chào, ${displayName}`;
+            elements.dashboardName.textContent = t('pages.dashboard.greeting', 'Xin chào, {{name}}').replace('{{name}}', displayName);
         }
 
         const planInfo = resolvePlanInfo(profile?.plan);
@@ -271,7 +280,7 @@
 
     function determineTypeLabel(file) {
         if (!file) {
-            return 'Khác';
+            return t('common.other', 'Khác');
         }
 
         const extensionSource = (file.extension || file.originalName || file.displayName || file.name || '').toString();
@@ -280,26 +289,26 @@
             : extensionSource.toLowerCase();
 
         if (normalizedExtension && KNOWN_EXTENSION_LABELS[normalizedExtension]) {
-            return KNOWN_EXTENSION_LABELS[normalizedExtension];
+            return KNOWN_EXTENSION_LABELS[normalizedExtension]();
         }
 
         const mime = (file.type || '').toLowerCase();
         if (mime && KNOWN_MIME_LABELS[mime]) {
-            return KNOWN_MIME_LABELS[mime];
+            return KNOWN_MIME_LABELS[mime]();
         }
 
-        if (mime.startsWith('image/')) return 'Hình ảnh';
-        if (mime.startsWith('video/')) return 'Video';
-        if (mime.startsWith('audio/')) return 'Âm thanh';
-        if (mime.includes('presentation')) return 'Trình chiếu';
-        if (mime.includes('spreadsheet') || mime.includes('excel')) return 'Bảng tính';
-        if (mime.includes('word') || mime.includes('document')) return 'Tài liệu';
-        if (mime.includes('pdf')) return 'Tệp PDF';
-        if (mime.includes('zip') || mime.includes('compressed')) return 'Tệp nén';
-        if (mime.includes('text')) return 'Tệp văn bản';
-        if (mime.includes('json')) return 'Tệp JSON';
+        if (mime.startsWith('image/')) return t('pages.fileTypes.image', 'Hình ảnh');
+        if (mime.startsWith('video/')) return t('pages.fileTypes.video', 'Video');
+        if (mime.startsWith('audio/')) return t('pages.fileTypes.audio', 'Âm thanh');
+        if (mime.includes('presentation')) return t('pages.fileTypes.presentation', 'Trình chiếu');
+        if (mime.includes('spreadsheet') || mime.includes('excel')) return t('pages.fileTypes.spreadsheet', 'Bảng tính');
+        if (mime.includes('word') || mime.includes('document')) return t('pages.fileTypes.document', 'Tài liệu');
+        if (mime.includes('pdf')) return t('pages.fileTypes.pdf', 'Tệp PDF');
+        if (mime.includes('zip') || mime.includes('compressed')) return t('pages.fileTypes.compressed', 'Tệp nén');
+        if (mime.includes('text')) return t('pages.fileTypes.text', 'Tệp văn bản');
+        if (mime.includes('json')) return t('pages.fileTypes.json', 'Tệp JSON');
 
-        return 'Khác';
+        return t('common.other', 'Khác');
     }
 
     function cacheElements() {
@@ -385,14 +394,16 @@
         if (!elements.storageQuota) return;
         const planInfo = getCurrentPlanInfo();
         const limitLabel = planInfo.storageLabel || formatBytes(planInfo.storageBytes || state.quotaBytes);
-        elements.storageQuota.textContent = `Dung lượng gói ${planInfo.title}: ${limitLabel}`;
+        elements.storageQuota.textContent = t('pages.dashboard.quotaLabel', 'Dung lượng gói {{plan}}: {{limit}}')
+            .replace('{{plan}}', planInfo.title)
+            .replace('{{limit}}', limitLabel);
     }
 
     async function fetchDashboardData(options = {}) {
         const { showToast = false } = options;
         try {
             if (showToast && window.toastSystem) {
-                window.toastSystem.info('Đang làm mới dữ liệu dashboard...', { duration: 2000 });
+                window.toastSystem.info(t('pages.dashboard.refreshing', 'Đang làm mới dữ liệu dashboard...'), { duration: 2000 });
             }
 
             const response = await fetch('/api/files');
@@ -407,12 +418,12 @@
             renderDashboard();
 
             if (showToast && window.toastSystem) {
-                window.toastSystem.success('Đã cập nhật dữ liệu dashboard.', { duration: 2200 });
+                window.toastSystem.success(t('pages.dashboard.refreshed', 'Đã cập nhật dữ liệu dashboard.'), { duration: 2200 });
             }
         } catch (error) {
-            console.error('Không thể tải dữ liệu dashboard:', error);
+            console.error(t('pages.dashboard.refreshError', 'Không thể tải dữ liệu dashboard:'), error);
             if (window.toastSystem) {
-                window.toastSystem.error('Lỗi tải dữ liệu dashboard.', { duration: 3200 });
+                window.toastSystem.error(t('pages.dashboard.refreshErrorToast', 'Lỗi tải dữ liệu dashboard.'), { duration: 3200 });
             }
             state.files = [];
             renderDashboard({ hasError: true });
@@ -456,7 +467,9 @@
 
         if (elements.storageUsed) {
             const limitLabel = planInfo.storageLabel || formatBytes(quotaBytes);
-            elements.storageUsed.textContent = `Đang dùng ${formatBytes(totalBytes)} / ${limitLabel}`;
+            elements.storageUsed.textContent = t('pages.dashboard.usedLabel', 'Đang dùng {{used}} / {{limit}}')
+                .replace('{{used}}', formatBytes(totalBytes))
+                .replace('{{limit}}', limitLabel);
         }
 
         if (elements.storagePercent) {
@@ -475,16 +488,16 @@
 
         if (elements.storageDetails) {
             if (!files.length) {
-                elements.storageDetails.innerHTML = '<li>Chưa có dữ liệu để hiển thị</li>';
+                elements.storageDetails.innerHTML = `<li>${t('pages.dashboard.noData', 'Chưa có dữ liệu để hiển thị')}</li>`;
                 return;
             }
 
             const metrics = buildCategoryMetrics(files);
             elements.storageDetails.innerHTML = `
-                <li><strong>${metrics.images}</strong> tệp hình ảnh</li>
-                <li><strong>${metrics.documents}</strong> tệp tài liệu</li>
-                <li><strong>${metrics.videos}</strong> tệp video</li>
-                <li><strong>${metrics.others}</strong> tệp khác</li>
+                <li><strong>${metrics.images}</strong> ${t('pages.dashboard.imageFiles', 'tệp hình ảnh')}</li>
+                <li><strong>${metrics.documents}</strong> ${t('pages.dashboard.documentFiles', 'tệp tài liệu')}</li>
+                <li><strong>${metrics.videos}</strong> ${t('pages.dashboard.videoFiles', 'tệp video')}</li>
+                <li><strong>${metrics.others}</strong> ${t('pages.dashboard.otherFiles', 'tệp khác')}</li>
             `;
         }
     }
@@ -495,7 +508,7 @@
         if (options.hasError) {
             elements.recentList.innerHTML = '';
             elements.recentEmpty.style.display = 'block';
-            elements.recentEmpty.querySelector('p').textContent = 'Không thể tải danh sách tệp gần đây.';
+            elements.recentEmpty.querySelector('p').textContent = t('pages.dashboard.recentError', 'Không thể tải danh sách tệp gần đây.');
             return;
         }
 
@@ -506,7 +519,7 @@
         if (!recentFiles.length) {
             elements.recentList.innerHTML = '';
             elements.recentEmpty.style.display = 'block';
-            elements.recentEmpty.querySelector('p').textContent = 'Chưa có tệp nào được tải lên';
+            elements.recentEmpty.querySelector('p').textContent = t('pages.dashboard.noFiles', 'Chưa có tệp nào được tải lên');
             return;
         }
 
@@ -515,10 +528,10 @@
             const size = formatBytes(toNumericSize(file.size));
             const uploadedTimestamp = extractTimestamp(file);
             const uploadedAt = uploadedTimestamp ? formatRelativeTime(uploadedTimestamp) : '-';
-            const uploadedExact = uploadedTimestamp ? formatDateTime(uploadedTimestamp) : 'Không xác định';
+            const uploadedExact = uploadedTimestamp ? formatDateTime(uploadedTimestamp) : t('common.unknown', 'Không xác định');
             const iconDescriptor = resolveFileIcon(file);
             const iconVariantAttr = iconDescriptor.variant ? ` data-icon-variant="${iconDescriptor.variant}"` : '';
-            const name = file.displayName || file.originalName || file.name || 'Không rõ tên';
+            const name = file.displayName || file.originalName || file.name || t('common.unknownName', 'Không rõ tên');
             return `
                 <li class="recent-file-item">
                     <div class="recent-file-main">
@@ -543,7 +556,7 @@
         if (options.hasError) {
             elements.topFilesBody.innerHTML = '';
             elements.topFilesEmpty.style.display = 'block';
-            elements.topFilesEmpty.querySelector('p').textContent = 'Không thể tải dữ liệu.';
+            elements.topFilesEmpty.querySelector('p').textContent = t('pages.dashboard.loadError', 'Không thể tải dữ liệu.');
             return;
         }
 
@@ -554,16 +567,16 @@
         if (!topFiles.length) {
             elements.topFilesBody.innerHTML = '';
             elements.topFilesEmpty.style.display = 'block';
-            elements.topFilesEmpty.querySelector('p').textContent = 'Hiện chưa có dữ liệu để hiển thị';
+            elements.topFilesEmpty.querySelector('p').textContent = t('pages.dashboard.noData', 'Chưa có dữ liệu để hiển thị');
             return;
         }
 
         elements.topFilesEmpty.style.display = 'none';
         elements.topFilesBody.innerHTML = topFiles.map((file) => {
-            const name = file.displayName || file.originalName || file.name || 'Không rõ tên';
+            const name = file.displayName || file.originalName || file.name || t('common.unknownName', 'Không rõ tên');
             const size = formatBytes(toNumericSize(file.size));
             const timestamp = extractTimestamp(file);
-            const uploadedAt = timestamp ? formatDateTime(timestamp) : 'Không xác định';
+            const uploadedAt = timestamp ? formatDateTime(timestamp) : t('common.unknown', 'Không xác định');
             return `
                 <tr>
                     <td title="${escapeHtml(name)}">${escapeHtml(name)}</td>
@@ -582,12 +595,12 @@
         if (options.hasError) {
             elements.typeSummary.innerHTML = '';
             elements.typeSummaryEmpty.style.display = 'block';
-            elements.typeSummaryEmpty.querySelector('p').textContent = 'Không thể tải dữ liệu phân tích.';
+            elements.typeSummaryEmpty.querySelector('p').textContent = t('pages.dashboard.analyticsError', 'Không thể tải dữ liệu phân tích.');
             elements.sizeAverage.textContent = '0 MB';
             elements.sizeMax.textContent = '0 MB';
             elements.sizeMin.textContent = '0 MB';
-            if (elements.typeCountLabel) elements.typeCountLabel.textContent = '0 loại';
-            if (elements.lastUpdatedLabel) elements.lastUpdatedLabel.textContent = 'Chưa cập nhật';
+            if (elements.typeCountLabel) elements.typeCountLabel.textContent = t('pages.dashboard.typeCount', '{{count}} loại').replace('{{count}}', '0');
+            if (elements.lastUpdatedLabel) elements.lastUpdatedLabel.textContent = t('pages.dashboard.notUpdated', 'Chưa cập nhật');
             return;
         }
 
@@ -600,7 +613,7 @@
                     <div class="type-row">
                         <div class="type-row-header">
                             <span>${escapeHtml(entry.label)}</span>
-                            <span>${entry.count} tệp (${entry.percent}%)</span>
+                            <span>${entry.count} ${t('pages.dashboard.filesCount', 'tệp')} (${entry.percent}%)</span>
                         </div>
                         <div class="type-progress">
                             <div class="type-progress-fill" style="width: ${entry.percent}%; --fill-color: ${color};"></div>
@@ -614,7 +627,7 @@
         }
 
         if (elements.typeCountLabel) {
-            elements.typeCountLabel.textContent = `${typeMap.length} loại`;
+            elements.typeCountLabel.textContent = t('pages.dashboard.typeCount', '{{count}} loại').replace('{{count}}', typeMap.length);
         }
 
         const sizes = files.map((file) => toNumericSize(file.size)).filter((size) => size > 0);
@@ -634,8 +647,8 @@
 
         if (elements.lastUpdatedLabel) {
             elements.lastUpdatedLabel.textContent = state.lastUpdated
-                ? `Cập nhật ${formatDateTime(state.lastUpdated)}`
-                : 'Chưa cập nhật';
+                ? t('pages.dashboard.updatedAt', 'Cập nhật {{time}}').replace('{{time}}', formatDateTime(state.lastUpdated))
+                : t('pages.dashboard.notUpdated', 'Chưa cập nhật');
         }
     }
 

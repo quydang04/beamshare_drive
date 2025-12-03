@@ -14,26 +14,43 @@
 <body>
     <a href="/" class="back-home">
         <i class="fas fa-arrow-left"></i>
-        Trang chủ
+        <span data-i18n="common.backHome">Trang chủ</span>
     </a>
+    <div class="lang-toggle-wrapper" id="langWrapper">
+        <button class="lang-toggle" id="langToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Chuyển ngôn ngữ">
+            <i class="fas fa-globe" aria-hidden="true"></i>
+            <span class="lang-toggle__label" id="langLabel">VI</span>
+            <i class="fas fa-caret-down lang-toggle__caret" aria-hidden="true"></i>
+        </button>
+        <div class="lang-menu" id="langMenu" role="menu">
+            <button class="lang-option" type="button" data-lang="vi" role="menuitemradio" aria-checked="true">
+                <span>🇻🇳</span>
+                <span>Tiếng Việt</span>
+            </button>
+            <button class="lang-option" type="button" data-lang="en" role="menuitemradio" aria-checked="false">
+                <span>🇺🇸</span>
+                <span>English</span>
+            </button>
+        </div>
+    </div>
     <div class="theme-toggle-wrapper" id="themeWrapper">
         <button class="theme-toggle" id="themeToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Chuyển giao diện">
             <i class="fas fa-sun theme-toggle__icon" id="themeIcon" aria-hidden="true"></i>
-            <span class="theme-toggle__label" id="themeLabel">Sáng</span>
+            <span class="theme-toggle__label" id="themeLabel" data-i18n="theme.light">Sáng</span>
             <i class="fas fa-caret-down theme-toggle__caret" aria-hidden="true"></i>
         </button>
         <div class="theme-menu" id="themeMenu" role="menu">
             <button class="theme-option" type="button" data-theme-option="light" role="menuitemradio" aria-checked="false">
                 <i class="fas fa-sun"></i>
-                <span>Sáng</span>
+                <span data-i18n="theme.light">Sáng</span>
             </button>
             <button class="theme-option" type="button" data-theme-option="dark" role="menuitemradio" aria-checked="false">
                 <i class="fas fa-moon"></i>
-                <span>Tối</span>
+                <span data-i18n="theme.dark">Tối</span>
             </button>
             <button class="theme-option" type="button" data-theme-option="system" role="menuitemradio" aria-checked="false">
                 <i class="fas fa-desktop"></i>
-                <span>Hệ thống</span>
+                <span data-i18n="theme.system">Hệ thống</span>
             </button>
         </div>
     </div>
@@ -44,44 +61,45 @@
                 <span>BeamShare</span>
             </div>
             <div class="auth-header">
-                <h1>Tạo tài khoản mới</h1>
-                <p>Đăng ký nhanh để bắt đầu lưu trữ và chia sẻ.</p>
+                <h1 data-i18n="auth.register.title">Tạo tài khoản mới</h1>
+                <p data-i18n="auth.register.subtitle">Đăng ký nhanh để bắt đầu lưu trữ và chia sẻ.</p>
             </div>
             <form class="auth-form" id="register-form" data-form-type="register">
                 <div class="auth-alert" role="alert"></div>
                 <div class="form-field">
-                    <label for="register-name">Họ và tên</label>
-                    <input type="text" id="register-name" name="fullName" placeholder="Nguyễn Văn A" autocomplete="name" required>
+                    <label for="register-name" data-i18n="auth.register.nameLabel">Họ và tên</label>
+                    <input type="text" id="register-name" name="fullName" data-i18n-placeholder="auth.register.namePlaceholder" placeholder="Nguyễn Văn A" autocomplete="name" required>
                 </div>
                 <div class="form-field">
-                    <label for="register-email">Email</label>
-                    <input type="email" id="register-email" name="email" placeholder="name@email.com" autocomplete="email" required>
+                    <label for="register-email" data-i18n="auth.register.emailLabel">Email</label>
+                    <input type="email" id="register-email" name="email" data-i18n-placeholder="auth.register.emailPlaceholder" placeholder="name@email.com" autocomplete="email" required>
                 </div>
                 <div class="form-field password-field">
-                    <label for="register-password">Mật khẩu</label>
-                    <input type="password" id="register-password" name="password" placeholder="Tối thiểu 6 ký tự" minlength="6" required>
+                    <label for="register-password" data-i18n="auth.register.passwordLabel">Mật khẩu</label>
+                    <input type="password" id="register-password" name="password" data-i18n-placeholder="auth.register.passwordPlaceholder" placeholder="Tối thiểu 6 ký tự" minlength="6" required>
                     <button type="button" class="password-toggle" aria-label="Hiển thị mật khẩu">
                         <i class="fas fa-eye"></i>
                         <i class="fas fa-eye-slash"></i>
                     </button>
                 </div>
                 <div class="form-field password-field">
-                    <label for="register-confirm">Nhập lại mật khẩu</label>
-                    <input type="password" id="register-confirm" name="confirm" placeholder="Nhập lại mật khẩu" minlength="6" required>
+                    <label for="register-confirm" data-i18n="auth.register.confirmLabel">Nhập lại mật khẩu</label>
+                    <input type="password" id="register-confirm" name="confirm" data-i18n-placeholder="auth.register.confirmPlaceholder" placeholder="Nhập lại mật khẩu" minlength="6" required>
                     <button type="button" class="password-toggle" aria-label="Hiển thị mật khẩu">
                         <i class="fas fa-eye"></i>
                         <i class="fas fa-eye-slash"></i>
                     </button>
                 </div>
                 <div class="auth-actions">
-                    <button type="submit" class="btn-primary">Đăng ký</button>
+                    <button type="submit" class="btn-primary" data-i18n="auth.register.submit">Đăng ký</button>
                 </div>
             </form>
             <div class="auth-switch">
-                Đã có tài khoản? <a href="/auth/login">Đăng nhập</a>
+                <span data-i18n="auth.register.hasAccount">Đã có tài khoản?</span> <a href="/auth/login" data-i18n="auth.register.loginLink">Đăng nhập</a>
             </div>
         </div>
     </div>
+    <script src="/public/pages/sso/js/auth-translate.js"></script>
     <script src="/public/pages/sso/js/auth-forms.js" defer></script>
 </body>
 </html>

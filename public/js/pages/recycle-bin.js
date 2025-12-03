@@ -2,6 +2,15 @@
     const RETENTION_DAYS = 30;
     const API_ENDPOINT = '/api/recycle-bin';
 
+    // Translation helper function
+    const t = (key, fallback = '') => {
+        const lang = window.LanguageManager;
+        if (lang && typeof lang.translate === 'function') {
+            return lang.translate(key) || fallback;
+        }
+        return fallback;
+    };
+
     const state = {
         initialized: false,
         files: [],
@@ -52,7 +61,7 @@
 
     function formatFileSize(bytes) {
         if (!Number.isFinite(bytes) || bytes <= 0) {
-            return 'Không xác định';
+            return t('pages.recycle.status.unknown', 'Không xác định');
         }
         const units = ['B', 'KB', 'MB', 'GB', 'TB'];
         const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
@@ -360,7 +369,10 @@
             if (!targetButton.dataset.originalHtml) {
                 targetButton.dataset.originalHtml = targetButton.innerHTML;
             }
-            targetButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${action === 'delete' ? 'Đang xóa' : 'Đang khôi phục'}`;
+            const loadingText = action === 'delete' 
+                ? t('pages.recycle.status.deleting', 'Đang xóa')
+                : t('pages.recycle.status.restoring', 'Đang khôi phục');
+            targetButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${loadingText}`;
             targetButton.disabled = true;
             state.busyAction = action;
             if (elements.selectionCancel) {
@@ -455,7 +467,7 @@
             await fetchRecycleBin();
         } catch (error) {
             console.error(`Bulk ${action} failed:`, error);
-            window.toastSystem?.error(error.message || 'Không thể hoàn tất thao tác.');
+            window.toastSystem?.error(error.message || t('pages.recycle.status.operationFailed', 'Không thể hoàn tất thao tác.'));
         } finally {
             setBulkActionLoading(action, false);
         }
@@ -499,13 +511,13 @@
         }
 
         const message = fileIds.length === 1
-            ? 'Xóa vĩnh viễn mục đã chọn? Hành động này không thể hoàn tác.'
-            : `Xóa vĩnh viễn ${fileIds.length} mục đã chọn? Hành động này không thể hoàn tác.`;
+            ? t('pages.recycle.bulkDelete.messageSingle', 'Xóa vĩnh viễn mục đã chọn? Hành động này không thể hoàn tác.')
+            : t('pages.recycle.bulkDelete.messageMultiple', 'Xóa vĩnh viễn {{count}} mục đã chọn? Hành động này không thể hoàn tác.').replace('{{count}}', fileIds.length);
 
         const confirmed = await askForConfirmation({
-            title: 'Xóa vĩnh viễn hàng loạt',
+            title: t('pages.recycle.bulkDelete.title', 'Xóa vĩnh viễn hàng loạt'),
             message,
-            confirmText: 'Xóa vĩnh viễn',
+            confirmText: t('pages.recycle.bulkDelete.confirm', 'Xóa vĩnh viễn'),
             confirmClass: 'btn-danger'
         });
 
@@ -688,7 +700,7 @@
             const payload = isJson ? await response.json().catch(() => ({})) : {};
 
             if (!response.ok) {
-                throw new Error(payload?.error || 'Không thể tải thùng rác');
+                throw new Error(payload?.error || t('pages.recycle.status.loadError', 'Không thể tải thùng rác'));
             }
 
             const files = Array.isArray(payload?.files) ? payload.files : [];
@@ -703,10 +715,10 @@
 
             console.error('Recycle bin load failed:', error);
             if (elements.summaryTotal) {
-                elements.summaryTotal.textContent = 'Không thể tải';
+                elements.summaryTotal.textContent = t('pages.recycle.status.loadError', 'Không thể tải');
             }
             setViewState({ isLoading: false, hasData: false });
-            window.toastSystem?.error(error.message || 'Không thể tải danh sách thùng rác. Vui lòng thử lại.');
+            window.toastSystem?.error(error.message || t('pages.recycle.status.loadErrorToast', 'Không thể tải danh sách thùng rác. Vui lòng thử lại.'));
         } finally {
             if (state.abortController === controller) {
                 state.abortController = null;
@@ -734,10 +746,10 @@
 
             const payload = await response.json().catch(() => ({}));
             if (!response.ok) {
-                throw new Error(payload?.error || 'Không thể khôi phục tệp');
+                throw new Error(payload?.error || t('pages.recycle.singleRestore.error', 'Không thể khôi phục tệp'));
             }
 
-            window.toastSystem?.success(payload?.message || `Đã khôi phục "${displayName}".`);
+            window.toastSystem?.success(payload?.message || t('pages.recycle.singleRestore.success', 'Đã khôi phục "{{name}}".').replace('{{name}}', displayName));
             state.selected.delete(file.internalName);
             updateSelectionSummary();
             syncRowSelectionState();
@@ -745,17 +757,17 @@
             await fetchRecycleBin();
         } catch (error) {
             console.error('Restore failed:', error);
-            window.toastSystem?.error(error.message || 'Không thể khôi phục tệp.');
+            window.toastSystem?.error(error.message || t('pages.recycle.singleRestore.errorToast', 'Không thể khôi phục tệp.'));
         }
     }
 
     async function handlePermanentDelete(file) {
         const displayName = file.displayName || file.originalName || file.internalName;
-        const confirmMessage = `Xóa vĩnh viễn "${displayName}"? Hành động này không thể hoàn tác.`;
+        const confirmMessage = t('pages.recycle.singleDelete.message', 'Xóa vĩnh viễn "{{name}}"? Hành động này không thể hoàn tác.').replace('{{name}}', displayName);
         const confirmed = await askForConfirmation({
-            title: 'Xóa vĩnh viễn',
+            title: t('pages.recycle.singleDelete.title', 'Xóa vĩnh viễn'),
             message: confirmMessage,
-            confirmText: 'Xóa vĩnh viễn',
+            confirmText: t('pages.recycle.singleDelete.confirm', 'Xóa vĩnh viễn'),
             confirmClass: 'btn-danger'
         });
 
@@ -770,10 +782,10 @@
 
             const payload = await response.json().catch(() => ({}));
             if (!response.ok) {
-                throw new Error(payload?.error || 'Không thể xóa vĩnh viễn tệp');
+                throw new Error(payload?.error || t('pages.recycle.singleDelete.error', 'Không thể xóa vĩnh viễn tệp'));
             }
 
-            window.toastSystem?.success(payload?.message || `Đã xóa vĩnh viễn "${displayName}".`);
+            window.toastSystem?.success(payload?.message || t('pages.recycle.singleDelete.success', 'Đã xóa vĩnh viễn "{{name}}".').replace('{{name}}', displayName));
             state.selected.delete(file.internalName);
             updateSelectionSummary();
             syncRowSelectionState();
@@ -781,19 +793,19 @@
             await fetchRecycleBin();
         } catch (error) {
             console.error('Permanent delete failed:', error);
-            window.toastSystem?.error(error.message || 'Không thể xóa vĩnh viễn tệp.');
+            window.toastSystem?.error(error.message || t('pages.recycle.singleDelete.errorToast', 'Không thể xóa vĩnh viễn tệp.'));
         }
     }
 
     async function askForConfirmation(options) {
         if (window.modalSystem && typeof window.modalSystem.confirm === 'function') {
             return window.modalSystem.confirm({
-                cancelText: 'Hủy',
+                cancelText: t('pages.recycle.confirmCancel', 'Hủy'),
                 ...options
             });
         }
 
-        return window.confirm(options?.message || 'Bạn có chắc chắn?');
+        return window.confirm(options?.message || t('common.confirmDefault', 'Bạn có chắc chắn?'));
     }
 
     function attachEventListeners() {

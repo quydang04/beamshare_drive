@@ -449,20 +449,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         const body = `
             <form id="${formId}" class="modal-form" novalidate>
                 <div class="form-group">
-                    <label for="profile-display-name">Tên hiển thị</label>
-                    <input type="text" id="profile-display-name" name="fullName" maxlength="80" value="${escapeHtml(profile?.fullName || '')}" placeholder="Nhập tên hiển thị" required />
-                    <p class="form-hint">Tên này sẽ xuất hiện trên dashboard và menu người dùng.</p>
+                    <label for="profile-display-name">${translate('modal.profile.nameLabel')}</label>
+                    <input type="text" id="profile-display-name" name="fullName" maxlength="80" value="${escapeHtml(profile?.fullName || '')}" placeholder="${translate('modal.profile.nameLabel')}" required />
+                    <p class="form-hint">${translate('header.userMenu.profile')}</p>
                 </div>
                 <div class="form-error" id="${errorId}" style="display: none;"></div>
             </form>
         `;
         const footer = `
-            <button class="btn btn-secondary" type="button" id="user-profile-update-cancel">Hủy</button>
-            <button class="btn btn-primary" type="submit" form="${formId}" id="user-profile-update-save">Lưu thay đổi</button>
+            <button class="btn btn-secondary" type="button" id="user-profile-update-cancel">${translate('common.cancel')}</button>
+            <button class="btn btn-primary" type="submit" form="${formId}" id="user-profile-update-save">${translate('common.saveChanges')}</button>
         `;
 
         modalSystem.show({
-            title: 'Cập nhật thông tin người dùng',
+            title: translate('modal.profile.title'),
             body,
             footer
         });
@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 if (!fullName) {
                     if (errorBox) {
-                        errorBox.textContent = 'Vui lòng nhập tên hiển thị.';
+                        errorBox.textContent = translate('modal.profile.nameError');
                         errorBox.style.display = 'block';
                     }
                     nameInput.focus();
@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 if (fullName.length < 2) {
                     if (errorBox) {
-                        errorBox.textContent = 'Tên hiển thị phải có ít nhất 2 ký tự.';
+                        errorBox.textContent = translate('modal.profile.nameMinError');
                         errorBox.style.display = 'block';
                     }
                     nameInput.focus();
@@ -518,7 +518,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 if (saveButton) {
                     saveButton.disabled = true;
-                    saveButton.textContent = 'Đang lưu...';
+                    saveButton.textContent = translate('common.saving');
                 }
 
                 try {
@@ -534,7 +534,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     const payload = await response.json().catch(() => ({}));
 
                     if (!response.ok) {
-                        const message = payload?.error || 'Không thể cập nhật thông tin người dùng.';
+                        const message = payload?.error || translate('modal.profile.updateError');
                         if (errorBox) {
                             errorBox.textContent = message;
                             errorBox.style.display = 'block';
@@ -550,18 +550,18 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                     modalSystem.hide();
                     if (window.toastSystem) {
-                        window.toastSystem.success('Đã cập nhật tên hiển thị.', { duration: 2200 });
+                        window.toastSystem.success(translate('modal.profile.updateSuccess'), { duration: 2200 });
                     }
                 } catch (error) {
-                    console.error('Cập nhật hồ sơ thất bại:', error);
+                    console.error('Profile update failed:', error);
                     if (errorBox) {
-                        errorBox.textContent = 'Đã xảy ra lỗi. Vui lòng thử lại sau.';
+                        errorBox.textContent = translate('common.genericError');
                         errorBox.style.display = 'block';
                     }
                 } finally {
                     if (saveButton) {
                         saveButton.disabled = false;
-                        saveButton.textContent = 'Lưu thay đổi';
+                        saveButton.textContent = translate('common.saveChanges');
                     }
                 }
             });
@@ -574,28 +574,28 @@ document.addEventListener('DOMContentLoaded', async function() {
         const body = `
             <form id="${formId}" class="modal-form" novalidate>
                 <div class="form-group">
-                    <label for="current-password">Mật khẩu hiện tại</label>
+                    <label for="current-password">${translate('modal.password.currentLabel')}</label>
                     <input type="password" id="current-password" name="currentPassword" autocomplete="current-password" required />
                 </div>
                 <div class="form-group">
-                    <label for="new-password">Mật khẩu mới</label>
+                    <label for="new-password">${translate('modal.password.newLabel')}</label>
                     <input type="password" id="new-password" name="newPassword" autocomplete="new-password" required />
-                    <p class="form-hint">Mật khẩu mới cần ít nhất 6 ký tự.</p>
+                    <p class="form-hint">${translate('modal.password.newHint')}</p>
                 </div>
                 <div class="form-group">
-                    <label for="confirm-password">Nhập lại mật khẩu mới</label>
+                    <label for="confirm-password">${translate('modal.password.confirmLabel')}</label>
                     <input type="password" id="confirm-password" autocomplete="new-password" required />
                 </div>
                 <div class="form-error" id="${errorId}" style="display: none;"></div>
             </form>
         `;
         const footer = `
-            <button class="btn btn-secondary" type="button" id="user-password-update-cancel">Hủy</button>
-            <button class="btn btn-primary" type="submit" form="${formId}" id="user-password-update-save">Đổi mật khẩu</button>
+            <button class="btn btn-secondary" type="button" id="user-password-update-cancel">${translate('common.cancel')}</button>
+            <button class="btn btn-primary" type="submit" form="${formId}" id="user-password-update-save">${translate('modal.password.submit')}</button>
         `;
 
         modalSystem.show({
-            title: 'Đổi mật khẩu',
+            title: translate('modal.password.title'),
             body,
             footer
         });
@@ -628,7 +628,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 if (!currentPassword || !newPassword || !confirmPassword) {
                     if (errorBox) {
-                        errorBox.textContent = 'Vui lòng nhập đầy đủ thông tin.';
+                        errorBox.textContent = translate('modal.password.allFieldsRequired');
                         errorBox.style.display = 'block';
                     }
                     return;
@@ -636,7 +636,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 if (newPassword.length < 6) {
                     if (errorBox) {
-                        errorBox.textContent = 'Mật khẩu mới phải có tối thiểu 6 ký tự.';
+                        errorBox.textContent = translate('modal.password.minLengthError');
                         errorBox.style.display = 'block';
                     }
                     if (newInput) {
@@ -647,7 +647,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 if (newPassword !== confirmPassword) {
                     if (errorBox) {
-                        errorBox.textContent = 'Mật khẩu mới và nhập lại chưa trùng khớp.';
+                        errorBox.textContent = translate('modal.password.mismatchError');
                         errorBox.style.display = 'block';
                     }
                     if (confirmInput) {
@@ -658,7 +658,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 if (currentPassword === newPassword) {
                     if (errorBox) {
-                        errorBox.textContent = 'Mật khẩu mới phải khác mật khẩu hiện tại.';
+                        errorBox.textContent = translate('modal.password.sameAsCurrentError');
                         errorBox.style.display = 'block';
                     }
                     if (newInput) {
@@ -674,7 +674,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 if (saveButton) {
                     saveButton.disabled = true;
-                    saveButton.textContent = 'Đang cập nhật...';
+                    saveButton.textContent = translate('common.updating');
                 }
 
                 try {
@@ -690,7 +690,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     const payload = await response.json().catch(() => ({}));
 
                     if (!response.ok) {
-                        const message = payload?.error || 'Không thể đổi mật khẩu.';
+                        const message = payload?.error || translate('modal.password.updateError');
                         if (errorBox) {
                             errorBox.textContent = message;
                             errorBox.style.display = 'block';
@@ -700,18 +700,18 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                     modalSystem.hide();
                     if (window.toastSystem) {
-                        window.toastSystem.success('Đổi mật khẩu thành công.', { duration: 2400 });
+                        window.toastSystem.success(translate('modal.password.updateSuccess'), { duration: 2400 });
                     }
                 } catch (error) {
-                    console.error('Đổi mật khẩu thất bại:', error);
+                    console.error('Password change failed:', error);
                     if (errorBox) {
-                        errorBox.textContent = 'Đã xảy ra lỗi. Vui lòng thử lại sau.';
+                        errorBox.textContent = translate('common.genericError');
                         errorBox.style.display = 'block';
                     }
                 } finally {
                     if (saveButton) {
                         saveButton.disabled = false;
-                        saveButton.textContent = 'Đổi mật khẩu';
+                        saveButton.textContent = translate('modal.password.submit');
                     }
                 }
             });
@@ -884,21 +884,21 @@ document.addEventListener('DOMContentLoaded', async function() {
                     </svg>
                 </div>
                 <div class="payment-failed-content">
-                    <p class="payment-failed-message">${escapeHtml(message) || 'Giao dịch đã bị hủy hoặc không thành công.'}</p>
+                    <p class="payment-failed-message">${escapeHtml(message) || translate('modal.paymentFailed.defaultMessage')}</p>
                     <div class="payment-failed-details">
                         <div class="payment-detail-item">
-                            <span class="detail-label">Trạng thái</span>
-                            <span class="detail-value status-failed">Không thành công</span>
+                            <span class="detail-label">${translate('modal.paymentFailed.statusLabel')}</span>
+                            <span class="detail-value status-failed">${translate('modal.paymentFailed.statusValue')}</span>
                         </div>
                         ${plan ? `
                         <div class="payment-detail-item">
-                            <span class="detail-label">Gói đăng ký</span>
+                            <span class="detail-label">${translate('modal.paymentFailed.planLabel')}</span>
                             <span class="detail-value">${escapeHtml(plan.charAt(0).toUpperCase() + plan.slice(1))}</span>
                         </div>
                         ` : ''}
                         <div class="payment-detail-item">
-                            <span class="detail-label">Thời gian</span>
-                            <span class="detail-value">${new Date().toLocaleString('vi-VN')}</span>
+                            <span class="detail-label">${translate('modal.paymentFailed.timeLabel')}</span>
+                            <span class="detail-value">${formatDateTime(new Date())}</span>
                         </div>
                     </div>
                     <p class="payment-failed-hint">
@@ -907,7 +907,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                             <line x1="12" y1="16" x2="12" y2="12"/>
                             <line x1="12" y1="8" x2="12.01" y2="8"/>
                         </svg>
-                        Nếu bạn đã bị trừ tiền nhưng giao dịch không thành công, vui lòng liên hệ hỗ trợ.
+                        ${translate('modal.paymentFailed.hint')}
                     </p>
                 </div>
             </div>
@@ -915,18 +915,18 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         if (window.modalSystem) {
             window.modalSystem.createModal({
-                title: 'Thanh toán không thành công',
+                title: translate('modal.paymentFailed.title'),
                 content: modalContent,
                 buttons: [
                     {
-                        text: 'Liên hệ hỗ trợ',
+                        text: translate('common.contactSupport'),
                         className: 'btn-secondary',
                         onclick: () => {
-                            window.location.href = 'mailto:webmaster@quydang.name.vn?subject=Hỗ trợ thanh toán BeamShare';
+                            window.location.href = 'mailto:webmaster@quydang.name.vn?subject=BeamShare Payment Support';
                         }
                     },
                     {
-                        text: 'Thử lại',
+                        text: translate('common.retry'),
                         className: 'btn-primary',
                         onclick: () => {
                             window.modalSystem.closeModal();

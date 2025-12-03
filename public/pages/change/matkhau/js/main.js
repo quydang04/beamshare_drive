@@ -8,6 +8,14 @@
     let backButtons = [];
     let backButtonHandler = null;
 
+    const t = (key, fallback = '') => {
+        const lang = window.LanguageManager;
+        if (lang && typeof lang.translate === 'function') {
+            return lang.translate(key) || fallback;
+        }
+        return fallback;
+    };
+
     const navigateToDashboard = () => {
         if (typeof window.switchToPage === 'function') {
             window.switchToPage('dashboard');
@@ -21,7 +29,9 @@
             return;
         }
         submitButton.disabled = isLoading;
-        submitButton.textContent = isLoading ? 'Đang cập nhật...' : 'Đổi mật khẩu';
+        submitButton.textContent = isLoading 
+            ? t('info.changePassword.loading', 'Đang cập nhật...') 
+            : t('info.changePassword.form.submit', 'Đổi mật khẩu');
     };
 
     const showError = (message) => {
@@ -39,16 +49,16 @@
 
     const validatePasswords = (currentPassword, newPassword, confirmPassword) => {
         if (!currentPassword || !newPassword || !confirmPassword) {
-            return 'Vui lòng nhập đầy đủ thông tin.';
+            return t('info.changePassword.validation.allRequired', 'Vui lòng nhập đầy đủ thông tin.');
         }
         if (newPassword.length < 6) {
-            return 'Mật khẩu mới phải có tối thiểu 6 ký tự.';
+            return t('info.changePassword.validation.minLength', 'Mật khẩu mới phải có tối thiểu 6 ký tự.');
         }
         if (newPassword !== confirmPassword) {
-            return 'Mật khẩu mới và nhập lại chưa trùng khớp.';
+            return t('info.changePassword.validation.mismatch', 'Mật khẩu mới và nhập lại chưa trùng khớp.');
         }
         if (currentPassword === newPassword) {
-            return 'Mật khẩu mới phải khác mật khẩu hiện tại.';
+            return t('info.changePassword.validation.sameAsCurrent', 'Mật khẩu mới phải khác mật khẩu hiện tại.');
         }
         return '';
     };
@@ -78,7 +88,7 @@
 
             const payload = await response.json().catch(() => ({}));
             if (!response.ok) {
-                const message = payload?.error || 'Không thể đổi mật khẩu.';
+                const message = payload?.error || t('info.changePassword.validation.defaultError', 'Không thể đổi mật khẩu.');
                 showError(message);
                 return;
             }
@@ -89,11 +99,11 @@
             }
 
             if (window.toastSystem) {
-                window.toastSystem.success('Đổi mật khẩu thành công.', { duration: 2600 });
+                window.toastSystem.success(t('info.changePassword.success', 'Đổi mật khẩu thành công.'), { duration: 2600 });
             }
         } catch (error) {
-            console.error('Đổi mật khẩu thất bại:', error);
-            showError('Đã xảy ra lỗi. Vui lòng thử lại sau.');
+            console.error(t('info.changePassword.errorLog', 'Đổi mật khẩu thất bại:'), error);
+            showError(t('common.genericError', 'Đã xảy ra lỗi. Vui lòng thử lại sau.'));
         } finally {
             setLoading(false);
         }

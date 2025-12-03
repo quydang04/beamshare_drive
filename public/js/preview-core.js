@@ -3,7 +3,15 @@
         return;
     }
 
-    const DISCLAIMER_TEXT = 'Xem trước có thể khác với file gốc, vui lòng tải về để xem chính xác.';
+    const t = (key, fallback = '') => {
+        const lang = window.LanguageManager;
+        if (lang && typeof lang.translate === 'function') {
+            return lang.translate(key) || fallback;
+        }
+        return fallback;
+    };
+
+    const DISCLAIMER_TEXT = t('info.preview.disclaimer', 'Xem trước có thể khác với file gốc, vui lòng tải về để xem chính xác.');
     const PDF_WORKER_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     function render(container, metadata = {}, options = {}) {
@@ -15,7 +23,7 @@
 
         const previewUrl = options.previewUrl;
         if (!previewUrl) {
-            showUnsupportedMessage(container, 'Không thể tạo bản xem trước. Vui lòng tải xuống để xem chi tiết.');
+            showUnsupportedMessage(container, t('info.preview.unsupportedGeneric', 'Không thể tạo bản xem trước. Vui lòng tải xuống để xem chi tiết.'));
             return;
         }
 
@@ -31,9 +39,9 @@
             previewUrl,
             options: {
                 showDisclaimer: options.showDisclaimer !== false,
-                ownerName: options.ownerName || metadata.owner || 'Không xác định',
+                ownerName: options.ownerName || metadata.owner || t('common.unknownValue', 'Không xác định'),
                 pdfWithCredentials: Boolean(options.pdfWithCredentials),
-                disclaimerMessage: options.disclaimerMessage || DISCLAIMER_TEXT
+                disclaimerMessage: options.disclaimerMessage || t('info.preview.disclaimer', DISCLAIMER_TEXT)
             }
         };
 
@@ -63,7 +71,7 @@
         }
 
         if (extension === '.doc') {
-            showUnsupportedMessage(context.container, 'Định dạng Word (.doc) chưa được hỗ trợ xem trước. Vui lòng tải về để xem đầy đủ.');
+            showUnsupportedMessage(context.container, t('info.preview.docUnsupported', 'Định dạng Word (.doc) chưa được hỗ trợ xem trước. Vui lòng tải về để xem đầy đủ.'));
             return;
         }
 
@@ -73,11 +81,11 @@
         }
 
         if (extension === '.ppt' || extension === '.pptx') {
-            showUnsupportedMessage(context.container, 'Không hỗ trợ xem trước với file PowerPoint. Vui lòng tải về để xem đầy đủ.');
+            showUnsupportedMessage(context.container, t('info.preview.pptUnsupported', 'Không hỗ trợ xem trước với file PowerPoint. Vui lòng tải về để xem đầy đủ.'));
             return;
         }
 
-        showUnsupportedMessage(context.container, 'Không có bản xem trước cho loại tệp này. Hãy tải xuống để mở bằng ứng dụng tương ứng.');
+        showUnsupportedMessage(context.container, t('info.preview.genericUnsupported', 'Không có bản xem trước cho loại tệp này. Hãy tải xuống để mở bằng ứng dụng tương ứng.'));
     }
 
     function renderImagePreview(context) {
@@ -88,7 +96,7 @@
         
         const img = document.createElement('img');
         img.className = 'image-preview-element';
-        img.alt = context.metadata.displayName || context.metadata.originalName || 'Xem trước hình ảnh';
+        img.alt = context.metadata.displayName || context.metadata.originalName || t('info.preview.imagePreviewAlt', 'Xem trước hình ảnh');
         img.src = context.previewUrl;
         img.loading = 'lazy';
         
@@ -116,7 +124,7 @@
             if (disclaimer && disclaimer.parentElement === context.container) {
                 context.container.removeChild(disclaimer);
             }
-            showUnsupportedMessage(context.container, 'Không thể tải Video.js để phát video này. Vui lòng tải xuống để xem.');
+            showUnsupportedMessage(context.container, t('info.preview.videoLoadError', 'Không thể tải Video.js để phát video này. Vui lòng tải xuống để xem.'));
             return;
         }
 
@@ -178,7 +186,7 @@
                 if (disclaimer && disclaimer.parentElement === context.container) {
                     context.container.removeChild(disclaimer);
                 }
-                showUnsupportedMessage(context.container, 'Không thể khởi tạo trình phát video. Vui lòng tải xuống để xem.');
+                showUnsupportedMessage(context.container, t('info.preview.videoInitError', 'Không thể khởi tạo trình phát video. Vui lòng tải xuống để xem.'));
             }
         });
     }
@@ -200,7 +208,7 @@
 
         const helper = document.createElement('p');
         helper.className = 'share-preview-message';
-        helper.textContent = context.metadata.displayName || context.metadata.originalName || 'Bản nhạc';
+        helper.textContent = context.metadata.displayName || context.metadata.originalName || t('info.preview.audioTrack', 'Bản nhạc');
 
         context.container.appendChild(audio);
         context.container.appendChild(helper);
@@ -210,7 +218,7 @@
         const disclaimer = maybeAppendDisclaimer(context.container, context.options);
 
         if (!window.pdfjsLib) {
-            showUnsupportedMessage(context.container, 'Không thể tải thư viện xem trước PDF. Vui lòng tải về để xem đầy đủ.');
+            showUnsupportedMessage(context.container, t('info.preview.pdfLoadError', 'Không thể tải thư viện xem trước PDF. Vui lòng tải về để xem đầy đủ.'));
             return;
         }
 
@@ -218,7 +226,7 @@
 
         const card = document.createElement('div');
         card.className = 'preview-pdf-card';
-        const loader = createLoader('Đang tải xem trước PDF…');
+        const loader = createLoader(t('info.preview.pdfLoading', 'Đang tải xem trước PDF…'));
         const canvas = document.createElement('canvas');
         canvas.className = 'preview-pdf-canvas';
         card.appendChild(loader);
@@ -248,7 +256,7 @@
                 if (disclaimer && disclaimer.parentElement === context.container) {
                     context.container.removeChild(disclaimer);
                 }
-                showUnsupportedMessage(context.container, 'Không thể hiển thị xem trước PDF. Vui lòng tải về để xem chính xác.');
+                showUnsupportedMessage(context.container, t('info.preview.pdfDisplayError', 'Không thể hiển thị xem trước PDF. Vui lòng tải về để xem chính xác.'));
             });
     }
 
@@ -256,7 +264,7 @@
         maybeAppendDisclaimer(context.container, context.options);
 
         if (!window.mammoth) {
-            showUnsupportedMessage(context.container, 'Không thể tải thư viện xem trước Word. Vui lòng tải về để xem đầy đủ.');
+            showUnsupportedMessage(context.container, t('info.preview.wordLoadError', 'Không thể tải thư viện xem trước Word. Vui lòng tải về để xem đầy đủ.'));
             return;
         }
 
@@ -264,14 +272,14 @@
         card.className = 'preview-doc-card';
         const body = document.createElement('div');
         body.className = 'preview-doc-body';
-        body.textContent = 'Đang tải nội dung tài liệu…';
+        body.textContent = t('info.preview.wordLoading', 'Đang tải nội dung tài liệu…');
         card.appendChild(body);
         context.container.appendChild(card);
 
         fetch(context.previewUrl)
             .then((response) => {
                 if (!response.ok) {
-                    throw new Error('Không thể tải tệp Word');
+                    throw new Error(t('info.preview.wordFetchError', 'Không thể tải tệp Word'));
                 }
                 return response.arrayBuffer();
             })
@@ -281,11 +289,11 @@
                 if (content) {
                     body.innerHTML = content;
                 } else {
-                    body.innerHTML = '<p>Không có nội dung để hiển thị.</p>';
+                    body.innerHTML = `<p>${t('info.preview.wordNoContent', 'Không có nội dung để hiển thị.')}</p>`;
                 }
             })
             .catch(() => {
-                body.innerHTML = '<p>Không thể hiển thị nội dung tài liệu. Vui lòng tải xuống để xem chi tiết.</p>';
+                body.innerHTML = `<p>${t('info.preview.wordDisplayError', 'Không thể hiển thị nội dung tài liệu. Vui lòng tải xuống để xem chi tiết.')}</p>`;
             });
     }
 
@@ -293,7 +301,7 @@
         maybeAppendDisclaimer(context.container, context.options);
 
         if (!window.XLSX) {
-            showUnsupportedMessage(context.container, 'Không thể tải thư viện xem trước Excel. Vui lòng tải về để xem đầy đủ.');
+            showUnsupportedMessage(context.container, t('info.preview.excelLoadError', 'Không thể tải thư viện xem trước Excel. Vui lòng tải về để xem đầy đủ.'));
             return;
         }
 
@@ -301,14 +309,14 @@
         card.className = 'preview-excel-card';
         const body = document.createElement('div');
         body.className = 'preview-excel-body';
-        body.textContent = 'Đang tải dữ liệu bảng tính…';
+        body.textContent = t('info.preview.excelLoading', 'Đang tải dữ liệu bảng tính…');
         card.appendChild(body);
         context.container.appendChild(card);
 
         fetch(context.previewUrl)
             .then((response) => {
                 if (!response.ok) {
-                    throw new Error('Không thể tải tệp Excel');
+                    throw new Error(t('info.preview.excelFetchError', 'Không thể tải tệp Excel'));
                 }
                 return response.arrayBuffer();
             })
@@ -316,12 +324,12 @@
                 const workbook = window.XLSX.read(buffer, { type: 'array' });
                 const firstSheet = workbook.SheetNames?.[0];
                 if (!firstSheet) {
-                    throw new Error('Không tìm thấy dữ liệu bảng tính');
+                    throw new Error(t('info.preview.excelNoData', 'Không tìm thấy dữ liệu bảng tính'));
                 }
                 const sheet = workbook.Sheets[firstSheet];
                 const rows = window.XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false });
                 if (!rows || rows.length === 0) {
-                    throw new Error('Bảng tính không có dữ liệu');
+                    throw new Error(t('info.preview.excelEmptySheet', 'Bảng tính không có dữ liệu'));
                 }
 
                 const table = document.createElement('table');
@@ -339,7 +347,7 @@
                 body.appendChild(table);
             })
             .catch(() => {
-                body.textContent = 'Không thể hiển thị dữ liệu bảng tính. Vui lòng tải về để xem chi tiết.';
+                body.textContent = t('info.preview.excelDisplayError', 'Không thể hiển thị dữ liệu bảng tính. Vui lòng tải về để xem chi tiết.');
             });
     }
 

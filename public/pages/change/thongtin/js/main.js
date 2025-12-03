@@ -8,6 +8,14 @@
     let backButtons = [];
     let profileListener = null;
 
+    const t = (key, fallback = '') => {
+        const lang = window.LanguageManager;
+        if (lang && typeof lang.translate === 'function') {
+            return lang.translate(key) || fallback;
+        }
+        return fallback;
+    };
+
     const navigateToDashboard = () => {
         if (typeof window.switchToPage === 'function') {
             window.switchToPage('dashboard');
@@ -21,7 +29,9 @@
             return;
         }
         submitButton.disabled = isLoading;
-        submitButton.textContent = isLoading ? 'Đang lưu...' : 'Lưu thay đổi';
+        submitButton.textContent = isLoading 
+            ? t('info.changeProfile.loading', 'Đang lưu...') 
+            : t('info.changeProfile.form.submit', 'Lưu thay đổi');
     };
 
     const showError = (message) => {
@@ -60,21 +70,21 @@
             applyProfileToView(profile);
             return profile;
         } catch (error) {
-            console.error('Không thể tải thông tin người dùng:', error);
-            showError('Không thể tải thông tin người dùng. Vui lòng thử lại sau.');
+            console.error(t('info.changeProfile.validation.loadErrorLog', 'Không thể tải thông tin người dùng:'), error);
+            showError(t('info.changeProfile.validation.loadError', 'Không thể tải thông tin người dùng. Vui lòng thử lại sau.'));
             return null;
         }
     };
 
     const validateName = (value) => {
         if (!value) {
-            return 'Vui lòng nhập tên hiển thị.';
+            return t('info.changeProfile.validation.empty', 'Vui lòng nhập tên hiển thị.');
         }
         if (value.length < 2) {
-            return 'Tên hiển thị phải có tối thiểu 2 ký tự.';
+            return t('info.changeProfile.validation.minLength', 'Tên hiển thị phải có tối thiểu 2 ký tự.');
         }
         if (value.length > 80) {
-            return 'Tên hiển thị không được vượt quá 80 ký tự.';
+            return t('info.changeProfile.validation.maxLength', 'Tên hiển thị không được vượt quá 80 ký tự.');
         }
         return '';
     };
@@ -107,7 +117,7 @@
             const payload = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                const message = payload?.error || 'Không thể cập nhật thông tin người dùng.';
+                const message = payload?.error || t('info.changeProfile.validation.defaultError', 'Không thể cập nhật thông tin người dùng.');
                 showError(message);
                 return;
             }
@@ -118,11 +128,11 @@
             }
 
             if (window.toastSystem) {
-                window.toastSystem.success('Đã cập nhật tên hiển thị.', { duration: 2400 });
+                window.toastSystem.success(t('info.changeProfile.success', 'Đã cập nhật tên hiển thị.'), { duration: 2400 });
             }
         } catch (error) {
-            console.error('Cập nhật thông tin thất bại:', error);
-            showError('Đã xảy ra lỗi. Vui lòng thử lại sau.');
+            console.error(t('info.changeProfile.validation.updateError', 'Cập nhật thông tin thất bại:'), error);
+            showError(t('common.genericError', 'Đã xảy ra lỗi. Vui lòng thử lại sau.'));
         } finally {
             setLoading(false);
         }

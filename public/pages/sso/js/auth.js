@@ -337,6 +337,12 @@ function setSubmitting(form, isSubmitting) {
 }
 
 function getDefaultSuccessMessage(type) {
+    const lang = window.LanguageManager;
+    if (lang && typeof lang.translate === 'function') {
+        return type === 'register'
+            ? lang.translate('auth.messages.registerSuccess')
+            : lang.translate('auth.messages.loginSuccess');
+    }
     return type === 'register'
         ? 'Đăng ký thành công. Đang chuyển hướng...'
         : 'Đăng nhập thành công. Đang chuyển hướng...';
@@ -349,9 +355,17 @@ function togglePasswordVisibility(button) {
         return;
     }
 
+    const lang = window.LanguageManager;
     const showing = field.type === 'text';
     field.type = showing ? 'password' : 'text';
-    button.textContent = showing ? 'Hiện' : 'Ẩn';
+    
+    if (lang && typeof lang.translate === 'function') {
+        button.textContent = showing 
+            ? lang.translate('common.passwordToggle.show') 
+            : lang.translate('common.passwordToggle.hide');
+    } else {
+        button.textContent = showing ? 'Hiện' : 'Ẩn';
+    }
 }
 
 function showAlert(alertBox, status, message) {
