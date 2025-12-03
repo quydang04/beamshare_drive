@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant User
+    participant FE as Browser
+    participant API as /api/upload(s)
+    participant Multer
+    participant Conflict
+    participant Meta as FileMetadata
+    participant FS as Uploads
+
+    User->>FE: Select files + options
+    FE->>API: POST /api/upload with JWT
+    API->>Multer: Store temp file /uploads/<user>
+    Multer-->>API: File info (name,size,type)
+    API->>Conflict: checkFileConflict(userId,name,size,type)
+    alt Conflict & no action
+        API->>FS: Delete temp file
+        API-->>FE: Return conflict + suggestions
+    else Conflict resolved/auto-rename/replace
+        Conflict-->>API: Unique name or replace directive
+        API->>FS: Move/rename file
+        API->>Meta: addFile(...)
+        API-->>FE: Success summary
+    end

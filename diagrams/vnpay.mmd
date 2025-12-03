@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant User
+    participant FE as Browser
+    participant Sub as /api/subscriptions/payments/vnpay
+    participant Pay as VNPay Gateway
+    participant DB as Payment/Subscription/User
+    participant Mail as EmailService
+
+    User->>FE: Choose Premium
+    FE->>Sub: POST create VNPay payment
+    Sub->>DB: Create Payment(pending)
+    Sub-->>FE: paymentUrl
+    FE->>Pay: Redirect to VNPay
+    Pay-->>FE: Redirect back with query params
+    FE->>Sub: GET /vnpay/return
+    Sub->>Pay: verifyReturnUrl
+    alt Verified success
+        Sub->>DB: Mark paid; upsert Subscription; update User.plan
+        Sub->>Mail: sendPaymentResultEmail(success)
+        Sub-->>FE: Redirect /thank-you?paymentStatus=success
+    else Failure
+        Sub->>DB: Mark failed
+        Sub->>Mail: sendPaymentResultEmail(failed)
+        Sub-->>FE: Redirect /?paymentStatus=failed
+    end
+    Pay->>Sub: IPN callback (later)
+    Sub->>Pay: verifyIpnCall
+    Sub->>DB: Update payment/subscription accordingly
+    Sub-->>Pay: IpnSuccess/FailChecksum
