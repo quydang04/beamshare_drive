@@ -910,7 +910,8 @@
     "title": "Thông tin dự án & hệ thống",
     "subtitle": "Tổng quan về nền tảng lưu trữ và chia sẻ tệp BeamShare.",
       "meta": {
-        "versionLabel": "Phiên bản"
+        "versionLabel": "Phiên bản",
+        "versionValue": "RC1"
       },
       "section": {
         "intro": {

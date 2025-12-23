@@ -910,7 +910,8 @@
     "title": "Project & system information",
     "subtitle": "A quick overview of the BeamShare file sharing platform.",
       "meta": {
-        "versionLabel": "Version"
+        "versionLabel": "Version",
+        "versionValue": "RC1"
       },
       "section": {
         "intro": {
